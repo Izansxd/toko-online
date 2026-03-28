@@ -3,48 +3,20 @@
 <head>
   <title>Toko Online</title>
 </head>
-<body>
+<body onload="tampilProduk()">
 
-<!-- LOGIN -->
-<div id="loginPage">
-  <h2>Login</h2>
-  <input id="email" placeholder="Email">
-  <input id="password" type="password" placeholder="Password">
-  <button onclick="loginUser()">Login</button>
-  <button onclick="showRegister()">Daftar</button>
-</div>
+<h2>Produk</h2>
 
-<!-- REGISTER -->
-<div id="registerPage" style="display:none;">
-  <h2>Register</h2>
-  <input id="regEmail" placeholder="Email">
-  <input id="regPass" type="password">
-  <button onclick="registerUser()">Daftar</button>
-  <button onclick="showLogin()">Kembali</button>
-</div>
+<div id="produk"></div>
 
-<!-- USER PAGE -->
-<div id="userPage" style="display:none;">
-  <h2>Produk</h2>
-  <div id="produk"></div>
-  <button onclick="showCart()">Cart</button>
-  <button onclick="logout()">Logout</button>
-</div>
-
-<!-- ADMIN PAGE -->
-<div id="adminPage" style="display:none;">
-  <h2>Admin</h2>
-  <input id="nama" placeholder="Nama Produk">
-  <input id="harga" type="number">
-  <button onclick="tambahProduk()">Tambah</button>
-  <button onclick="logout()">Logout</button>
-</div>
+<br>
+<button onclick="showCart()">🛒 Lihat Keranjang</button>
 
 <!-- CART -->
 <div id="cartPage" style="display:none;">
   <h2>Keranjang</h2>
   <div id="cart"></div>
-  <button onclick="showUser()">Kembali</button>
+  <button onclick="hideCart()">Kembali</button>
 </div>
 
 <script type="module" src="app.js"></script>
