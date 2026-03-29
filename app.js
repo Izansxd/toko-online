@@ -2,9 +2,9 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
-  apiKey: "API_KEY_ANDA",
-  authDomain: "PROJECT_ID.firebaseapp.com",
-  projectId: "PROJECT_ID"
+  apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
+  authDomain: "toko-online-8a68d.firebaseapp.com",
+  projectId: "toko-online-8a68d"
 };
 
 const app = initializeApp(firebaseConfig);
