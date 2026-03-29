@@ -56,23 +56,35 @@ window.showCart = function(){
   document.getElementById("cart").innerHTML = html;
 }
 //tambah produk
-window.tambahProduk = function(){
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
+
+const storage = getStorage();
+
+window.tambahProduk = async function(){
   let nama = document.getElementById("nama").value;
   let harga = document.getElementById("harga").value;
+  let file = document.getElementById("gambar").files[0];
 
-  if(!nama || !harga){
-    alert("Isi dulu!");
+  if(!nama || !harga || !file){
+    alert("Isi semua + gambar!");
     return;
   }
 
-  addDoc(collection(db, "produk"), {
+  // upload gambar
+  const storageRef = ref(storage, "produk/" + file.name);
+  await uploadBytes(storageRef, file);
+
+  // ambil URL
+  const url = await getDownloadURL(storageRef);
+
+  // simpan ke firestore
+  await addDoc(collection(db, "produk"), {
     nama: nama,
-    harga: Number(harga)
-  }).then(()=>{
-    alert("Produk berhasil ditambah!");
-  }).catch(err=>{
-    alert("Error: " + err.message);
+    harga: Number(harga),
+    gambar: url
   });
+
+  alert("Produk + gambar berhasil!");
 }
 // TAMPIL GAMBAR
 let file = document.getElementById("gambar").files[0];
