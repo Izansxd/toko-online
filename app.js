@@ -1,6 +1,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+// --- KONFIGURASI ---
+const NOMOR_WA_ADMIN = "6282298627146"; // Nomor kamu sudah saya pasang di sini
+
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
   authDomain: "toko-online-8a68d.firebaseapp.com",
@@ -21,11 +24,10 @@ window.tampilProduk = async function() {
 
   data.forEach((docSnap) => {
     const p = docSnap.data();
-    const isSold = p.status === "Sold"; // Cek apakah akun sudah laku
+    const isSold = p.status === "Sold"; 
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const kategori = p.kategori || "Game";
 
-    // Gunakan struktur kartu yang sesuai dengan CSS di index.html
     html += `
       <div class="card">
         <div class="card-img-container">
@@ -59,8 +61,8 @@ window.submitProduk = async function() {
   const harga = document.getElementById("harga").value;
   const gambar = document.getElementById("gambar").value;
   const deskripsi = document.getElementById("deskripsi").value;
-  const kategori = document.getElementById("kategori").value; // Ambil kategori
-  const status = document.getElementById("status").value;     // Ambil status
+  const kategori = document.getElementById("kategori").value; 
+  const status = document.getElementById("status").value;     
   const editId = document.getElementById("editId").value;
 
   if (!nama || !harga || !gambar) return alert("Wajib isi Nama, Harga, dan Gambar!");
@@ -111,7 +113,7 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
 // --- 5. FUNGSI WHATSAPP ---
 window.beliWhatsApp = (nama) => {
   const pesan = `Halo Admin, saya tertarik untuk membeli akun: ${nama}. Apakah masih tersedia?`;
-  window.open(`https://wa.me/6282298627146?text=${encodeURIComponent(pesan)}`, "_blank");
+  window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
 // Jalankan otomatis saat web dibuka
