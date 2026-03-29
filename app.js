@@ -1,7 +1,7 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-// ======= Konfigurasi Firebase =======
+// Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
   authDomain: "toko-online-8a68d.firebaseapp.com",
@@ -14,8 +14,9 @@ const db = getFirestore();
 // ================= TAMPIL PRODUK =================
 window.tampilProduk = async function() {
   const data = await getDocs(collection(db, "produk"));
+  const produkDiv = document.getElementById("produk");
   let html = "";
-  const isAdmin = window.location.href.toLowerCase().includes("admin.html"); // cek admin
+  const isAdmin = window.location.href.toLowerCase().includes("admin.html");
 
   data.forEach(docSnap => {
     const p = docSnap.data();
@@ -24,12 +25,13 @@ window.tampilProduk = async function() {
         <img src="${p.gambar}" alt="${p.nama}">
         <h4>${p.nama}</h4>
         <p>Rp${p.harga.toLocaleString('id-ID')}</p>
-        ${isAdmin ? `<button class="hapus-btn" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>` : `<button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>`}
+        ${isAdmin ? `<button class="hapus-btn" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>` 
+                  : `<button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>`}
       </div>
     `;
   });
 
-  document.getElementById("produk").innerHTML = html;
+  produkDiv.innerHTML = html;
 }
 
 // ================= TAMBAH PRODUK =================
@@ -54,7 +56,7 @@ window.tambahProduk = async function() {
   document.getElementById("harga").value = "";
   document.getElementById("gambar").value = "";
 
-  tampilProduk(); // refresh daftar produk
+  tampilProduk(); // refresh produk
 }
 
 // ================= HAPUS PRODUK =================
@@ -64,82 +66,6 @@ window.hapusProduk = async function(id) {
     return;
   }
 
-  if(confirm("Yakin mau hapus produk ini?")){
-    await deleteDoc(doc(db, "produk", id));
-    tampilProduk(); // refresh daftar produk
-  }
-}
-
-// ================= CART =================
-window.tambahKeCart = function(nama, harga){
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  cart.push({nama, harga});
-  localStorage.setItem("cart", JSON.stringify(cart));
-  alert("Masuk keranjang!");
-}
-
-window.showCart = function(){
-  document.getElementById("cartPage").style.display = "block";
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  let html = "";
-  if(cart.length === 0){
-    html = "<p>Keranjang kosong</p>";
-  } else {
-    cart.forEach(p => {
-      html += `<p>${p.nama} - Rp${p.harga.toLocaleString('id-ID')}</p>`;
-    });
-  }
-  document.getElementById("cart").innerHTML = html;
-}
-
-window.hideCart = function(){
-  document.getElementById("cartPage").style.display = "none";
-}  // Admin check
-  const isAdmin = window.location.href.includes("admin.html");
-
-  data.forEach(docSnap=>{
-    const p = docSnap.data();
-    html += `
-      <div class="card">
-        <img src="${p.gambar}" style="width:100%; border-radius:10px;">
-        <h4>${p.nama}</h4>
-        <p>Rp${p.harga}</p>
-        <button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>
-        ${isAdmin ? `<button style="background:red; color:white; margin-top:5px;" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>` : ''}
-      </div>
-    `;
-  });
-
-  document.getElementById("produk").innerHTML = html;
-}
-
-// ================= TAMBAH PRODUK =================
-window.tambahProduk = async function(){
-  const nama = document.getElementById("nama").value;
-  const harga = document.getElementById("harga").value;
-  const gambar = document.getElementById("gambar")?.value;
-
-  if(!nama || !harga || !gambar){
-    alert("Isi semua field!");
-    return;
-  }
-
-  await addDoc(collection(db, "produk"), {
-    nama,
-    harga: Number(harga),
-    gambar
-  });
-
-  alert("Produk berhasil ditambah!");
-  document.getElementById("nama").value = "";
-  document.getElementById("harga").value = "";
-  if(document.getElementById("gambar")) document.getElementById("gambar").value = "";
-
-  tampilProduk();
-}
-
-// ================= HAPUS PRODUK =================
-window.hapusProduk = async function(id){
   if(confirm("Yakin mau hapus produk ini?")){
     await deleteDoc(doc(db, "produk", id));
     tampilProduk();
@@ -155,12 +81,20 @@ window.tambahKeCart = function(nama, harga){
 }
 
 window.showCart = function(){
-  document.getElementById("cartPage").style.display = "block";
+  const cartPage = document.getElementById("cartPage");
+  cartPage.style.display = "block";
+
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
   let html = "";
-  cart.forEach(p=>{
-    html += `<p>${p.nama} - Rp${p.harga}</p>`;
-  });
+
+  if(cart.length === 0){
+    html = "<p>Keranjang kosong</p>";
+  } else {
+    cart.forEach(p=>{
+      html += `<p>${p.nama} - Rp${p.harga.toLocaleString('id-ID')}</p>`;
+    });
+  }
+
   document.getElementById("cart").innerHTML = html;
 }
 
