@@ -6,6 +6,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
   authDomain: "toko-online-8a68d.firebaseapp.com",
   projectId: "toko-online-8a68d",
+  storageBucket: "toko-online-8a68d.firebasestorage.app",
 };
 
 const app = initializeApp(firebaseConfig);
