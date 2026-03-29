@@ -14,7 +14,7 @@
     .btn-lihat { background: orange; color: white; }
     .btn-lihat:hover { background: darkorange; }
     .card { background: white; padding: 10px; border-radius: 10px; margin-top: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
-    .card button { margin: 5px 2px; width: 45%; }
+    .card button { margin: 5px 2px; width: 45%; cursor: pointer; }
   </style>
 </head>
 
@@ -37,69 +37,5 @@
   </div>
 
   <script type="module" src="app.js?v=4"></script>
-</body>
-</html>      margin-top: 10px;
-      border: none;
-      border-radius: 5px;
-      font-size: 16px;
-      cursor: pointer;
-    }
-
-    .btn-tambah {
-      background: green;
-      color: white;
-    }
-
-    .btn-tambah:hover {
-      background: darkgreen;
-    }
-
-    .btn-lihat {
-      background: orange;
-      color: white;
-    }
-
-    .btn-lihat:hover {
-      background: darkorange;
-    }
-
-    .card {
-      background: white;
-      padding: 10px;
-      border-radius: 10px;
-      margin-top: 15px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      text-align: center;
-    }
-
-    .card button {
-      margin: 5px 2px;
-      width: 45%;
-    }
-  </style>
-</head>
-
-<body onload="tampilProdukAdmin()">
-
-<div class="box">
-  <h1>🛠️ Admin Panel</h1>
-
-  <input type="text" id="nama" placeholder="Nama Produk">
-  <input type="number" id="harga" placeholder="Harga">
-  <input type="text" id="gambar" placeholder="Link Gambar (ImgBB)">
-  
-  <button class="btn-tambah" onclick="tambahProduk()">+ Tambah Produk</button>
-
-  <hr>
-
-  <h2>Daftar Produk</h2>
-  <div id="produk"></div>
-
-  <button class="btn-lihat" onclick="window.location.href='index.html'">
-    👀 Lihat Toko
-  </button>
-</div>
-
-<script type="module" src="app.js?v=4"></script>
 </body>
 </html>
