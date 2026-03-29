@@ -79,14 +79,12 @@ window.showCart = function(){
 // HAPUS PRODUK
 window.hapusProduk = async function(id){
   let yakin = confirm("Yakin mau hapus produk?");
-
   if(!yakin) return;
 
   await deleteDoc(doc(db, "produk", id));
 
   alert("Produk dihapus!");
-
-  tampilProduk(); // refresh
+  tampilProduk();
 }
 // SEMBUNYIIN CART
 window.hideCart = function(){
