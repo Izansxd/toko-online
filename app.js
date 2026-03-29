@@ -1,6 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-import { addDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
 const firebaseConfig = {
@@ -60,6 +59,8 @@ window.showCart = function(){
 //tambah produk
 
 window.tambahProduk = async function(){
+  alert("KLIK TERDETEKSI");
+
   let nama = document.getElementById("nama").value;
   let harga = document.getElementById("harga").value;
   let file = document.getElementById("gambar").files[0];
@@ -69,21 +70,24 @@ window.tambahProduk = async function(){
     return;
   }
 
-  // upload gambar
-  const storageRef = ref(storage, "produk/" + file.name);
-  await uploadBytes(storageRef, file);
+  try {
+    const storageRef = ref(storage, "produk/" + file.name);
 
-  // ambil URL
-  const url = await getDownloadURL(storageRef);
+    await uploadBytes(storageRef, file);
 
-  // simpan ke firestore
-  await addDoc(collection(db, "produk"), {
-    nama: nama,
-    harga: Number(harga),
-    gambar: url
-  });
+    const url = await getDownloadURL(storageRef);
 
-  alert("Produk + gambar berhasil!");
+    await addDoc(collection(db, "produk"), {
+      nama: nama,
+      harga: Number(harga),
+      gambar: url
+    });
+
+    alert("BERHASIL TAMBAH!");
+  } catch (err) {
+    alert("ERROR: " + err.message);
+    console.error(err);
+  }
 }
 // TAMPIL GAMBAR
 let file = document.getElementById("gambar").files[0];
