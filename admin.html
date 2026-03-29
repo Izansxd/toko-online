@@ -36,15 +36,32 @@
       width: 100%;
       padding: 10px;
       margin-top: 15px;
-      background: green;
-      color: white;
       border: none;
       border-radius: 5px;
       font-size: 16px;
+      cursor: pointer;
     }
 
-    button:hover {
+    .btn-tambah {
+      background: green;
+      color: white;
+    }
+
+    .btn-tambah:hover {
       background: darkgreen;
+    }
+
+    .btn-lihat {
+      background: orange;
+      color: white;
+    }
+
+    .btn-lihat:hover {
+      background: darkorange;
+    }
+
+    hr {
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -52,12 +69,18 @@
 <body>
 
 <div class="box">
-  <h1>🛠️ Admin</h1>
+  <h1>🛠️ Admin Panel</h1>
 
   <input type="text" id="nama" placeholder="Nama Produk">
   <input type="number" id="harga" placeholder="Harga">
 
-  <button onclick="tambahProduk()">+ Tambah Produk</button>
+  <button class="btn-tambah" onclick="tambahProduk()">+ Tambah Produk</button>
+
+  <hr>
+
+  <button class="btn-lihat" onclick="window.location.href='index.html'">
+    👀 Lihat Toko
+  </button>
 </div>
 
 <script type="module" src="app.js"></script>
