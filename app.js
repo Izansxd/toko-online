@@ -65,19 +65,29 @@ window.tambahProduk = async function(){
   let harga = document.getElementById("harga").value;
   let file = document.getElementById("gambar").files[0];
 
+  console.log("FILE:", file);
+
   if(!nama || !harga){
     alert("Isi nama & harga!");
     return;
   }
 
-  let urlGambar = "https://via.placeholder.com/150"; // default dulu
+  let urlGambar = "https://via.placeholder.com/150";
 
   try {
     if(file){
+      alert("UPLOAD MULAI");
+
       const storageRef = ref(storage, "produk/" + file.name);
+
       await uploadBytes(storageRef, file);
+
+      alert("UPLOAD SELESAI");
+
       urlGambar = await getDownloadURL(storageRef);
     }
+
+    alert("SIMPAN FIRESTORE");
 
     await addDoc(collection(db, "produk"), {
       nama: nama,
@@ -88,7 +98,7 @@ window.tambahProduk = async function(){
     alert("BERHASIL TAMBAH!");
   } catch (err) {
     alert("ERROR: " + err.message);
-    console.error(err);
+    console.error("ERROR DETAIL:", err);
   }
 }
 // SEMBUNYIIN CART
