@@ -15,6 +15,25 @@ window.tampilProduk = async function(){
   const data = await getDocs(collection(db,"produk"));
   let html = "";
 
+  // Hanya tampilkan tombol hapus di admin.html
+  const isAdmin = window.location.href.includes("admin.html");
+
+  data.forEach(docSnap => {
+    const p = docSnap.data();
+    html += `
+      <div class="card">
+        <img src="${p.gambar}" style="width:100%; border-radius:10px;">
+        <h4>${p.nama}</h4>
+        <p>Rp${p.harga.toLocaleString('id-ID')}</p>
+        <button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>
+        ${isAdmin ? `<button style="background:red; color:white; margin-top:5px;" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>` : ''}
+      </div>
+    `;
+  });
+
+  document.getElementById("produk").innerHTML = html;
+}
+
   // Admin check
   const isAdmin = window.location.href.includes("admin.html");
 
