@@ -22,7 +22,7 @@
   </style>
 </head>
 
-<body>
+<body onload="tampilProduk()">
 
 <div class="box">
   <h1>🛠️ Admin Panel</h1>
@@ -35,6 +35,17 @@
   <hr>
   <button class="btn-lihat" onclick="window.location.href='index.html'">👀 Lihat Toko</button>
 </div>
+
+<div class="produk-container">
+  <h2>Daftar Produk</h2>
+  <div id="produk"></div>
+</div>
+
+<!-- Panggil app.js sebagai module -->
+<script type="module" src="app.js"></script>
+
+</body>
+</html></div>
 
 <div class="produk-container">
   <h2>Daftar Produk</h2>
