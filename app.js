@@ -27,7 +27,7 @@ window.tampilProduk = async function() {
         <p>Rp${p.harga.toLocaleString('id-ID')}</p>
         ${isAdmin 
           ? `<button class="hapus-btn" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>
-             <button style="background: blue; color:white; margin-top:5px;" 
+             <button style="background: blue; color:white; margin-top:5px;"
                      onclick="editProduk('${docSnap.id}','${p.nama}',${p.harga},'${p.gambar}')">✏️ Edit</button>` 
           : `<button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>`}
       </div>
@@ -35,6 +35,97 @@ window.tampilProduk = async function() {
   });
 
   produkDiv.innerHTML = html;
+}
+
+// ================= TAMBAH / UPDATE PRODUK =================
+window.submitProduk = async function() {
+  const nama = document.getElementById("nama").value;
+  const harga = document.getElementById("harga").value;
+  const gambar = document.getElementById("gambar").value;
+  const editId = document.getElementById("editId").value;
+
+  if (!nama || !harga || !gambar) {
+    alert("Isi semua field!");
+    return;
+  }
+
+  if (editId) {
+    // UPDATE produk
+    await updateDoc(doc(db, "produk", editId), {
+      nama,
+      harga: Number(harga),
+      gambar
+    });
+    alert("Produk berhasil diupdate!");
+  } else {
+    // TAMBAH produk baru
+    await addDoc(collection(db, "produk"), {
+      nama,
+      harga: Number(harga),
+      gambar
+    });
+    alert("Produk berhasil ditambah!");
+  }
+
+  // Reset form
+  document.getElementById("nama").value = "";
+  document.getElementById("harga").value = "";
+  document.getElementById("gambar").value = "";
+  document.getElementById("editId").value = "";
+
+  tampilProduk(); // refresh daftar produk
+}
+
+// ================= HAPUS PRODUK =================
+window.hapusProduk = async function(id) {
+  if(!window.location.href.toLowerCase().includes("admin.html")){
+    alert("Hanya admin yang bisa menghapus produk!");
+    return;
+  }
+
+  if(confirm("Yakin mau hapus produk ini?")){
+    await deleteDoc(doc(db, "produk", id));
+    tampilProduk();
+  }
+}
+
+// ================= EDIT PRODUK =================
+window.editProduk = function(id, nama, harga, gambar) {
+  document.getElementById("nama").value = nama;
+  document.getElementById("harga").value = harga;
+  document.getElementById("gambar").value = gambar;
+  document.getElementById("editId").value = id;
+}
+
+// ================= CART =================
+window.tambahKeCart = function(nama, harga){
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  cart.push({nama, harga});
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("Masuk keranjang!");
+}
+
+window.showCart = function(){
+  const cartPage = document.getElementById("cartPage");
+  cartPage.style.display = "block";
+
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  let html = "";
+
+  if(cart.length === 0){
+    html = "<p>Keranjang kosong</p>";
+  } else {
+    cart.forEach(p=>{
+      html += `<p>${p.nama} - Rp${p.harga.toLocaleString('id-ID')}</p>`;
+    });
+  }
+
+  document.getElementById("cart").innerHTML = html;
+}
+
+window.hideCart = function(){
+  document.getElementById("cartPage").style.display = "none";
+}  produkDiv.innerHTML = html;
 }
 
 // ================= TAMBAH / UPDATE PRODUK =================
