@@ -111,7 +111,7 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
 // --- 5. FUNGSI WHATSAPP ---
 window.beliWhatsApp = (nama) => {
   const pesan = `Halo Admin, saya tertarik untuk membeli akun: ${nama}. Apakah masih tersedia?`;
-  window.open(`https://wa.me/628123456789?text=${encodeURIComponent(pesan)}`, "_blank");
+  window.open(`https://wa.me/6282298627146?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
 // Jalankan otomatis saat web dibuka
