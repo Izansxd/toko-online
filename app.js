@@ -73,6 +73,8 @@ window.tambahProduk = function(){
     alert("Error: " + err.message);
   });
 }
+// TAMPIL GAMBAR
+let file = document.getElementById("gambar").files[0];
 // SEMBUNYIIN CART
 window.hideCart = function(){
   document.getElementById("cartPage").style.display = "none";
