@@ -22,6 +22,9 @@
       border-radius: 12px; 
       box-shadow: 0 4px 6px rgba(0,0,0,0.1); 
       text-align: center; 
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
     
     .card img { 
@@ -32,7 +35,21 @@
     }
 
     .card h4 { margin: 10px 0 5px; font-size: 14px; }
-    .card p { color: #2ecc71; font-weight: bold; margin: 5px 0; }
+
+    /* CSS Tambahan untuk Deskripsi */
+    .card .deskripsi-teks { 
+      font-size: 11px; 
+      color: #666; 
+      margin: 5px 0; 
+      line-height: 1.4;
+      /* Membatasi deskripsi agar tidak merusak tinggi kotak */
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card p.harga { color: #2ecc71; font-weight: bold; margin: 5px 0; font-size: 15px; }
 
     .card button { 
       background: #27ae60; 
@@ -43,6 +60,7 @@
       cursor: pointer; 
       width: 100%;
       font-weight: bold;
+      margin-top: 5px;
     }
   </style>
 </head>
