@@ -125,6 +125,72 @@ window.showCart = function(){
 
 window.hideCart = function(){
   document.getElementById("cartPage").style.display = "none";
+}    await addDoc(collection(db, "produk"), {
+      nama,
+      harga: Number(harga),
+      gambar
+    });
+    alert("Produk berhasil ditambah!");
+  }
+
+  // Reset form
+  document.getElementById("nama").value = "";
+  document.getElementById("harga").value = "";
+  document.getElementById("gambar").value = "";
+  document.getElementById("editId").value = "";
+
+  tampilProduk(); // refresh daftar produk
+}
+
+// ================= HAPUS PRODUK =================
+window.hapusProduk = async function(id) {
+  if(!window.location.href.toLowerCase().includes("admin.html")){
+    alert("Hanya admin yang bisa menghapus produk!");
+    return;
+  }
+
+  if(confirm("Yakin mau hapus produk ini?")){
+    await deleteDoc(doc(db, "produk", id));
+    tampilProduk();
+  }
+}
+
+// ================= EDIT PRODUK =================
+window.editProduk = function(id, nama, harga, gambar) {
+  document.getElementById("nama").value = nama;
+  document.getElementById("harga").value = harga;
+  document.getElementById("gambar").value = gambar;
+  document.getElementById("editId").value = id;
+}
+
+// ================= CART =================
+window.tambahKeCart = function(nama, harga){
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  cart.push({nama, harga});
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("Masuk keranjang!");
+}
+
+window.showCart = function(){
+  const cartPage = document.getElementById("cartPage");
+  cartPage.style.display = "block";
+
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  let html = "";
+
+  if(cart.length === 0){
+    html = "<p>Keranjang kosong</p>";
+  } else {
+    cart.forEach(p=>{
+      html += `<p>${p.nama} - Rp${p.harga.toLocaleString('id-ID')}</p>`;
+    });
+  }
+
+  document.getElementById("cart").innerHTML = html;
+}
+
+window.hideCart = function(){
+  document.getElementById("cartPage").style.display = "none";
 }  produkDiv.innerHTML = html;
 }
 
