@@ -1,40 +1,45 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
-  authDomain: "toko-online-8a68d.firebaseapp.com",
-  projectId: "toko-online-8a68d"
-};
-
+const firebaseConfig = { apiKey: "...", authDomain: "...", projectId: "..." };
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// ==============================
-// TAMPIL PRODUK TOKO
-// ==============================
-window.tampilProduk = async function(){
+// TAMBAH PRODUK
+window.tambahProduk = async function(){
+  let nama = document.getElementById("nama").value;
+  let harga = Number(document.getElementById("harga").value);
+  let gambar = document.getElementById("gambar").value;
+  if(!nama || !harga || !gambar){ alert("Isi semua!"); return; }
+  await addDoc(collection(db,"produk"), { nama, harga, gambar });
+  alert("Produk berhasil ditambah!");
+  tampilProdukAdmin();
+}
+
+// HAPUS PRODUK
+window.hapusProduk = async function(id){
+  if(!confirm("Yakin mau hapus produk?")) return;
+  await deleteDoc(doc(db,"produk",id));
+  alert("Produk dihapus!");
+  tampilProdukAdmin();
+}
+
+// TAMPIL PRODUK ADMIN
+window.tampilProdukAdmin = async function(){
   const data = await getDocs(collection(db,"produk"));
   let html = "";
   data.forEach(d=>{
     let p = d.data();
     html += `
       <div class="card">
-        <img src="${p.gambar || 'https://via.placeholder.com/150'}" style="width:100%; border-radius:10px;">
         <h4>${p.nama}</h4>
         <p>Rp${p.harga}</p>
-        <button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>
+        <button onclick="hapusProduk('${d.id}')">🗑️ Hapus</button>
       </div>
     `;
   });
   document.getElementById("produk").innerHTML = html;
-}
-
-// ==============================
-// TAMPIL PRODUK ADMIN
-// ==============================
-window.tampilProdukAdmin = async function(){
-  const data = await getDocs(collection(db,"produk"));
+}  const data = await getDocs(collection(db,"produk"));
   let html = "";
   data.forEach(d=>{
     let p = d.data();
