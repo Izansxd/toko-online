@@ -89,8 +89,6 @@ window.tambahProduk = async function(){
     console.error(err);
   }
 }
-// TAMPIL GAMBAR
-let file = document.getElementById("gambar").files[0];
 // SEMBUNYIIN CART
 window.hideCart = function(){
   document.getElementById("cartPage").style.display = "none";
