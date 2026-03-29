@@ -1,17 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-storage.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
   authDomain: "toko-online-8a68d.firebaseapp.com",
-  projectId: "toko-online-8a68d",
-  storageBucket: "toko-online-8a68d.appspot.com",
+  projectId: "toko-online-8a68d"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
-const storage = getStorage();
 
 // TAMPIL PRODUK
 window.tampilProduk = async function(){
@@ -20,21 +17,66 @@ window.tampilProduk = async function(){
 
   data.forEach(doc=>{
     let p = doc.data();
+
     html += `
-  <div class="card">
-    <img src="${p.gambar}" style="width:100%; border-radius:10px;">
-    <h4>${p.nama}</h4>
-    <p>Rp${p.harga}</p>
-    <button onclick="tambahKeCart('${p.nama}', ${p.harga})">
-      Beli
-    </button>
-  </div>
-`;
+      <div class="card">
+        <img src="${p.gambar}" style="width:100%; border-radius:10px;">
+        <h4>${p.nama}</h4>
+        <p>Rp${p.harga}</p>
+        <button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>
+      </div>
+    `;
   });
 
   document.getElementById("produk").innerHTML = html;
 }
 
+// TAMBAH PRODUK (PAKAI LINK GAMBAR)
+window.tambahProduk = async function(){
+  let nama = document.getElementById("nama").value;
+  let harga = document.getElementById("harga").value;
+  let gambar = prompt("Masukkan link gambar dari ImgBB:");
+
+  if(!nama || !harga || !gambar){
+    alert("Isi semua!");
+    return;
+  }
+
+  await addDoc(collection(db, "produk"), {
+    nama: nama,
+    harga: Number(harga),
+    gambar: gambar
+  });
+
+  alert("Produk berhasil ditambah!");
+}
+
+// CART
+window.tambahKeCart = function(nama, harga){
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  cart.push({nama, harga});
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("Masuk keranjang!");
+}
+
+// CART TAMPIL
+window.showCart = function(){
+  document.getElementById("cartPage").style.display = "block";
+
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  let html = "";
+
+  cart.forEach(p=>{
+    html += `<p>${p.nama} - Rp${p.harga}</p>`;
+  });
+
+  document.getElementById("cart").innerHTML = html;
+}
+
+// SEMBUNYIIN CART
+window.hideCart = function(){
+  document.getElementById("cartPage").style.display = "none";
+}
 // CART
 window.tambahKeCart = function(nama, harga){
   let cart = JSON.parse(localStorage.getItem("cart")) || [];
