@@ -1,40 +1,38 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Admin</title>
+  <title>Admin Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     body { font-family: Arial; background: #f5f5f5; padding: 20px; }
     .box { background: white; padding: 20px; border-radius: 10px; max-width: 400px; margin: auto; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    h1,h2 { text-align: center; }
+    h1 { text-align: center; }
     input { width: 100%; padding: 10px; margin-top: 10px; border-radius: 5px; border: 1px solid #ccc; }
-    button { width: 100%; padding: 10px; margin-top: 10px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
+    button { width: 100%; padding: 10px; margin-top: 15px; border: none; border-radius: 5px; font-size: 16px; cursor: pointer; }
     .btn-tambah { background: green; color: white; }
     .btn-tambah:hover { background: darkgreen; }
     .btn-lihat { background: orange; color: white; }
     .btn-lihat:hover { background: darkorange; }
-    .card { background: white; padding: 10px; border-radius: 10px; margin-top: 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
-    .card button { margin: 5px 2px; width: 45%; cursor: pointer; }
+    hr { margin-top: 20px; }
   </style>
 </head>
 
-<body onload="tampilProdukAdmin()">
-  <div class="box">
-    <h1>🛠️ Admin Panel</h1>
+<body>
+<div class="box">
+  <h1>🛠️ Admin Panel</h1>
 
-    <input type="text" id="nama" placeholder="Nama Produk">
-    <input type="number" id="harga" placeholder="Harga">
-    <input type="text" id="gambar" placeholder="Link Gambar (ImgBB)">
-    
-    <button class="btn-tambah" onclick="tambahProduk()">+ Tambah Produk</button>
+  <input type="text" id="nama" placeholder="Nama Produk">
+  <input type="number" id="harga" placeholder="Harga">
+  <input type="text" id="gambar" placeholder="Link Gambar (misal: https://ibb.co/...)">
+  
+  <button class="btn-tambah" onclick="tambahProduk()">+ Tambah Produk</button>
+  <hr>
+  <button class="btn-lihat" onclick="window.location.href='index.html'">👀 Lihat Toko</button>
+</div>
 
-    <hr>
-
-    <h2>Daftar Produk</h2>
-    <div id="produk"></div>
-
-    <button class="btn-lihat" onclick="window.location.href='index.html'">👀 Lihat Toko</button>
-  </div>
+<script type="module" src="app.js"></script>
+</body>
+</html>  </div>
 
   <script type="module" src="app.js?v=1"></script>
 </body>
