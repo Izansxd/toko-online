@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-// 1. Firebase config
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
   authDomain: "toko-online-8a68d.firebaseapp.com",
@@ -11,66 +10,73 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// --- FUNGSI KERANJANG (Ditempel ke window agar bisa dipanggil onclick) ---
-
-window.showCart = function() {
-  console.log("Membuka keranjang...");
-  const cartPage = document.getElementById("cartPage");
-  if (cartPage) {
-    cartPage.style.display = "block";
-    renderCartItems(); // Fungsi pembantu untuk isi list
-  }
-};
-
-window.hideCart = function() {
-  const cartPage = document.getElementById("cartPage");
-  if (cartPage) cartPage.style.display = "none";
-};
-
-window.tambahKeCart = function(nama, harga) {
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  cart.push({ nama, harga });
-  localStorage.setItem("cart", JSON.stringify(cart));
-  alert(nama + " masuk keranjang!");
-};
-
-// Fungsi pembantu untuk menggambar isi keranjang
-function renderCartItems() {
-  const cartDiv = document.getElementById("cart");
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  let html = "";
-
-  if (cart.length === 0) {
-    html = "<p>Keranjang kosong</p>";
-  } else {
-    cart.forEach((p) => {
-      html += `<p>${p.nama} - Rp${Number(p.harga).toLocaleString('id-ID')}</p>`;
-    });
-  }
-  cartDiv.innerHTML = html;
-}
-
-// --- FUNGSI TAMPIL PRODUK ---
-
+// --- TAMPIL PRODUK ---
 window.tampilProduk = async function() {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
   const data = await getDocs(collection(db, "produk"));
   let html = "";
-  
+  const isAdmin = window.location.href.includes("admin.html");
+
   data.forEach((docSnap) => {
     const p = docSnap.data();
     html += `
       <div class="card">
-        <img src="${p.gambar}" style="width:100%; height:120px; object-fit:cover;">
+        <img src="${p.gambar}" alt="${p.nama}">
         <h4>${p.nama}</h4>
         <p>Rp${Number(p.harga).toLocaleString('id-ID')}</p>
-        <button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>
+        ${isAdmin 
+          ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>
+             <button style="background:blue;" onclick="editProduk('${docSnap.id}','${p.nama}',${p.harga},'${p.gambar}')">✏️ Edit</button>` 
+          : `<button onclick="beliWhatsApp('${p.nama}')">Beli Sekarang</button>`}
       </div>`;
   });
   produkDiv.innerHTML = html;
 };
 
-// --- EKSEKUSI SAAT START ---
+// --- FUNGSI ADMIN (TAMBAH/UPDATE/HAPUS) ---
+window.submitProduk = async function() {
+  const nama = document.getElementById("nama").value;
+  const harga = document.getElementById("harga").value;
+  const gambar = document.getElementById("gambar").value;
+  const editId = document.getElementById("editId").value;
+
+  if (!nama || !harga || !gambar) return alert("Isi semua field!");
+
+  try {
+    if (editId) {
+      await updateDoc(doc(db, "produk", editId), { nama, harga: Number(harga), gambar });
+      alert("Berhasil diupdate!");
+    } else {
+      await addDoc(collection(db, "produk"), { nama, harga: Number(harga), gambar });
+      alert("Berhasil ditambah!");
+    }
+    location.reload();
+  } catch (e) { alert("Error: " + e.message); }
+};
+
+window.hapusProduk = async function(id) {
+  if (confirm("Hapus produk?")) {
+    await deleteDoc(doc(db, "produk", id));
+    tampilProduk();
+  }
+};
+
+window.editProduk = (id, nama, harga, gambar) => {
+  document.getElementById("nama").value = nama;
+  document.getElementById("harga").value = harga;
+  document.getElementById("gambar").value = gambar;
+  document.getElementById("editId").value = id;
+  window.scrollTo(0,0);
+};
+
+// --- ALTERNATIF BELI (WHATSAPP) ---
+window.beliWhatsApp = function(namaProduk) {
+  const pesan = `Halo, saya mau beli produk: ${namaProduk}`;
+  const linkWA = `https://wa.me/628123456789?text=${encodeURIComponent(pesan)}`; // Ganti nomor WA kamu
+  window.open(linkWA, "_blank");
+};
+
+// Jalankan saat load
 tampilProduk();
