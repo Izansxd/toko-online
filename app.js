@@ -1,31 +1,41 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-const firebaseConfig = { apiKey: "...", authDomain: "...", projectId: "..." };
+const firebaseConfig = {
+  apiKey: "API_KEY_ANDA",
+  authDomain: "PROJECT_ID.firebaseapp.com",
+  projectId: "PROJECT_ID"
+};
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// TAMBAH PRODUK
-window.tambahProduk = async function(){
+// Tambah Produk
+window.tambahProduk = async function() {
   let nama = document.getElementById("nama").value;
   let harga = Number(document.getElementById("harga").value);
   let gambar = document.getElementById("gambar").value;
-  if(!nama || !harga || !gambar){ alert("Isi semua!"); return; }
+
+  if(!nama || !harga || !gambar){
+    alert("Isi semua!");
+    return;
+  }
+
   await addDoc(collection(db,"produk"), { nama, harga, gambar });
   alert("Produk berhasil ditambah!");
   tampilProdukAdmin();
 }
 
-// HAPUS PRODUK
-window.hapusProduk = async function(id){
+// Hapus Produk
+window.hapusProduk = async function(id) {
   if(!confirm("Yakin mau hapus produk?")) return;
   await deleteDoc(doc(db,"produk",id));
   alert("Produk dihapus!");
   tampilProdukAdmin();
 }
 
-// TAMPIL PRODUK ADMIN
-window.tampilProdukAdmin = async function(){
+// Tampil Produk Admin
+window.tampilProdukAdmin = async function() {
   const data = await getDocs(collection(db,"produk"));
   let html = "";
   data.forEach(d=>{
@@ -35,6 +45,11 @@ window.tampilProdukAdmin = async function(){
         <h4>${p.nama}</h4>
         <p>Rp${p.harga}</p>
         <button onclick="hapusProduk('${d.id}')">🗑️ Hapus</button>
+      </div>
+    `;
+  });
+  document.getElementById("produk").innerHTML = html;
+}        <button onclick="hapusProduk('${d.id}')">🗑️ Hapus</button>
       </div>
     `;
   });
