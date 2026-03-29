@@ -65,22 +65,24 @@ window.tambahProduk = async function(){
   let harga = document.getElementById("harga").value;
   let file = document.getElementById("gambar").files[0];
 
-  if(!nama || !harga || !file){
-    alert("Isi semua + gambar!");
+  if(!nama || !harga){
+    alert("Isi nama & harga!");
     return;
   }
 
+  let urlGambar = "https://via.placeholder.com/150"; // default dulu
+
   try {
-    const storageRef = ref(storage, "produk/" + file.name);
-
-    await uploadBytes(storageRef, file);
-
-    const url = await getDownloadURL(storageRef);
+    if(file){
+      const storageRef = ref(storage, "produk/" + file.name);
+      await uploadBytes(storageRef, file);
+      urlGambar = await getDownloadURL(storageRef);
+    }
 
     await addDoc(collection(db, "produk"), {
       nama: nama,
       harga: Number(harga),
-      gambar: url
+      gambar: urlGambar
     });
 
     alert("BERHASIL TAMBAH!");
