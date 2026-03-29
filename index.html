@@ -8,27 +8,26 @@
     h2 { text-align: center; }
     #produk { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
     .card { background: white; padding: 10px; border-radius: 10px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); text-align: center; }
-    .card button { background: green; color: white; border: none; padding: 8px; border-radius: 5px; margin-top: 5px; width: 100%; cursor: pointer; }
-    .cart-btn { position: fixed; bottom: 20px; right: 20px; background: orange; color: white; border: none; padding: 15px; border-radius: 50%; font-size: 18px; cursor: pointer; }
-    #cartPage { position: fixed; top: 0; right: 0; width: 80%; height: 100%; background: white; padding: 10px; box-shadow: -2px 0 5px rgba(0,0,0,0.2); overflow-y: auto; }
-    #totalHarga { margin-top: 10px; font-weight: bold; }
-    #cartPage button { margin-top: 10px; padding: 10px; width: 100%; border: none; border-radius: 5px; background: red; color: white; cursor: pointer; }
+    .card button { background: green; color: white; border: none; padding: 8px; border-radius: 5px; margin-top: 5px; width: 100%; }
+    .cart-btn { position: fixed; bottom: 20px; right: 20px; background: orange; color: white; border: none; padding: 15px; border-radius: 50%; font-size: 18px; }
+    #cartPage { position: fixed; top: 0; right: 0; width: 80%; height: 100%; background: white; padding: 10px; box-shadow: -2px 0 5px rgba(0,0,0,0.2); display: none; overflow-y: auto;}
   </style>
 </head>
 
 <body onload="tampilProduk()">
+
 <h2>🛍️ Toko Online</h2>
 
 <div id="produk"></div>
+
 <button class="cart-btn" onclick="showCart()">🛒</button>
 
-<div id="cartPage" style="display:none;">
+<div id="cartPage">
   <h3>Keranjang</h3>
   <div id="cart"></div>
-  <p id="totalHarga">Total: Rp0</p>
   <button onclick="hideCart()">Tutup</button>
 </div>
 
-<script type="module" src="app.js?v=1"></script>
+<script type="module" src="app.js"></script>
 </body>
 </html>
