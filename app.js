@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
@@ -15,22 +15,26 @@ window.tampilProduk = async function(){
   const data = await getDocs(collection(db,"produk"));
   let html = "";
 
-  data.forEach(doc=>{
-    let p = doc.data();
+  data.forEach(d=>{
+    let p = d.data();
 
     html += `
       <div class="card">
-        <img src="${p.gambar}" style="width:100%; border-radius:10px;">
+        <img src="${p.gambar || 'https://via.placeholder.com/150'}" style="width:100%; border-radius:10px;">
         <h4>${p.nama}</h4>
         <p>Rp${p.harga}</p>
+
         <button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button>
+
+        <button onclick="hapusProduk('${d.id}')" style="background:red; margin-top:5px;">
+          🗑️ Hapus
+        </button>
       </div>
     `;
   });
 
   document.getElementById("produk").innerHTML = html;
 }
-
 // TAMBAH PRODUK (PAKAI LINK GAMBAR)
 window.tambahProduk = async function(){
   let nama = document.getElementById("nama").value;
@@ -72,7 +76,18 @@ window.showCart = function(){
 
   document.getElementById("cart").innerHTML = html;
 }
+// HAPUS PRODUK
+window.hapusProduk = async function(id){
+  let yakin = confirm("Yakin mau hapus produk?");
 
+  if(!yakin) return;
+
+  await deleteDoc(doc(db, "produk", id));
+
+  alert("Produk dihapus!");
+
+  tampilProduk(); // refresh
+}
 // SEMBUNYIIN CART
 window.hideCart = function(){
   document.getElementById("cartPage").style.display = "none";
