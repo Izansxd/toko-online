@@ -20,6 +20,7 @@ window.tampilProduk = async function(){
     let p = doc.data();
     html += `
   <div class="card">
+    <img src="${p.gambar}" style="width:100%; border-radius:10px;">
     <h4>${p.nama}</h4>
     <p>Rp${p.harga}</p>
     <button onclick="tambahKeCart('${p.nama}', ${p.harga})">
