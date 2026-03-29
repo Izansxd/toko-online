@@ -19,7 +19,7 @@ window.tampilProduk = async function(){
   data.forEach(doc=>{
     let p = doc.data();
     html += `<p>${p.nama} - Rp${p.harga}
-    <button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button></p>`;
+<button onclick="tambahKeCart('${p.nama}', ${p.harga})">Beli</button></p>`;
   });
 
   document.getElementById("produk").innerHTML = html;
