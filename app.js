@@ -10,7 +10,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// --- TAMPIL PRODUK ---
+// --- 1. FUNGSI TAMPIL PRODUK ---
 window.tampilProduk = async function() {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
@@ -21,65 +21,98 @@ window.tampilProduk = async function() {
 
   data.forEach((docSnap) => {
     const p = docSnap.data();
-    // Gunakan isi deskripsi, jika kosong tampilkan teks bantuan
-    const deskripsi = p.deskripsi || "Tidak ada deskripsi produk.";
+    const isSold = p.status === "Sold"; // Cek apakah akun sudah laku
+    const deskripsi = p.deskripsi || "Tidak ada detail spek.";
+    const kategori = p.kategori || "Game";
 
+    // Gunakan struktur kartu yang sesuai dengan CSS di index.html
     html += `
       <div class="card">
-        <img src="${p.gambar}" alt="${p.nama}">
-        <h4>${p.nama}</h4>
-        <p style="font-size: 12px; color: #777; margin: 5px 0; min-height: 30px;">${deskripsi}</p>
-        <p style="color: #2ecc71; font-weight: bold;">Rp${Number(p.harga).toLocaleString('id-ID')}</p>
-        ${isAdmin 
-          ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>
-             <button style="background:blue;" onclick="editProduk('${docSnap.id}','${p.nama}',${p.harga},'${p.gambar}', '${deskripsi.replace(/'/g, "\\'")}')">✏️ Edit</button>` 
-          : `<button onclick="beliWhatsApp('${p.nama}')">Beli Sekarang</button>`}
+        <div class="card-img-container">
+          <img src="${p.gambar}" alt="${p.nama}">
+          <div class="badge">${kategori}</div>
+          ${isSold ? `
+            <div class="sold-overlay">
+              <div class="sold-label">SOLD OUT</div>
+            </div>` : ''}
+        </div>
+        <div class="card-info">
+          <h4>${p.nama}</h4>
+          <p class="deskripsi-teks">${deskripsi}</p>
+          <p class="harga">Rp${Number(p.harga).toLocaleString('id-ID')}</p>
+          
+          ${isAdmin 
+            ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>
+               <button style="background:blue;" onclick="editProduk('${docSnap.id}','${p.nama}',${p.harga},'${p.gambar}','${deskripsi.replace(/'/g, "\\'")}','${kategori}','${p.status}')">✏️ Edit</button>` 
+            : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${p.nama}')"`}>
+                ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
+               </button>`}
+        </div>
       </div>`;
   });
   produkDiv.innerHTML = html;
 };
 
-// --- FUNGSI ADMIN ---
+// --- 2. FUNGSI SIMPAN/UPDATE PRODUK ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
   const gambar = document.getElementById("gambar").value;
   const deskripsi = document.getElementById("deskripsi").value;
+  const kategori = document.getElementById("kategori").value; // Ambil kategori
+  const status = document.getElementById("status").value;     // Ambil status
   const editId = document.getElementById("editId").value;
 
-  if (!nama || !harga || !gambar) return alert("Isi semua field!");
+  if (!nama || !harga || !gambar) return alert("Wajib isi Nama, Harga, dan Gambar!");
 
   try {
-    const dataBaru = { nama, harga: Number(harga), gambar, deskripsi };
+    const dataObj = { 
+      nama, 
+      harga: Number(harga), 
+      gambar, 
+      deskripsi, 
+      kategori, 
+      status 
+    };
+
     if (editId) {
-      await updateDoc(doc(db, "produk", editId), dataBaru);
-      alert("Update Berhasil!");
+      await updateDoc(doc(db, "produk", editId), dataObj);
+      alert("Data Akun Berhasil Diupdate!");
     } else {
-      await addDoc(collection(db, "produk"), dataBaru);
-      alert("Tambah Berhasil!");
+      await addDoc(collection(db, "produk"), dataObj);
+      alert("Akun Baru Berhasil Ditambahkan!");
     }
     location.reload();
-  } catch (e) { alert("Error: " + e.message); }
+  } catch (e) { 
+    alert("Gagal menyimpan: " + e.message); 
+  }
 };
 
+// --- 3. FUNGSI HAPUS ---
 window.hapusProduk = async function(id) {
-  if (confirm("Hapus produk?")) {
+  if (confirm("Hapus data akun ini dari database?")) {
     await deleteDoc(doc(db, "produk", id));
     tampilProduk();
   }
 };
 
-window.editProduk = (id, nama, harga, gambar, deskripsi) => {
+// --- 4. FUNGSI EDIT ---
+window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
   document.getElementById("nama").value = nama;
   document.getElementById("harga").value = harga;
   document.getElementById("gambar").value = gambar;
   document.getElementById("deskripsi").value = deskripsi;
+  document.getElementById("kategori").value = kategori || "Mobile Legends";
+  document.getElementById("status").value = status || "Ready";
   document.getElementById("editId").value = id;
   window.scrollTo(0,0);
 };
 
+// --- 5. FUNGSI WHATSAPP ---
 window.beliWhatsApp = (nama) => {
-  window.open(`https://wa.me/628123456789?text=Halo, saya mau beli ${nama}`, "_blank");
+  const pesan = `Halo Admin, saya tertarik untuk membeli akun: ${nama}. Apakah masih tersedia?`;
+  window.open(`https://wa.me/628123456789?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
+// Jalankan otomatis saat web dibuka
 tampilProduk();
