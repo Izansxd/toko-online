@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-// ====== KONFIGURASI FIREBASE ======
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
   authDomain: "toko-online-8a68d.firebaseapp.com",
@@ -17,7 +16,6 @@ const db = getFirestore();
 window.tampilProduk = async function(){
   const data = await getDocs(collection(db,"produk"));
   let html = "";
-
   data.forEach(d=>{
     let p = d.data();
     html += `
@@ -29,12 +27,79 @@ window.tampilProduk = async function(){
       </div>
     `;
   });
-
   document.getElementById("produk").innerHTML = html;
 }
 
 // ==============================
 // TAMPIL PRODUK ADMIN
+// ==============================
+window.tampilProdukAdmin = async function(){
+  const data = await getDocs(collection(db,"produk"));
+  let html = "";
+  data.forEach(d=>{
+    let p = d.data();
+    html += `
+      <div class="card">
+        <h4>${p.nama}</h4>
+        <p>Rp${p.harga}</p>
+        <button onclick="editProduk('${d.id}','${p.nama}',${p.harga},'${p.gambar}')">✏️ Edit</button>
+        <button onclick="hapusProduk('${d.id}')">🗑️ Hapus</button>
+      </div>
+    `;
+  });
+  document.getElementById("produk").innerHTML = html;
+}
+
+// ==============================
+// TAMBAH PRODUK
+// ==============================
+window.tambahProduk = async function(){
+  let nama = document.getElementById("nama").value;
+  let harga = Number(document.getElementById("harga").value);
+  let gambar = document.getElementById("gambar").value;
+  if(!nama || !harga || !gambar){ alert("Isi semua!"); return; }
+
+  await addDoc(collection(db, "produk"), { nama, harga, gambar });
+  alert("Produk berhasil ditambah!");
+  tampilProdukAdmin();
+}
+
+// ==============================
+// EDIT PRODUK
+// ==============================
+window.editProduk = async function(id, nama, harga, gambar){
+  let newNama = prompt("Nama Produk:", nama);
+  if(!newNama) return;
+  let newHarga = prompt("Harga:", harga);
+  if(!newHarga) return;
+  let newGambar = prompt("Link Gambar:", gambar);
+  if(!newGambar) return;
+
+  await updateDoc(doc(db,"produk",id), { nama: newNama, harga: Number(newHarga), gambar: newGambar });
+  alert("Produk berhasil diubah!");
+  tampilProdukAdmin();
+}
+
+// ==============================
+// CART
+// ==============================
+window.tambahKeCart = function(nama, harga){
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  cart.push({nama, harga});
+  localStorage.setItem("cart", JSON.stringify(cart));
+  alert("Masuk keranjang!");
+}
+
+window.showCart = function(){
+  document.getElementById("cartPage").style.display = "block";
+  let cart = JSON.parse(localStorage.getItem("cart")) || [];
+  let html = ""; let total = 0;
+  cart.forEach(p => { html += `<p>${p.nama} - Rp${p.harga}</p>`; total += p.harga; });
+  document.getElementById("cart").innerHTML = html;
+  document.getElementById("totalHarga").innerHTML = `Total: Rp${total}`;
+}
+
+window.hideCart = function(){ document.getElementById("cart// TAMPIL PRODUK ADMIN
 // ==============================
 window.tampilProdukAdmin = async function(){
   const data = await getDocs(collection(db,"produk"));
