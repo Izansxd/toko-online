@@ -35,7 +35,7 @@ window.tampilProduk = async function(){
 window.tambahProduk = async function(){
   let nama = document.getElementById("nama").value;
   let harga = document.getElementById("harga").value;
-  let gambar = prompt("Masukkan link gambar dari ImgBB:");
+  let gambar = document.getElementById("gambar").value;
 
   if(!nama || !harga || !gambar){
     alert("Isi semua!");
