@@ -47,7 +47,6 @@ window.tampilProdukAdmin = async function(){
       <div class="card">
         <h4>${p.nama}</h4>
         <p>Rp${p.harga}</p>
-
         <button onclick="hapusProduk('${d.id}')">🗑️ Hapus</button>
       </div>
     `;
@@ -114,62 +113,6 @@ window.hapusProduk = async function(id){
   if(!yakin) return;
 
   await deleteDoc(doc(db, "produk", id));
-
   alert("Produk dihapus!");
   tampilProdukAdmin(); // refresh admin panel
-}}
-// TAMBAH PRODUK (PAKAI LINK GAMBAR)
-window.tambahProduk = async function(){
-  let nama = document.getElementById("nama").value;
-  let harga = document.getElementById("harga").value;
-  let gambar = document.getElementById("gambar").value;
-
-  if(!nama || !harga || !gambar){
-    alert("Isi semua!");
-    return;
-  }
-
-  await addDoc(collection(db, "produk"), {
-    nama: nama,
-    harga: Number(harga),
-    gambar: gambar
-  });
-
-  alert("Produk berhasil ditambah!");
-}
-
-// CART
-window.tambahKeCart = function(nama, harga){
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  cart.push({nama, harga});
-  localStorage.setItem("cart", JSON.stringify(cart));
-  alert("Masuk keranjang!");
-}
-
-// CART TAMPIL
-window.showCart = function(){
-  document.getElementById("cartPage").style.display = "block";
-
-  let cart = JSON.parse(localStorage.getItem("cart")) || [];
-  let html = "";
-
-  cart.forEach(p=>{
-    html += `<p>${p.nama} - Rp${p.harga}</p>`;
-  });
-
-  document.getElementById("cart").innerHTML = html;
-}
-// HAPUS PRODUK
-window.hapusProduk = async function(id){
-  let yakin = confirm("Yakin mau hapus produk?");
-  if(!yakin) return;
-
-  await deleteDoc(doc(db, "produk", id));
-
-  alert("Produk dihapus!");
-  tampilProduk();
-}
-// SEMBUNYIIN CART
-window.hideCart = function(){
-  document.getElementById("cartPage").style.display = "none";
 }
