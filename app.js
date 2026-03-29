@@ -45,7 +45,25 @@ window.showCart = function(){
 
   document.getElementById("cart").innerHTML = html;
 }
+//tambah produk
+window.tambahProduk = function(){
+  let nama = document.getElementById("nama").value;
+  let harga = document.getElementById("harga").value;
 
+  if(!nama || !harga){
+    alert("Isi dulu!");
+    return;
+  }
+
+  addDoc(collection(db, "produk"), {
+    nama: nama,
+    harga: Number(harga)
+  }).then(()=>{
+    alert("Produk berhasil ditambah!");
+  }).catch(err=>{
+    alert("Error: " + err.message);
+  });
+}
 // SEMBUNYIIN CART
 window.hideCart = function(){
   document.getElementById("cartPage").style.display = "none";
