@@ -21,14 +21,18 @@ window.tampilProduk = async function() {
 
   data.forEach((docSnap) => {
     const p = docSnap.data();
+    // Menambahkan fallback jika deskripsi kosong agar tidak muncul "undefined"
+    const deskripsiSingkat = p.deskripsi || "Tidak ada deskripsi.";
+
     html += `
       <div class="card">
         <img src="${p.gambar}" alt="${p.nama}">
         <h4>${p.nama}</h4>
-        <p>Rp${Number(p.harga).toLocaleString('id-ID')}</p>
+        <p style="font-size: 13px; color: #666; margin: 5px 0;">${deskripsiSingkat}</p>
+        <p style="color: #27ae60; font-weight: bold;">Rp${Number(p.harga).toLocaleString('id-ID')}</p>
         ${isAdmin 
           ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>
-             <button style="background:blue;" onclick="editProduk('${docSnap.id}','${p.nama}',${p.harga},'${p.gambar}')">✏️ Edit</button>` 
+             <button style="background:blue;" onclick="editProduk('${docSnap.id}','${p.nama}',${p.harga},'${p.gambar}', '${deskripsiSingkat.replace(/'/g, "\\'")}')">✏️ Edit</button>` 
           : `<button onclick="beliWhatsApp('${p.nama}')">Beli Sekarang</button>`}
       </div>`;
   });
@@ -40,16 +44,24 @@ window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
   const gambar = document.getElementById("gambar").value;
+  const deskripsi = document.getElementById("deskripsi").value; // Tambahan field deskripsi
   const editId = document.getElementById("editId").value;
 
-  if (!nama || !harga || !gambar) return alert("Isi semua field!");
+  if (!nama || !harga || !gambar) return alert("Isi semua field utama!");
 
   try {
+    const dataObj = { 
+      nama, 
+      harga: Number(harga), 
+      gambar,
+      deskripsi: deskripsi // Menyimpan deskripsi ke Firebase
+    };
+
     if (editId) {
-      await updateDoc(doc(db, "produk", editId), { nama, harga: Number(harga), gambar });
+      await updateDoc(doc(db, "produk", editId), dataObj);
       alert("Berhasil diupdate!");
     } else {
-      await addDoc(collection(db, "produk"), { nama, harga: Number(harga), gambar });
+      await addDoc(collection(db, "produk"), dataObj);
       alert("Berhasil ditambah!");
     }
     location.reload();
@@ -63,10 +75,11 @@ window.hapusProduk = async function(id) {
   }
 };
 
-window.editProduk = (id, nama, harga, gambar) => {
+window.editProduk = (id, nama, harga, gambar, deskripsi) => {
   document.getElementById("nama").value = nama;
   document.getElementById("harga").value = harga;
   document.getElementById("gambar").value = gambar;
+  document.getElementById("deskripsi").value = deskripsi; // Mengisi textarea deskripsi saat edit
   document.getElementById("editId").value = id;
   window.scrollTo(0,0);
 };
