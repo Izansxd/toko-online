@@ -20,7 +20,6 @@ window.tampilProduk = async function() {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
-  // Skeleton Loading
   produkDiv.innerHTML = Array(4).fill('<div class="skeleton skeleton-card"></div>').join('');
 
   try {
@@ -29,14 +28,13 @@ window.tampilProduk = async function() {
     data.forEach(docSnap => {
       allProducts.push({ id: docSnap.id, ...docSnap.data() });
     });
-    // Jalankan search/filter pertama kali setelah data masuk
     window.searchProduk(); 
   } catch (error) {
     produkDiv.innerHTML = `<p style="text-align:center; color:red;">Gagal memuat data.</p>`;
   }
 };
 
-// --- 2. FUNGSI SEARCH (REAL-TIME) ---
+// --- 2. FUNGSI SEARCH ---
 window.searchProduk = function() {
   const searchInput = document.getElementById("searchInput");
   const keyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
@@ -44,7 +42,6 @@ window.searchProduk = function() {
   const activeBtn = document.querySelector('.btn-filter.active');
   let kategoriAktif = activeBtn ? activeBtn.innerText.trim() : "Semua";
   
-  // Normalisasi Nama Kategori
   if(kategoriAktif === "MLBB") kategoriAktif = "Mobile Legends";
   if(kategoriAktif === "FF") kategoriAktif = "Free Fire";
   if(kategoriAktif === "PUBG") kategoriAktif = "PUBG Mobile";
@@ -75,12 +72,11 @@ function renderHTML(data) {
 
   data.forEach((p) => {
     const isSold = p.status === "Sold"; 
-    const isPromo = p.isPromo === true; // Ambil status promo
+    const isPromo = p.isPromo === true || p.isPromo === "true"; // Perbaikan logika deteksi
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const namaAman = p.nama.replace(/'/g, "\\'");
     const deskripsiAman = deskripsi.toString().replace(/'/g, "\\'").replace(/\n/g, " ");
     
-    // Format Harga
     const hargaFormat = Number(p.harga).toLocaleString('id-ID');
     const hargaLamaHTML = p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : "";
 
@@ -97,8 +93,10 @@ function renderHTML(data) {
           <p class="deskripsi-teks">${deskripsi}</p>
           <p class="harga">${hargaLamaHTML} Rp${hargaFormat}</p>
           ${isAdmin 
-            ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
-               <button style="background:blue;" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${p.kategori}','${p.status}')">✏️ Edit</button>` 
+            ? `<div class="btn-group">
+                 <button class="btn-hapus" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
+                 <button class="btn-edit" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${p.kategori}','${p.status}',${isPromo},'${p.hargaLama || ''}')">✏️ Edit</button>
+               </div>` 
             : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
                 ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
                </button>`}
@@ -113,30 +111,37 @@ function renderHTML(data) {
 window.filterGame = function(elemen, kategori) {
   const buttons = document.querySelectorAll('.btn-filter');
   buttons.forEach(btn => btn.classList.remove('active'));
-  
-  // Jika dipanggil dari HTML dengan 'this', elemen akan terisi
-  if (elemen && elemen.classList) {
-    elemen.classList.add('active');
-  }
-
+  if (elemen) elemen.classList.add('active');
   if(document.getElementById("searchInput")) document.getElementById("searchInput").value = "";
   window.searchProduk(); 
 };
 
-// --- 5. FUNGSI ADMIN & WA ---
+// --- 5. FUNGSI ADMIN ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
+  const hargaLama = document.getElementById("hargaLama").value; // Ambil harga lama
   const gambar = document.getElementById("gambar").value;
   const deskripsi = document.getElementById("deskripsi").value;
   const kategori = document.getElementById("kategori").value; 
   const status = document.getElementById("status").value;     
+  const isPromo = document.getElementById("isPromo").checked; // Ambil status checkbox
   const editId = document.getElementById("editId").value;
 
   if (!nama || !harga || !gambar) return alert("Wajib isi Nama, Harga, dan Gambar!");
 
   try {
-    const dataObj = { nama, harga: Number(harga), gambar, deskripsi, kategori, status };
+    const dataObj = { 
+      nama, 
+      harga: Number(harga), 
+      hargaLama: hargaLama ? Number(hargaLama) : null,
+      gambar, 
+      deskripsi, 
+      kategori, 
+      status,
+      isPromo: isPromo 
+    };
+
     if (editId) {
       await updateDoc(doc(db, "produk", editId), dataObj);
       alert("Data Berhasil Diupdate!");
@@ -155,26 +160,22 @@ window.hapusProduk = async function(id) {
   }
 };
 
-window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
+window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPromo, hargaLama) => {
   document.getElementById("nama").value = nama;
   document.getElementById("harga").value = harga;
+  document.getElementById("hargaLama").value = hargaLama || "";
   document.getElementById("gambar").value = gambar;
   document.getElementById("deskripsi").value = deskripsi;
   document.getElementById("kategori").value = kategori || "Mobile Legends";
   document.getElementById("status").value = status || "Ready";
+  document.getElementById("isPromo").checked = (isPromo === true || isPromo === "true");
   document.getElementById("editId").value = id;
   window.scrollTo(0,0);
 };
 
 window.beliWhatsApp = (nama, harga) => {
   const hargaFormatted = Number(harga).toLocaleString('id-ID');
-  const pesan = `Halo Admin 👋, saya mau beli akun ini:
-
-📌 *Produk:* ${nama}
-💰 *Harga:* Rp${hargaFormatted}
-
-Apakah akun ini masih ready?`;
-
+  const pesan = `Halo Admin 👋, saya mau beli akun ini:\n\n📌 *Produk:* ${nama}\n💰 *Harga:* Rp${hargaFormatted}\n\nApakah akun ini masih ready?`;
   window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
