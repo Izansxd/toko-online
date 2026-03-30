@@ -97,7 +97,7 @@ window.filterGame = (el, kat) => {
   window.searchProduk();
 };
 
-// --- 4. RENDER HTML ---
+// --- 4. RENDER HTML (DENGAN TOMBOL DETAIL) ---
 function renderHTML(data) {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
@@ -110,8 +110,12 @@ function renderHTML(data) {
     const hargaLamaValue = p.hargaLama ? Number(p.hargaLama) : 0;
     const hargaBaruValue = Number(p.harga);
     const diskonValue = hargaLamaValue > hargaBaruValue ? hargaLamaValue - hargaBaruValue : 0;
-    const namaAman = p.nama.replace(/'/g, "\\'");
     
+    // Proteksi teks agar tidak merusak script
+    const namaAman = p.nama.replace(/'/g, "\\'");
+    const deskripsiAman = (p.deskripsi || "Tidak ada detail spek.").replace(/'/g, "\\'").replace(/\n/g, "\\n");
+    const gambarAman = p.gambar;
+
     if (isAdmin) {
       html += `
         <div class="card-admin">
@@ -131,6 +135,9 @@ function renderHTML(data) {
           </div>
           <div class="card-info">
             <div style="display:flex; align-items:center; gap:5px;"><h4 style="font-size:13px;">${p.nama}</h4><span style="color:#38bdf8;">🔵</span></div>
+            
+            <p onclick="bukaDetail('${namaAman}', '${deskripsiAman}', '${gambarAman}', ${hargaBaruValue}, ${diskonValue})" style="font-size: 11px; color: var(--primary); cursor: pointer; text-decoration: underline; margin: 5px 0; font-weight: 600;">🔍 Cek Detail Akun</p>
+            
             <div class="garansi-tag">🛡️ Garansi Anti-HB</div>
             <div class="harga">
                 ${p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : ''}
@@ -146,7 +153,26 @@ function renderHTML(data) {
   produkDiv.innerHTML = html || `<p style="text-align:center; padding:20px;">Produk tidak ditemukan.</p>`;
 }
 
-// --- 5. SISTEM PEMBAYARAN (STRUK) ---
+// --- 5. SISTEM DETAIL & PEMBAYARAN ---
+
+// FUNGSI MODAL DETAIL
+window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon) {
+  document.getElementById("detailNama").innerText = nama;
+  document.getElementById("detailDeskripsi").innerText = deskripsi.replace(/\\n/g, '\n');
+  document.getElementById("detailGambar").src = gambar;
+  
+  const btnLanjut = document.getElementById("btnLanjutBeli");
+  btnLanjut.onclick = function() {
+    tutupDetail();
+    window.bukaStruk(nama, harga, diskon);
+  };
+
+  document.getElementById("modalDetail").style.display = "flex";
+};
+
+window.tutupDetail = () => document.getElementById("modalDetail").style.display = "none";
+
+// FUNGSI BUKA STRUK
 window.bukaStruk = function(nama, harga, diskon) {
   const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
   dataPesananSementera = { nama, harga, inv, diskon };
