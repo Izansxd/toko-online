@@ -47,6 +47,7 @@
       margin: auto;
       white-space: nowrap;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
     }
     
     .filter-container::-webkit-scrollbar {
@@ -66,13 +67,30 @@
       display: inline-block;
     }
 
-    /* PERBAIKAN: CSS dipaksa (Force) agar warna biru muncul */
     .btn-filter.active {
       background-color: var(--primary) !important;
       color: var(--dark) !important;
       border-color: var(--primary) !important;
       box-shadow: 0 0 15px rgba(0, 210, 255, 0.5) !important;
       transform: scale(1.05);
+    }
+
+    /* Efek Skeleton Loading */
+    .skeleton {
+      background: #1e293b;
+      background: linear-gradient(110deg, #1e293b 8%, #334155 18%, #1e293b 33%);
+      border-radius: 18px;
+      background-size: 200% 100%;
+      animation: 1.5s shine linear infinite;
+    }
+
+    @keyframes shine {
+      to { background-position-x: -200%; }
+    }
+
+    .skeleton-card {
+      height: 280px; /* Sesuaikan dengan tinggi kartu asli */
+      width: 100%;
     }
 
     /* Grid Produk */
@@ -83,7 +101,7 @@
       max-width: 1000px; 
       margin: 20px auto 30px; 
       padding: 0 15px;
-      min-height: 200px; /* Agar halaman tidak kosong saat loading */
+      min-height: 300px;
     }
     
     .card { 
