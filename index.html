@@ -14,6 +14,8 @@
       --text: #f8fafc;
       --danger: #ef4444;
       --success: #10b981;
+      --input-bg: #1e293b;
+      --input-border: #334155;
     }
 
     body { 
@@ -73,6 +75,44 @@
       transform: scale(1.05);
     }
 
+    /* Search Bar Styling */
+    .search-container {
+      max-width: 1000px;
+      margin: 15px auto;
+      padding: 0 15px;
+    }
+
+    .search-box {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 12px 15px 12px 45px;
+      border-radius: 15px;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      font-size: 14px;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(0, 210, 255, 0.2);
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 15px;
+      color: #94a3b8;
+      font-size: 16px;
+    }
+
     /* Efek Skeleton Loading */
     .skeleton {
       background: #1e293b;
@@ -90,7 +130,7 @@
       grid-template-columns: repeat(2, 1fr); 
       gap: 15px; 
       max-width: 1000px; 
-      margin: 20px auto 30px; 
+      margin: 10px auto 30px; 
       padding: 0 15px;
       min-height: 300px;
     }
@@ -143,7 +183,6 @@
       text-transform: uppercase; transition: 0.2s;
     }
 
-    /* Efek Klik Tombol */
     .card button:active { transform: scale(0.95); }
     .card button:disabled { background: #475569; cursor: not-allowed; opacity: 0.8; }
 
@@ -171,6 +210,13 @@
   <button class="btn-filter" onclick="filterGame('Free Fire')">FF</button>
   <button class="btn-filter" onclick="filterGame('PUBG Mobile')">PUBG</button>
   <button class="btn-filter" onclick="filterGame('Lainnya')">Lainnya</button>
+</div>
+
+<div class="search-container">
+  <div class="search-box">
+    <i>🔍</i>
+    <input type="text" id="searchInput" placeholder="Cari akun impianmu..." oninput="searchProduk()">
+  </div>
 </div>
 
 <div id="produk">
