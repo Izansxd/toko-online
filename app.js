@@ -26,6 +26,22 @@ window.tampilProduk = async function() {
       allProducts.push({ id: docSnap.id, ...docSnap.data() });
     });
 
+    // --- FITUR INCOME TRACKER (TOTAL CUAN) ---
+    const pesananSnap = await getDocs(collection(db, "pesanan"));
+    let totalCuan = 0;
+    pesananSnap.forEach(docP => {
+        const p = docP.data();
+        // Hanya menghitung pesanan yang statusnya Selesai
+        if(p.status === "🎉 Pesanan Selesai") {
+            totalCuan += Number(p.total || 0);
+        }
+    });
+    
+    // Update angka cuan di Admin Panel jika elemennya ada
+    const statCuan = document.getElementById("statCuan");
+    if(statCuan) statCuan.innerText = "Rp" + totalCuan.toLocaleString('id-ID');
+    // ------------------------------------------
+
     const infoSnap = await getDoc(doc(db, "pengaturan", "toko"));
     if (infoSnap.exists()) {
       const marquee = document.getElementById("isiPengumuman");
@@ -111,7 +127,6 @@ function renderHTML(data) {
     const hargaBaruValue = Number(p.harga);
     const diskonValue = hargaLamaValue > hargaBaruValue ? hargaLamaValue - hargaBaruValue : 0;
     
-    // Proteksi teks agar tidak merusak script
     const namaAman = p.nama.replace(/'/g, "\\'");
     const deskripsiAman = (p.deskripsi || "Tidak ada detail spek.").replace(/'/g, "\\'").replace(/\n/g, "\\n");
     const gambarAman = p.gambar;
@@ -155,12 +170,25 @@ function renderHTML(data) {
 
 // --- 5. SISTEM DETAIL & PEMBAYARAN ---
 
-// FUNGSI MODAL DETAIL
+// FUNGSI MODAL DETAIL (DENGAN FITUR SHARE WHATSAPP)
 window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon) {
   document.getElementById("detailNama").innerText = nama;
   document.getElementById("detailDeskripsi").innerText = deskripsi.replace(/\\n/g, '\n');
   document.getElementById("detailGambar").src = gambar;
   
+  // LOGIKA TOMBOL SHARE WA
+  const btnShare = document.getElementById("btnShareWA");
+  if(btnShare) {
+    btnShare.onclick = function() {
+      const teksShare = `🔥 *AKUN SULTAN READY DI FAZA STORE* 🔥\n\n` +
+                        `*Produk:* ${nama}\n` +
+                        `*Harga:* Rp${harga.toLocaleString('id-ID')}\n` +
+                        `*Spek Singkat:* \n${deskripsi.replace(/\\n/g, '\n').substring(0, 150)}...\n\n` +
+                        `Buruan cek di Faza Store sebelum disikat orang!`;
+      window.open(`https://wa.me/?text=${encodeURIComponent(teksShare)}`, "_blank");
+    };
+  }
+
   const btnLanjut = document.getElementById("btnLanjutBeli");
   btnLanjut.onclick = function() {
     tutupDetail();
