@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // --- KONFIGURASI ---
 const NOMOR_WA_ADMIN = "6282298627146"; 
@@ -14,7 +14,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
 let allProducts = [];
-let pesananSekarang = {}; // Simpan data pesanan sementara
+let pesananSekarang = {}; 
 
 // --- 1. FUNGSI TAMPIL PRODUK ---
 window.tampilProduk = async function() {
@@ -121,7 +121,7 @@ window.filterGame = function(elemen, kategori) {
   window.searchProduk(); 
 };
 
-// --- 5. FUNGSI STRUK DIGITAL (NEW) ---
+// --- 5. FUNGSI STRUK DIGITAL ---
 window.beliWhatsApp = (nama, harga) => {
   pesananSekarang = { nama, harga };
   const hargaFormat = Number(harga).toLocaleString('id-ID');
@@ -137,7 +137,6 @@ window.beliWhatsApp = (nama, harga) => {
       `;
       document.getElementById("modalStruk").style.display = "flex";
   } else {
-      // Fallback jika modal belum terpasang di HTML
       const pesan = `Halo Admin 👋, saya mau beli akun ini:\n\n📌 *Produk:* ${nama}\n💰 *Harga:* Rp${hargaFormat}\n\nApakah akun ini masih ready?`;
       window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
   }
@@ -165,7 +164,33 @@ window.tutupStruk = () => {
   document.getElementById("modalStruk").style.display = "none";
 };
 
-// --- 6. FUNGSI ADMIN PRODUK ---
+// --- 6. FUNGSI PENGUMUMAN (NEW) ---
+window.updatePengumuman = async function() {
+  const teks = document.getElementById("teksBaru").value;
+  if (!teks) return alert("Isi dulu teks pengumumannya!");
+
+  try {
+    await setDoc(doc(db, "pengaturan", "pengumuman"), { isi: teks });
+    alert("Pengumuman Berhasil Diperbarui!");
+    location.reload();
+  } catch (e) { alert("Gagal update: " + e.message); }
+};
+
+window.ambilPengumuman = async function() {
+  const marquee = document.getElementById("isiPengumuman");
+  if (!marquee) return;
+
+  try {
+    const data = await getDocs(collection(db, "pengaturan"));
+    data.forEach((d) => {
+      if(d.id === "pengumuman") {
+        marquee.innerText = d.data().isi;
+      }
+    });
+  } catch (e) { console.error("Gagal ambil pengumuman:", e); }
+};
+
+// --- 7. FUNGSI ADMIN PRODUK ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
@@ -222,7 +247,7 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPro
   window.scrollTo(0,0);
 };
 
-// --- 7. FITUR TESTIMONI ---
+// --- 8. FITUR TESTIMONI ---
 window.submitTestimoni = async function() {
   const foto = document.getElementById("fotoTesti").value;
   const ket = document.getElementById("ketTesti").value;
@@ -287,3 +312,4 @@ window.hapusTestimoni = async function(id) {
 // Jalankan fungsi awal
 tampilProduk();
 tampilTestimoni();
+ambilPengumuman();
