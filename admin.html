@@ -128,14 +128,17 @@
     <label for="isPromo">⚡ AKTIFKAN MODE FLASH SALE</label>
   </div>
   
+  <label>Waktu Berakhir Flash Sale (Opsional)</label>
+  <input type="datetime-local" id="flashSaleEnd">
+  
   <label>Spesifikasi Lengkap (Muncul di Cek Detail)</label>
   <textarea id="deskripsi" placeholder="Tulis per baris, contoh:
 - Skin Legend: Gusion
 - Hero: 120
 - Login: Moonton (Sepaket)"></textarea>
   
-  <label>Link Foto Akun</label>
-  <input type="text" id="gambar" placeholder="Tempel link foto di sini">
+  <label>Link Foto Akun (Gunakan koma [,] jika lebih dari 1 foto)</label>
+  <input type="text" id="gambar" placeholder="link1.jpg, link2.jpg, link3.jpg">
   
   <input type="hidden" id="editId">
   
@@ -200,6 +203,7 @@ function resetForm() {
     document.getElementById("displayHargaLama").value = "";
     document.getElementById("gambar").value = "";
     document.getElementById("deskripsi").value = "";
+    document.getElementById("flashSaleEnd").value = "";
     document.getElementById("editId").value = "";
     document.getElementById("isPromo").checked = false;
     alert("Form siap untuk tambah produk baru!");
