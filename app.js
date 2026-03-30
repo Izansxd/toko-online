@@ -65,14 +65,10 @@ function renderHTML(data) {
   const isAdmin = window.location.href.includes("admin.html");
   let html = "";
 
-  if (data.length === 0) {
-    produkDiv.innerHTML = `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Produk tidak ditemukan.</p>`;
-    return;
-  }
-
   data.forEach((p) => {
     const isSold = p.status === "Sold"; 
-    const isPromo = p.isPromo === true || p.isPromo === "true"; // Perbaikan logika deteksi
+    // Paksa cek tipe data agar selalu benar
+    const isPromo = p.isPromo === true || p.isPromo === "true"; 
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const namaAman = p.nama.replace(/'/g, "\\'");
     const deskripsiAman = deskripsi.toString().replace(/'/g, "\\'").replace(/\n/g, " ");
@@ -80,31 +76,43 @@ function renderHTML(data) {
     const hargaFormat = Number(p.harga).toLocaleString('id-ID');
     const hargaLamaHTML = p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : "";
 
-    html += `
-      <div class="card">
-        <div class="card-img-container">
+    // Versi Admin (List bawah)
+    if (isAdmin) {
+      html += `
+        <div class="card-admin">
           <img src="${p.gambar}" alt="${p.nama}">
-          <div class="badge">${p.kategori || 'Game'}</div>
-          ${isPromo ? `<div class="badge-promo">🔥 HOT ITEM</div>` : ''}
-          ${isSold ? `<div class="sold-overlay"><div class="sold-label">SOLD OUT</div></div>` : ''}
-        </div>
-        <div class="card-info">
-          <h4>${p.nama}</h4>
-          <p class="deskripsi-teks">${deskripsi}</p>
-          <p class="harga">${hargaLamaHTML} Rp${hargaFormat}</p>
-          ${isAdmin 
-            ? `<div class="btn-group">
-                 <button class="btn-hapus" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
-                 <button class="btn-edit" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${p.kategori}','${p.status}',${isPromo},'${p.hargaLama || ''}')">✏️ Edit</button>
-               </div>` 
-            : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
+          <div class="info-admin">
+            <h4>${p.nama} ${isPromo ? '🔥' : ''}</h4>
+            <p>Rp${hargaFormat}</p>
+          </div>
+          <div class="btn-group">
+            <button class="btn-edit" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${p.kategori}','${p.status}',${isPromo},'${p.hargaLama || ''}')">✏️ Edit</button>
+            <button class="btn-hapus" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
+          </div>
+        </div>`;
+    } else {
+      // Versi Toko (Index)
+      html += `
+        <div class="card">
+          <div class="card-img-container">
+            <img src="${p.gambar}" alt="${p.nama}">
+            <div class="badge">${p.kategori || 'Game'}</div>
+            ${isPromo ? `<div class="badge-promo">🔥 HOT ITEM</div>` : ''}
+            ${isSold ? `<div class="sold-overlay"><div class="sold-label">SOLD OUT</div></div>` : ''}
+          </div>
+          <div class="card-info">
+            <h4>${p.nama}</h4>
+            <p class="deskripsi-teks">${deskripsi}</p>
+            <p class="harga">${hargaLamaHTML} Rp${hargaFormat}</p>
+            <button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
                 ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
-               </button>`}
-        </div>
-      </div>`;
+            </button>
+          </div>
+        </div>`;
+    }
   });
 
-  produkDiv.innerHTML = html;
+  produkDiv.innerHTML = html || `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Produk tidak ditemukan.</p>`;
 }
 
 // --- 4. FUNGSI FILTER ---
@@ -112,7 +120,6 @@ window.filterGame = function(elemen, kategori) {
   const buttons = document.querySelectorAll('.btn-filter');
   buttons.forEach(btn => btn.classList.remove('active'));
   if (elemen) elemen.classList.add('active');
-  if(document.getElementById("searchInput")) document.getElementById("searchInput").value = "";
   window.searchProduk(); 
 };
 
@@ -120,12 +127,12 @@ window.filterGame = function(elemen, kategori) {
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
-  const hargaLama = document.getElementById("hargaLama").value; // Ambil harga lama
+  const hargaLama = document.getElementById("hargaLama").value;
   const gambar = document.getElementById("gambar").value;
   const deskripsi = document.getElementById("deskripsi").value;
   const kategori = document.getElementById("kategori").value; 
   const status = document.getElementById("status").value;     
-  const isPromo = document.getElementById("isPromo").checked; // Ambil status checkbox
+  const isPromo = document.getElementById("isPromo").checked; 
   const editId = document.getElementById("editId").value;
 
   if (!nama || !harga || !gambar) return alert("Wajib isi Nama, Harga, dan Gambar!");
@@ -166,8 +173,8 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPro
   document.getElementById("hargaLama").value = hargaLama || "";
   document.getElementById("gambar").value = gambar;
   document.getElementById("deskripsi").value = deskripsi;
-  document.getElementById("kategori").value = kategori || "Mobile Legends";
-  document.getElementById("status").value = status || "Ready";
+  document.getElementById("kategori").value = kategori;
+  document.getElementById("status").value = status;
   document.getElementById("isPromo").checked = (isPromo === true || isPromo === "true");
   document.getElementById("editId").value = id;
   window.scrollTo(0,0);
