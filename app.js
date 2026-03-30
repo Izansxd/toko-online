@@ -15,7 +15,7 @@ const db = getFirestore();
 let allProducts = [];
 let currentMinHarga = 0;
 let currentMaxHarga = 999999999;
-let dataPesananSementera = {}; // Untuk simpan data saat klik beli
+let dataPesananSementera = {}; 
 
 // --- 2. FUNGSI UTAMA (TAMPIL DATA) ---
 window.tampilProduk = async function() {
@@ -26,14 +26,12 @@ window.tampilProduk = async function() {
       allProducts.push({ id: docSnap.id, ...docSnap.data() });
     });
 
-    // Muat Pengumuman ke Marquee (ID: isiPengumuman)
     const infoSnap = await getDoc(doc(db, "pengaturan", "toko"));
     if (infoSnap.exists()) {
       const marquee = document.getElementById("isiPengumuman");
       if(marquee) marquee.innerText = infoSnap.data().pengumuman;
     }
 
-    // Statistik Admin
     const statTotal = document.getElementById("statTotal");
     const statSold = document.getElementById("statSold");
     if (statTotal && statSold) {
@@ -109,6 +107,9 @@ function renderHTML(data) {
   data.forEach((p) => {
     const isSold = p.status === "Sold"; 
     const hargaFormat = Number(p.harga).toLocaleString('id-ID');
+    const hargaLamaValue = p.hargaLama ? Number(p.hargaLama) : 0;
+    const hargaBaruValue = Number(p.harga);
+    const diskonValue = hargaLamaValue > hargaBaruValue ? hargaLamaValue - hargaBaruValue : 0;
     const namaAman = p.nama.replace(/'/g, "\\'");
     
     if (isAdmin) {
@@ -131,8 +132,13 @@ function renderHTML(data) {
           <div class="card-info">
             <div style="display:flex; align-items:center; gap:5px;"><h4 style="font-size:13px;">${p.nama}</h4><span style="color:#38bdf8;">🔵</span></div>
             <div class="garansi-tag">🛡️ Garansi Anti-HB</div>
-            <div class="harga">${p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : ''}<span class="harga-baru">Rp${hargaFormat}</span></div>
-            <button class="btn-beli" ${isSold ? 'disabled' : `onclick="bukaStruk('${namaAman}', ${p.harga})"`}>${isSold ? 'TERJUAL' : 'BELI SEKARANG'}</button>
+            <div class="harga">
+                ${p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : ''}
+                <span class="harga-baru">Rp${hargaFormat}</span>
+            </div>
+            <button class="btn-beli" ${isSold ? 'disabled' : `onclick="bukaStruk('${namaAman}', ${hargaBaruValue}, ${diskonValue})"`}>
+                ${isSold ? 'TERJUAL' : 'BELI SEKARANG'}
+            </button>
           </div>
         </div>`;
     }
@@ -141,12 +147,22 @@ function renderHTML(data) {
 }
 
 // --- 5. SISTEM PEMBAYARAN (STRUK) ---
-window.bukaStruk = function(nama, harga) {
-  dataPesananSementera = { nama, harga, inv: "FZ-" + Math.floor(1000 + Math.random() * 9999) };
+window.bukaStruk = function(nama, harga, diskon) {
+  const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
+  dataPesananSementera = { nama, harga, inv, diskon };
+  
   document.getElementById("isiStruk").innerHTML = `
-    <p><b>No. Invoice:</b> ${dataPesananSementera.inv}</p>
-    <p><b>Produk:</b> ${nama}</p>
-    <p><b>Total:</b> Rp${Number(harga).toLocaleString('id-ID')}</p>
+    <div style="font-size: 13px; color: #333; line-height: 1.6;">
+      <div style="display:flex; justify-content:space-between;"><span>No. Invoice</span><b>${inv}</b></div>
+      <div style="display:flex; justify-content:space-between;"><span>Produk</span><b style="text-align:right; max-width:60%">${nama}</b></div>
+      <div style="display:flex; justify-content:space-between;"><span>Harga</span><span>Rp${(harga + diskon).toLocaleString('id-ID')}</span></div>
+      ${diskon > 0 ? `<div style="display:flex; justify-content:space-between; color:#ef4444;"><span>Potongan</span><span>-Rp${diskon.toLocaleString('id-ID')}</span></div>` : ''}
+      <hr style="border: 0.5px dashed #ccc; margin: 10px 0;">
+      <div style="display:flex; justify-content:space-between; font-size:16px; color:#10b981; font-weight:800;">
+        <span>TOTAL</span>
+        <span>Rp${harga.toLocaleString('id-ID')}</span>
+      </div>
+    </div>
   `;
   document.getElementById("modalStruk").style.display = "flex";
 };
@@ -157,7 +173,6 @@ window.kirimInvoiceWA = async function() {
   const metode = document.getElementById("metodeBayar").value;
   const { nama, harga, inv } = dataPesananSementera;
   
-  // Simpan pesanan ke Database agar bisa dicek statusnya nanti
   try {
     await setDoc(doc(db, "pesanan", inv), {
       produk: nama,
@@ -167,7 +182,15 @@ window.kirimInvoiceWA = async function() {
       tanggal: new Date()
     });
     
-    const pesan = `*PESANAN BARU - FAZA STORE*\n\nID: ${inv}\nProduk: ${nama}\nTotal: Rp${Number(harga).toLocaleString('id-ID')}\nMetode: ${metode}\n\nSegera kirimkan detail pembayarannya ya Min!`;
+    const pesan = `*PESANAN BARU - FAZA STORE*\n` +
+                  `----------------------------------\n` +
+                  `*No. Invoice :* ${inv}\n` +
+                  `*Produk      :* ${nama}\n` +
+                  `*Total Bayar :* Rp${Number(harga).toLocaleString('id-ID')}\n` +
+                  `*Metode      :* ${metode}\n` +
+                  `----------------------------------\n\n` +
+                  `_Mohon kirimkan detail pembayaran/QRIS nya ya Min!_`;
+                  
     window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
     tutupStruk();
   } catch (e) { alert("Gagal membuat pesanan."); }
@@ -175,7 +198,7 @@ window.kirimInvoiceWA = async function() {
 
 // --- 6. FITUR LACAK PESANAN ---
 window.cekStatusPesanan = async function() {
-  const idInput = document.getElementById("inputCekStatus").value.trim();
+  const idInput = document.getElementById("inputCekStatus").value.trim().toUpperCase();
   const hasilDiv = document.getElementById("hasilStatus");
   if(!idInput) return alert("Masukkan ID Invoice!");
 
@@ -248,7 +271,7 @@ window.submitTestimoni = async function() {
 };
 
 window.updateStatusPesanan = async function() {
-  const invId = document.getElementById("adminIdPesanan").value.trim();
+  const invId = document.getElementById("adminIdPesanan").value.trim().toUpperCase();
   const status = document.getElementById("adminStatusUpdate").value;
   try {
     await setDoc(doc(db, "pesanan", invId), { status: status }, { merge: true });
