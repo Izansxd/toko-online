@@ -163,16 +163,42 @@
       cursor: pointer; width: 100%; font-weight: 700;
     }
 
-    /* Drawer & Floating Button */
+    /* --- PERBAIKAN TESTIMONI (TIDAK RAKSASA) --- */
+    .testimoni-section { max-width: 1000px; margin: 40px auto; padding: 0 15px; }
+    #list-testimoni { 
+      display: flex; 
+      gap: 15px; 
+      overflow-x: auto; 
+      padding: 10px 5px 20px; 
+      scrollbar-width: none; 
+    }
+    #list-testimoni::-webkit-scrollbar { display: none; }
+    .card-testi { 
+      min-width: 180px; 
+      max-width: 180px; 
+      background: var(--card-bg); 
+      border-radius: 15px; 
+      padding: 10px; 
+      border: 1px solid var(--input-border); 
+      flex-shrink: 0; 
+    }
+    .card-testi img { 
+      width: 100%; 
+      height: 220px; 
+      object-fit: cover; 
+      border-radius: 10px; 
+    }
+    .card-testi p { margin: 10px 0 0; font-size: 11px; color: #94a3b8; text-align: center; }
+
+    /* --- PERBAIKAN DRAWER & TOMBOL CEK (LURUS) --- */
     .btn-buka-status {
       position: fixed; bottom: 25px; right: 25px;
       background: linear-gradient(135deg, var(--secondary), var(--primary));
-      width: 60px; height: 60px; border-radius: 50%;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      gap: 4px; box-shadow: 0 8px 20px rgba(0, 210, 255, 0.4);
+      width: 65px; height: 65px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; box-shadow: 0 8px 25px rgba(0, 210, 255, 0.4);
       cursor: pointer; z-index: 999; border: 2px solid rgba(255,255,255,0.3);
     }
-    .line-icon { width: 24px; height: 3px; background: white; border-radius: 2px; }
 
     .drawer-overlay {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -186,18 +212,23 @@
       background: var(--card-bg); border-top-left-radius: 30px; border-top-right-radius: 30px;
       padding: 30px 20px 40px; z-index: 10001;
       transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1);
-      box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
     }
     .drawer-content.active { bottom: 0; }
 
-    .status-input-group { display: flex; gap: 8px; width: 100%; }
+    .status-input-group { 
+      display: flex; 
+      gap: 10px; 
+      width: 100%; 
+      align-items: center; /* Kunci agar tombol & input lurus sejajar */
+    }
     .status-input-group input {
       flex: 1; background: var(--dark); border: 1px solid var(--input-border);
-      color: white; padding: 12px 15px; border-radius: 12px; font-size: 14px; outline: none; min-width: 0;
+      color: white; padding: 14px; border-radius: 12px; font-size: 14px; outline: none; min-width: 0;
     }
     .btn-cek {
       background: var(--primary); color: var(--dark); border: none;
-      padding: 0 20px; border-radius: 12px; font-weight: 800; cursor: pointer; white-space: nowrap;
+      padding: 14px 25px; border-radius: 12px; font-weight: 800; cursor: pointer; 
+      white-space: nowrap; /* Kunci agar teks CEK tidak miring/turun kebawah */
     }
     #hasilStatus {
       margin-top: 20px; padding: 15px; border-radius: 15px;
@@ -250,16 +281,14 @@
 <div id="produk"></div>
 
 <div class="testimoni-section">
-  <div style="padding: 0 15px; margin-bottom: 15px; border-left: 4px solid var(--primary);">
-    <h2 style="font-size: 18px; margin: 0;">💬 TESTIMONI PEMBELI</h2>
+  <div style="padding: 0 5px; margin-bottom: 15px; border-left: 4px solid var(--primary);">
+    <h2 style="font-size: 18px; margin: 0; padding-left: 10px;">💬 TESTIMONI</h2>
   </div>
-  <div id="list-testimoni" style="display: flex; gap: 15px; overflow-x: auto; padding: 0 15px 20px; scrollbar-width: none;"></div>
+  <div id="list-testimoni"></div>
 </div>
 
 <div class="btn-buka-status" onclick="toggleDrawer(true)">
-  <span class="line-icon"></span>
-  <span class="line-icon"></span>
-  <span class="line-icon"></span>
+  🚚
 </div>
 
 <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
