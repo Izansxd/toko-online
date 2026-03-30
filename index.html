@@ -164,7 +164,9 @@
     .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 1000; backdrop-filter: blur(4px); }
     .drawer-content { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--card-bg); padding: 30px 20px; z-index: 1001; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-top-left-radius: 25px; border-top-right-radius: 25px; }
     .drawer-content.active { bottom: 0; }
-    #modalStruk { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
+    
+    /* MODAL STRUK FIX */
+    #modalStruk { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
     .struk-box { background: white; color: #333; width: 85%; max-width: 350px; padding: 25px; border-radius: 15px; font-family: monospace; }
   </style>
 </head>
@@ -239,14 +241,14 @@
     <div id="isiStruk"></div>
     <div style="border-top: 1px dashed #ccc; margin: 10px 0;"></div>
     <label style="font-size: 11px; font-weight: 700;">Metode Pembayaran:</label>
-    <select id="metodeBayar" style="width:100%; padding:12px; margin-top:8px; border-radius:8px; border: 1px solid #ddd; background: #f9f9f9;">
+    <select id="metodeBayar" style="width:100%; padding:12px; margin-top:8px; border-radius:8px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Poppins';">
+      <option value="QRIS (All Payment)">QRIS (All Payment)</option>
       <option value="DANA">DANA</option>
-      <option value="OVO">OVO</option>
       <option value="GoPay">GoPay</option>
-      <option value="Transfer Bank">Transfer Bank</option>
+      <option value="OVO">OVO</option>
     </select>
     <button onclick="kirimInvoiceWA()" style="width:100%; padding:14px; background:#000; color:#fff; border-radius:8px; border:none; font-weight:800; margin-top:15px; cursor: pointer;">BAYAR SEKARANG</button>
-    <button onclick="tutupStruk()" style="width:100%; margin-top:10px; background:none; border:none; color:#888; font-size: 11px;">Batalkan Pesanan</button>
+    <button onclick="tutupStruk()" style="width:100%; margin-top:10px; background:none; border:none; color:#888; font-size: 11px; cursor:pointer;">Batalkan Pesanan</button>
   </div>
 </div>
 
@@ -264,7 +266,7 @@
     document.body.classList.add('light-mode');
   }
 
-  // PERSISTENT FLASH SALE TIMER (LOGIC ANTI-REFRESH)
+  // PERSISTENT FLASH SALE TIMER
   function startRealTimer() {
     let endTime = localStorage.getItem('faza_flash_sale_end');
     if (!endTime) {
@@ -278,7 +280,7 @@
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-      display.innerHTML = (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
+      if(display) display.innerHTML = (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
       if (distance < 0) {
         clearInterval(x);
         display.innerHTML = "BERAKHIR";
