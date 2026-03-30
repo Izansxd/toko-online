@@ -190,9 +190,31 @@ window.ambilPengumuman = async function() {
   } catch (e) { console.error("Gagal ambil pengumuman:", e); }
 };
 
-// --- 7. FITUR STATUS PESANAN (BARU) ---
+// --- 7. FITUR STATUS PESANAN (DRAWER SYSTEM) ---
+
+window.toggleDrawer = function(show) {
+  const drawer = document.getElementById('statusDrawer');
+  const overlay = document.getElementById('drawerOverlay');
+  
+  if (!drawer || !overlay) return;
+
+  if (show) {
+    overlay.style.display = 'block';
+    setTimeout(() => {
+      overlay.classList.add('show');
+      drawer.classList.add('active');
+    }, 10);
+  } else {
+    drawer.classList.remove('active');
+    overlay.classList.remove('show');
+    setTimeout(() => {
+      overlay.style.display = 'none';
+    }, 400);
+  }
+};
+
 window.updateStatusPesanan = async function() {
-  const id = document.getElementById("adminIdPesanan").value.trim();
+  const id = document.getElementById("adminIdPesanan").value.trim().toUpperCase();
   const status = document.getElementById("adminStatusUpdate").value;
 
   if (!id) return alert("Masukkan ID Pesanan dulu!");
@@ -207,14 +229,15 @@ window.updateStatusPesanan = async function() {
 };
 
 window.cekStatusPesanan = async function() {
-  const id = document.getElementById("inputCekStatus").value.trim();
+  const id = document.getElementById("inputCekStatus").value.trim().toUpperCase();
   const boxHasil = document.getElementById("hasilStatus");
 
   if (!id) return alert("Masukkan ID Pesanan kamu!");
 
   boxHasil.style.display = "block";
-  boxHasil.innerHTML = "🔍 Mencari data...";
-  boxHasil.style.background = "#1e293b";
+  boxHasil.innerHTML = "🔍 Sedang melacak pesanan...";
+  boxHasil.style.background = "rgba(0, 210, 255, 0.05)";
+  boxHasil.style.border = "1px solid var(--input-border)";
 
   try {
     const docRef = doc(db, "pesanan", id);
@@ -222,16 +245,26 @@ window.cekStatusPesanan = async function() {
 
     if (docSnap.exists()) {
       const data = docSnap.data();
+      let warnaStatus = "#f1c40f"; 
+      if(data.status.toLowerCase().includes("selesai")) warnaStatus = "#10b981"; 
+      if(data.status.toLowerCase().includes("batal")) warnaStatus = "#ef4444"; 
+
       boxHasil.innerHTML = `
-        <b style="color:var(--primary)">ID: ${id}</b><br>
-        <span style="font-size:14px; color:white;">Status: ${data.status}</span>
+        <div style="border-bottom: 1px solid #334155; padding-bottom: 8px; margin-bottom: 8px;">
+          <b style="color:var(--primary)">ID: ${id}</b>
+        </div>
+        <div style="font-size:14px; color:white;">
+          Status: <b style="color:${warnaStatus}">${data.status}</b>
+        </div>
       `;
-      boxHasil.style.border = "1px solid var(--success)";
+      boxHasil.style.border = `1px solid ${warnaStatus}`;
     } else {
-      boxHasil.innerHTML = "❌ ID Tidak Ditemukan. Pastikan ID benar!";
+      boxHasil.innerHTML = "❌ <b style='color:#ef4444'>ID Tidak Ditemukan.</b><br>Periksa kembali ID Invoice kamu.";
       boxHasil.style.border = "1px solid var(--danger)";
     }
-  } catch (e) { boxHasil.innerHTML = "Gagal mengecek: " + e.message; }
+  } catch (e) { 
+    boxHasil.innerHTML = "⚠️ Gagal mengecek: " + e.message; 
+  }
 };
 
 // --- 8. FUNGSI ADMIN PRODUK ---
