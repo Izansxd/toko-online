@@ -37,7 +37,7 @@
     header h2 { margin: 0; font-weight: 700; letter-spacing: 1px; font-size: 24px; }
     header p { margin: 8px 0 0; font-size: 14px; opacity: 0.9; }
 
-    /* CSS untuk Filter Kategori */
+    /* Filter Kategori */
     .filter-container {
       display: flex;
       gap: 10px;
@@ -45,11 +45,11 @@
       overflow-x: auto;
       max-width: 1000px;
       margin: auto;
-      scrollbar-width: none; /* Sembunyikan scrollbar di Firefox */
+      scrollbar-width: none;
     }
     
     .filter-container::-webkit-scrollbar {
-      display: none; /* Sembunyikan scrollbar di Chrome/Safari */
+      display: none;
     }
     
     .btn-filter {
@@ -65,10 +65,11 @@
       transition: 0.3s;
     }
 
+    /* Penambahan !important agar warna biru pasti muncul */
     .btn-filter.active {
-      background: var(--primary);
-      color: var(--dark);
-      border-color: var(--primary);
+      background: var(--primary) !important;
+      color: var(--dark) !important;
+      border-color: var(--primary) !important;
       box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
     }
 
