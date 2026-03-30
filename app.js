@@ -13,18 +13,18 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// Variabel global untuk menampung data agar filter lebih cepat
+// Variabel global untuk menampung data
 let allProducts = [];
 
-// --- 1. FUNGSI TAMPIL PRODUK (DENGAN LOGIKA FILTER) ---
+// --- 1. FUNGSI TAMPIL PRODUK ---
 window.tampilProduk = async function(kategoriFilter = "Semua") {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
-  // Jika data internal masih kosong, ambil dari Firebase
+  // Selalu ambil data terbaru jika allProducts masih kosong
   if (allProducts.length === 0) {
     const data = await getDocs(collection(db, "produk"));
-    allProducts = []; // Reset untuk jaga-jaga
+    allProducts = []; 
     data.forEach(docSnap => {
       allProducts.push({ id: docSnap.id, ...docSnap.data() });
     });
@@ -33,7 +33,7 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
   let html = "";
   const isAdmin = window.location.href.includes("admin.html");
 
-  // Filter data berdasarkan kategori yang dipilih
+  // Filter data berdasarkan kategori
   const filteredData = kategoriFilter === "Semua" 
     ? allProducts 
     : allProducts.filter(p => p.kategori === kategoriFilter);
@@ -48,10 +48,7 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
         <div class="card-img-container">
           <img src="${p.gambar}" alt="${p.nama}">
           <div class="badge">${kategori}</div>
-          ${isSold ? `
-            <div class="sold-overlay">
-              <div class="sold-label">SOLD OUT</div>
-            </div>` : ''}
+          ${isSold ? `<div class="sold-overlay"><div class="sold-label">SOLD OUT</div></div>` : ''}
         </div>
         <div class="card-info">
           <h4>${p.nama}</h4>
@@ -71,21 +68,28 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
   produkDiv.innerHTML = html || `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Belum ada akun di kategori ini.</p>`;
 };
 
-// --- FUNGSI TRIGGER FILTER (UNTUK TOMBOL DI INDEX.HTML) ---
+// --- FUNGSI TRIGGER FILTER (PERBAIKAN UTAMA) ---
 window.filterGame = function(kategori) {
-  // Update warna tombol aktif di index.html
+  console.log("Filter diklik:", kategori); // Untuk ngecek di console
+
+  // 1. Update warna tombol aktif
   const buttons = document.querySelectorAll('.btn-filter');
   buttons.forEach(btn => {
     btn.classList.remove('active');
-    // Menyesuaikan teks tombol dengan nilai kategori
-    const btnText = btn.innerText.replace('MLBB', 'Mobile Legends').replace('FF', 'Free Fire');
-    if (btnText === kategori || (kategori === "Semua" && btn.innerText === "Semua")) {
-       btn.classList.add('active');
-    }
+    
+    // Ambil teks tombol dan bersihkan
+    const btnText = btn.innerText.trim();
+    
+    // Logika pencocokan teks tombol dengan kategori database
+    if (kategori === "Semua" && btnText === "Semua") btn.classList.add('active');
+    if (kategori === "Mobile Legends" && btnText === "MLBB") btn.classList.add('active');
+    if (kategori === "Free Fire" && btnText === "FF") btn.classList.add('active');
+    if (kategori === "PUBG Mobile" && btnText === "PUBG") btn.classList.add('active');
+    if (kategori === "Lainnya" && btnText === "Lainnya") btn.classList.add('active');
   });
 
-  // Tampilkan data yang sudah difilter
-  tampilProduk(kategori);
+  // 2. Jalankan tampilProduk dengan kategori yang dipilih
+  window.tampilProduk(kategori);
 };
 
 // --- 2. FUNGSI SIMPAN/UPDATE PRODUK ---
@@ -117,7 +121,7 @@ window.submitProduk = async function() {
 window.hapusProduk = async function(id) {
   if (confirm("Hapus data akun ini?")) {
     await deleteDoc(doc(db, "produk", id));
-    location.reload(); // Reload agar data allProducts diperbarui
+    location.reload();
   }
 };
 
@@ -139,5 +143,5 @@ window.beliWhatsApp = (nama) => {
   window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
-// Jalankan otomatis
+// Jalankan saat pertama buka
 tampilProduk();
