@@ -13,24 +13,24 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// Variabel global untuk menampung data
+// Variabel global untuk menampung data agar tidak fetch bolak-balik
 let allProducts = [];
 
-// --- 1. FUNGSI TAMPIL PRODUK ---
+// --- 1. FUNGSI TAMPIL PRODUK (UTAMA) ---
 window.tampilProduk = async function(kategoriFilter = "Semua") {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
-  // --- EFEK SKELETON LOADING ---
+  // Efek Skeleton Loading
   let skeletonHTML = "";
   for (let i = 0; i < 4; i++) {
     skeletonHTML += `<div class="skeleton skeleton-card"></div>`;
   }
   produkDiv.innerHTML = skeletonHTML;
 
-  // Jeda sebentar agar transisi smooth
   await new Promise(resolve => setTimeout(resolve, 300));
 
+  // Ambil data dari Firebase hanya jika allProducts masih kosong
   if (allProducts.length === 0) {
     try {
       const data = await getDocs(collection(db, "produk"));
@@ -44,19 +44,43 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
     }
   }
 
-  let html = "";
+  // Panggil fungsi pencarian untuk memfilter dan menampilkan data
+  window.searchProduk(); 
+};
+
+// --- 2. FUNGSI SEARCH (PENCARIAN REAL-TIME) ---
+window.searchProduk = function() {
+  const keyword = document.getElementById("searchInput") ? document.getElementById("searchInput").value.toLowerCase() : "";
+  
+  // Ambil kategori yang sedang aktif dari tombol filter
+  const activeBtn = document.querySelector('.btn-filter.active');
+  let kategoriAktif = activeBtn ? activeBtn.innerText.trim() : "Semua";
+  
+  // Normalisasi nama kategori (MLBB -> Mobile Legends, dsb)
+  if(kategoriAktif === "MLBB") kategoriAktif = "Mobile Legends";
+  if(kategoriAktif === "FF") kategoriAktif = "Free Fire";
+  if(kategoriAktif === "PUBG") kategoriAktif = "PUBG Mobile";
+
+  // Logika Filter Gabungan (Kategori + Keyword Search)
+  const filteredData = allProducts.filter(p => {
+    const cocokKategori = (kategoriAktif === "Semua" || p.kategori === kategoriAktif);
+    const cocokKeyword = p.nama.toLowerCase().includes(keyword) || 
+                         (p.deskripsi && p.deskripsi.toLowerCase().includes(keyword));
+    return cocokKategori && cocokKeyword;
+  });
+
+  renderHTML(filteredData);
+};
+
+// --- 3. FUNGSI HELPER RENDER HTML ---
+function renderHTML(data) {
+  const produkDiv = document.getElementById("produk");
   const isAdmin = window.location.href.includes("admin.html");
+  let html = "";
 
-  const filteredData = kategoriFilter === "Semua" 
-    ? allProducts 
-    : allProducts.filter(p => p.kategori === kategoriFilter);
-
-  filteredData.forEach((p) => {
+  data.forEach((p) => {
     const isSold = p.status === "Sold"; 
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
-    const kategori = p.kategori || "Game";
-    
-    // Pembersihan karakter agar tidak error saat dikirim ke fungsi onclick
     const namaAman = p.nama.replace(/'/g, "\\'");
     const deskripsiAman = deskripsi.replace(/'/g, "\\'").replace(/\n/g, " ");
 
@@ -64,7 +88,7 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
       <div class="card">
         <div class="card-img-container">
           <img src="${p.gambar}" alt="${p.nama}">
-          <div class="badge">${kategori}</div>
+          <div class="badge">${p.kategori || 'Game'}</div>
           ${isSold ? `<div class="sold-overlay"><div class="sold-label">SOLD OUT</div></div>` : ''}
         </div>
         <div class="card-info">
@@ -74,7 +98,7 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
           
           ${isAdmin 
             ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
-               <button style="background:blue;" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${kategori}','${p.status}')">✏️ Edit</button>` 
+               <button style="background:blue;" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${p.kategori}','${p.status}')">✏️ Edit</button>` 
             : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
                 ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
                </button>`}
@@ -82,8 +106,8 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
       </div>`;
   });
 
-  produkDiv.innerHTML = html || `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Belum ada akun di kategori ini.</p>`;
-};
+  produkDiv.innerHTML = html || `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Produk tidak ditemukan.</p>`;
+}
 
 // --- FUNGSI TRIGGER FILTER ---
 window.filterGame = function(kategori) {
@@ -97,10 +121,14 @@ window.filterGame = function(kategori) {
     if (kategori === "PUBG Mobile" && btnText === "PUBG") btn.classList.add('active');
     if (kategori === "Lainnya" && btnText === "Lainnya") btn.classList.add('active');
   });
-  window.tampilProduk(kategori);
+  
+  // Setiap ganti kategori, kosongkan kolom search agar tidak membingungkan
+  if(document.getElementById("searchInput")) document.getElementById("searchInput").value = "";
+  
+  window.searchProduk(); 
 };
 
-// --- 2. FUNGSI SIMPAN/UPDATE PRODUK ---
+// --- 4. FUNGSI ADMIN (SIMPAN, HAPUS, EDIT) ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
@@ -125,7 +153,6 @@ window.submitProduk = async function() {
   } catch (e) { alert("Gagal menyimpan: " + e.message); }
 };
 
-// --- 3. FUNGSI HAPUS ---
 window.hapusProduk = async function(id) {
   if (confirm("Hapus data akun ini?")) {
     await deleteDoc(doc(db, "produk", id));
@@ -133,7 +160,6 @@ window.hapusProduk = async function(id) {
   }
 };
 
-// --- 4. FUNGSI EDIT ---
 window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
   document.getElementById("nama").value = nama;
   document.getElementById("harga").value = harga;
@@ -145,7 +171,7 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
   window.scrollTo(0,0);
 };
 
-// --- 5. FUNGSI WHATSAPP (WITH DETAILS) ---
+// --- 5. FUNGSI WHATSAPP ---
 window.beliWhatsApp = (nama, harga) => {
   const hargaFormatted = Number(harga).toLocaleString('id-ID');
   const pesan = `Halo Admin 👋, saya mau beli akun ini:
