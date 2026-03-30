@@ -53,7 +53,6 @@
       border-bottom-right-radius: 30px;
     }
 
-    /* TOGGLE TEMA */
     .theme-toggle {
       position: absolute; top: 15px; right: 15px;
       background: rgba(255,255,255,0.2);
@@ -86,7 +85,7 @@
 
     /* Kategori & Search */
     .filter-container { display: flex; gap: 10px; padding: 20px 15px 5px; overflow-x: auto; scrollbar-width: none; }
-    .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
     .btn-filter.active { background-color: var(--primary) !important; color: var(--dark) !important; }
 
     .search-container { max-width: 1000px; margin: 15px auto; padding: 0 15px; }
@@ -106,12 +105,10 @@
     
     .card-info { padding: 12px; flex-grow: 1; }
     
-    /* STYLING VERIFIED & JUDUL */
     .title-wrapper { display: flex; align-items: center; gap: 5px; margin-bottom: 5px; }
     .card h4 { margin: 0; font-size: 13px; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .verified-icon { color: var(--verified); font-size: 14px; }
 
-    /* STYLING GARANSI TAG */
     .garansi-tag {
       display: inline-flex; align-items: center; gap: 3px;
       background: rgba(16, 185, 129, 0.1); color: var(--success);
@@ -131,7 +128,7 @@
     .card-testi { min-width: 180px; background: var(--card-bg); border-radius: 15px; padding: 10px; border: 1px solid var(--input-border); flex-shrink: 0; }
     .card-testi img { width: 100%; height: 220px; object-fit: cover; border-radius: 10px; }
     
-    .btn-buka-status { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, var(--secondary), var(--primary)); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 999; box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4); }
+    .btn-buka-status { position: fixed; bottom: 25px; right: 25px; background: linear-gradient(135deg, var(--secondary), var(--primary)); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 24px; z-index: 999; box-shadow: 0 5px 15px rgba(0, 210, 255, 0.4); border: none; cursor: pointer; }
     
     footer { text-align: center; padding: 40px 20px; font-size: 12px; color: #64748b; }
     @media (min-width: 768px) { #produk { grid-template-columns: repeat(3, 1fr); } }
@@ -187,7 +184,7 @@
   <div id="list-testimoni"></div>
 </div>
 
-<div class="btn-buka-status" onclick="toggleDrawer(true)">🚚</div>
+<button class="btn-buka-status" onclick="toggleDrawer(true)">🚚</button>
 
 <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer(false)"></div>
 <div class="drawer-content" id="statusDrawer">
@@ -233,28 +230,44 @@
     document.body.classList.add('light-mode');
   }
 
-  // TIMER FLASH SALE
-  function startTimer(duration, display) {
-    let timer = duration, hours, minutes, seconds;
-    setInterval(function () {
-      hours = parseInt(timer / 3600, 10);
-      minutes = parseInt((timer % 3600) / 60, 10);
-      seconds = parseInt(timer % 60, 10);
+  // PERSISTENT FLASH SALE TIMER (LOGIC ANTI-REFRESH)
+  function startRealTimer() {
+    let endTime = localStorage.getItem('faza_flash_sale_end');
 
-      hours = hours < 10 ? "0" + hours : hours;
-      minutes = minutes < 10 ? "0" + minutes : minutes;
-      seconds = seconds < 10 ? "0" + seconds : seconds;
+    // Jika belum ada waktu target, buat baru (misal: 6 jam dari sekarang)
+    if (!endTime) {
+      endTime = new Date().getTime() + (6 * 60 * 60 * 1000); 
+      localStorage.setItem('faza_flash_sale_end', endTime);
+    }
 
-      display.textContent = hours + ":" + minutes + ":" + seconds;
-      if (--timer < 0) timer = duration;
+    const display = document.querySelector('#timer');
+
+    const x = setInterval(function() {
+      const now = new Date().getTime();
+      const distance = endTime - now;
+
+      // Hitung jam, menit, detik
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      // Format 00:00:00
+      display.innerHTML = 
+        (hours < 10 ? "0" + hours : hours) + ":" + 
+        (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+        (seconds < 10 ? "0" + seconds : seconds);
+
+      // Jika waktu habis, reset atau berhenti
+      if (distance < 0) {
+        clearInterval(x);
+        display.innerHTML = "BERAKHIR";
+        // localStorage.removeItem('faza_flash_sale_end'); // Aktifkan jika ingin reset saat habis
+      }
     }, 1000);
   }
 
-  window.onload = function () {
-    let timeLimit = 60 * 60 * 3.5; // 3.5 Jam
-    let display = document.querySelector('#timer');
-    startTimer(timeLimit, display);
-  };
+  // Jalankan timer saat web dibuka
+  startRealTimer();
 </script>
 </body>
 </html>
