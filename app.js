@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // --- 1. KONFIGURASI FIREBASE ---
-const NOMOR_WA_ADMIN = "6282298627146"; 
+const NOMOR_WA_ADMIN = "6282298627146"; // Nomor WhatsApp Kamu
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
   authDomain: "toko-online-8a68d.firebaseapp.com",
@@ -16,7 +16,7 @@ let allProducts = [];
 let currentMinHarga = 0;
 let currentMaxHarga = 999999999;
 
-// --- 2. FUNGSI TAMPIL PRODUK & UPDATE DASHBOARD ---
+// --- 2. FUNGSI TAMPIL PRODUK ---
 window.tampilProduk = async function() {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
@@ -43,15 +43,16 @@ window.tampilProduk = async function() {
   }
 };
 
-// --- 3. FUNGSI SEARCH & FILTER (KOMBINASI GAME + HARGA) ---
+// --- 3. FUNGSI SEARCH & FILTER (KOMBINASI GAME + KEYWORD + HARGA) ---
 window.searchProduk = function() {
   const searchInput = document.getElementById("searchInput");
   const keyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
   
-  const activeBtn = document.querySelector('.btn-filter.active');
-  let kategoriAktif = activeBtn ? activeBtn.innerText.trim() : "Semua";
+  // Ambil kategori dari tombol filter kategori yang sedang aktif
+  const activeCatBtn = document.querySelector('.filter-container:nth-of-type(1) .btn-filter.active');
+  let kategoriAktif = activeCatBtn ? activeCatBtn.innerText.trim() : "Semua";
   
-  // Normalisasi nama kategori
+  // Normalisasi nama kategori agar cocok dengan database
   if(kategoriAktif === "MLBB") kategoriAktif = "Mobile Legends";
   if(kategoriAktif === "FF") kategoriAktif = "Free Fire";
   if(kategoriAktif === "PUBG") kategoriAktif = "PUBG Mobile";
@@ -68,18 +69,19 @@ window.searchProduk = function() {
   renderHTML(filteredData);
 };
 
-// --- 4. FILTER HARGA (DIPANGGIL DARI HTML) ---
+// --- 4. FILTER RENTANG HARGA ---
 window.filterHarga = function(el, min, max) {
-  // Hapus class active dari tombol filter harga saja
-  el.parentElement.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+  // Hanya hapus class active dari baris filter harga
+  const parent = el.parentElement;
+  parent.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   
   currentMinHarga = min;
   currentMaxHarga = max;
-  window.searchProduk();
+  window.searchProduk(); // Jalankan penyaringan ulang
 };
 
-// --- 5. RENDER HTML ---
+// --- 5. RENDER HTML KE LAYAR ---
 function renderHTML(data) {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
@@ -116,14 +118,14 @@ function renderHTML(data) {
           <div class="card-info">
             <div style="display:flex; align-items:center; gap:5px;">
               <h4 style="font-size:14px; margin:0;">${p.nama}</h4>
-              <span style="color:#38bdf8;">🔵</span>
+              <span style="color:#38bdf8; font-size:14px;">🔵</span>
             </div>
-            <div style="font-size:9px; color:#10b981; background:rgba(16,185,129,0.1); display:inline-block; padding:2px 5px; border-radius:4px; margin:5px 0;">🛡️ Garansi Anti-HB</div>
+            <div class="garansi-tag">🛡️ Garansi Anti-HB</div>
             <div class="harga">
                 ${p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : ''}
-                <span class="harga-baru" style="display:block; font-size:16px; font-weight:700; color:#10b981;">Rp${hargaFormat}</span>
+                <span class="harga-baru">Rp${hargaFormat}</span>
             </div>
-            <button class="btn-beli" style="width:100%; margin-top:10px; padding:10px; border-radius:8px; border:none; background:linear-gradient(90deg, #3a7bd5, #00d2ff); color:white; font-weight:700;" ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
+            <button class="btn-beli" ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
                 ${isSold ? 'TERJUAL' : 'BELI SEKARANG'}
             </button>
           </div>
@@ -134,16 +136,13 @@ function renderHTML(data) {
   produkDiv.innerHTML = html || `<p style="text-align:center; color:#94a3b8; padding:20px;">Produk tidak ditemukan.</p>`;
 }
 
-// --- 6. FUNGSI ADMIN (SUBMIT, EDIT, HAPUS) ---
+// --- 6. FUNGSI ADMIN ---
 window.submitProduk = async function() {
   const editId = document.getElementById("editId").value;
-  const hargaMurni = document.getElementById("harga").value;
-  const hargaLamaMurni = document.getElementById("hargaLama").value;
-
   const dataObj = {
     nama: document.getElementById("nama").value,
-    harga: Number(hargaMurni),
-    hargaLama: hargaLamaMurni ? Number(hargaLamaMurni) : null,
+    harga: Number(document.getElementById("harga").value),
+    hargaLama: document.getElementById("hargaLama").value ? Number(document.getElementById("hargaLama").value) : null,
     gambar: document.getElementById("gambar").value,
     deskripsi: document.getElementById("deskripsi").value,
     kategori: document.getElementById("kategori").value,
@@ -164,9 +163,7 @@ window.submitProduk = async function() {
 window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPromo, hargaLama) => {
   document.getElementById("nama").value = nama;
   document.getElementById("harga").value = harga;
-  document.getElementById("displayHarga").value = new Intl.NumberFormat('id-ID').format(harga);
   document.getElementById("hargaLama").value = hargaLama || "";
-  document.getElementById("displayHargaLama").value = hargaLama ? new Intl.NumberFormat('id-ID').format(hargaLama) : "";
   document.getElementById("gambar").value = gambar;
   document.getElementById("deskripsi").value = deskripsi;
   document.getElementById("kategori").value = kategori;
@@ -185,7 +182,9 @@ window.hapusProduk = async function(id) {
 
 // --- 7. UTILITY ---
 window.filterGame = (el, kat) => {
-  document.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+  // Hanya hapus class active dari baris filter kategori
+  const parent = el.parentElement;
+  parent.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
   window.searchProduk();
 };
