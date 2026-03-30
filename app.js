@@ -28,6 +28,7 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
   }
   produkDiv.innerHTML = skeletonHTML;
 
+  // Jeda sebentar agar transisi smooth
   await new Promise(resolve => setTimeout(resolve, 300));
 
   if (allProducts.length === 0) {
@@ -54,7 +55,10 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
     const isSold = p.status === "Sold"; 
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const kategori = p.kategori || "Game";
-    const namaAman = p.nama.replace(/'/g, "\\'"); // Agar tidak error jika ada tanda petik
+    
+    // Pembersihan karakter agar tidak error saat dikirim ke fungsi onclick
+    const namaAman = p.nama.replace(/'/g, "\\'");
+    const deskripsiAman = deskripsi.replace(/'/g, "\\'").replace(/\n/g, " ");
 
     html += `
       <div class="card">
@@ -70,7 +74,7 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
           
           ${isAdmin 
             ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
-               <button style="background:blue;" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsi.replace(/'/g, "\\'")}','${kategori}','${p.status}')">✏️ Edit</button>` 
+               <button style="background:blue;" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${kategori}','${p.status}')">✏️ Edit</button>` 
             : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
                 ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
                </button>`}
