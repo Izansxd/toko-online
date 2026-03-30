@@ -39,6 +39,7 @@
     .btn-tambah { background: #00d2ff; color: #0f172a; }
     .btn-tambah:hover { background: #3a7bd5; color: white; }
     .btn-lihat { background: #64748b; color: white; margin-top: 10px; }
+    .btn-warning { background: #f1c40f; color: #0f172a; }
     
     .produk-container { max-width: 600px; margin: 40px auto; }
     h2 { border-bottom: 2px solid #334155; padding-bottom: 10px; font-size: 18px; color: #00d2ff; }
@@ -118,6 +119,13 @@
 </div>
 
 <div class="box">
+  <h1>📢 Update Pengumuman</h1>
+  <label>Teks Berjalan (Running Text)</label>
+  <textarea id="teksBaru" placeholder="Contoh: ⚠️ Hati-hati penipuan! Transaksi hanya via WhatsApp Faza Store."></textarea>
+  <button class="btn-warning" onclick="updatePengumuman()">📢 UPDATE INFO TOKO</button>
+</div>
+
+<div class="box">
   <h1>📸 Tambah Testimoni</h1>
   <label>Link Foto Bukti Chat/Transfer</label>
   <input type="text" id="fotoTesti" placeholder="Tempel link foto testimoni">
@@ -136,7 +144,7 @@
   <div id="list-testimoni"></div>
 </div>
 
-<script type="module" src="app.js?v=500"></script>
+<script type="module" src="app.js?v=600"></script>
 
 </body>
 </html>
