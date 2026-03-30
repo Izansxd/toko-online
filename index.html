@@ -45,7 +45,8 @@
       overflow-x: auto;
       max-width: 1000px;
       margin: auto;
-      scrollbar-width: none;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
     }
     
     .filter-container::-webkit-scrollbar {
@@ -56,21 +57,22 @@
       background: #1e293b;
       color: #94a3b8;
       border: 1px solid #334155;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 12px;
+      padding: 10px 22px;
+      border-radius: 25px;
+      font-size: 13px;
       font-weight: 600;
-      white-space: nowrap;
       cursor: pointer;
-      transition: 0.3s;
+      transition: all 0.3s ease;
+      display: inline-block;
     }
 
-    /* Penambahan !important agar warna biru pasti muncul */
+    /* PERBAIKAN: CSS dipaksa (Force) agar warna biru muncul */
     .btn-filter.active {
-      background: var(--primary) !important;
+      background-color: var(--primary) !important;
       color: var(--dark) !important;
       border-color: var(--primary) !important;
-      box-shadow: 0 0 10px rgba(0, 210, 255, 0.4);
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.5) !important;
+      transform: scale(1.05);
     }
 
     /* Grid Produk */
@@ -81,9 +83,9 @@
       max-width: 1000px; 
       margin: 20px auto 30px; 
       padding: 0 15px;
+      min-height: 200px; /* Agar halaman tidak kosong saat loading */
     }
     
-    /* Kartu Produk */
     .card { 
       background: var(--card-bg); 
       border-radius: 18px; 
@@ -129,27 +131,15 @@
     }
 
     .sold-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      position: absolute; top: 0; left: 0; width: 100%; height: 100%;
       background: rgba(15, 23, 42, 0.7);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 5;
+      display: flex; align-items: center; justify-content: center; z-index: 5;
     }
 
     .sold-label {
-      background: var(--danger);
-      color: white;
-      padding: 5px 15px;
-      font-weight: 800;
-      font-size: 14px;
-      border-radius: 5px;
-      transform: rotate(-15deg);
-      border: 2px solid white;
+      background: var(--danger); color: white; padding: 5px 15px;
+      font-weight: 800; font-size: 14px; border-radius: 5px;
+      transform: rotate(-15deg); border: 2px solid white;
     }
 
     .card-info { padding: 15px; flex-grow: 1; display: flex; flex-direction: column; }
