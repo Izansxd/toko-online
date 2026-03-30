@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // --- KONFIGURASI ---
-const NOMOR_WA_ADMIN = "6282298627146"; // Nomor kamu sudah saya pasang di sini
+const NOMOR_WA_ADMIN = "6282298627146"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
@@ -13,17 +13,32 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// --- 1. FUNGSI TAMPIL PRODUK ---
-window.tampilProduk = async function() {
+// Variabel global untuk menampung data agar filter lebih cepat
+let allProducts = [];
+
+// --- 1. FUNGSI TAMPIL PRODUK (DENGAN LOGIKA FILTER) ---
+window.tampilProduk = async function(kategoriFilter = "Semua") {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
-  const data = await getDocs(collection(db, "produk"));
+  // Jika data internal masih kosong, ambil dari Firebase
+  if (allProducts.length === 0) {
+    const data = await getDocs(collection(db, "produk"));
+    allProducts = []; // Reset untuk jaga-jaga
+    data.forEach(docSnap => {
+      allProducts.push({ id: docSnap.id, ...docSnap.data() });
+    });
+  }
+
   let html = "";
   const isAdmin = window.location.href.includes("admin.html");
 
-  data.forEach((docSnap) => {
-    const p = docSnap.data();
+  // Filter data berdasarkan kategori yang dipilih
+  const filteredData = kategoriFilter === "Semua" 
+    ? allProducts 
+    : allProducts.filter(p => p.kategori === kategoriFilter);
+
+  filteredData.forEach((p) => {
     const isSold = p.status === "Sold"; 
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const kategori = p.kategori || "Game";
@@ -44,15 +59,33 @@ window.tampilProduk = async function() {
           <p class="harga">Rp${Number(p.harga).toLocaleString('id-ID')}</p>
           
           ${isAdmin 
-            ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${docSnap.id}')">🗑️ Hapus</button>
-               <button style="background:blue;" onclick="editProduk('${docSnap.id}','${p.nama}',${p.harga},'${p.gambar}','${deskripsi.replace(/'/g, "\\'")}','${kategori}','${p.status}')">✏️ Edit</button>` 
+            ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
+               <button style="background:blue;" onclick="editProduk('${p.id}','${p.nama}',${p.harga},'${p.gambar}','${deskripsi.replace(/'/g, "\\'")}','${kategori}','${p.status}')">✏️ Edit</button>` 
             : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${p.nama}')"`}>
                 ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
                </button>`}
         </div>
       </div>`;
   });
-  produkDiv.innerHTML = html;
+
+  produkDiv.innerHTML = html || `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Belum ada akun di kategori ini.</p>`;
+};
+
+// --- FUNGSI TRIGGER FILTER (UNTUK TOMBOL DI INDEX.HTML) ---
+window.filterGame = function(kategori) {
+  // Update warna tombol aktif di index.html
+  const buttons = document.querySelectorAll('.btn-filter');
+  buttons.forEach(btn => {
+    btn.classList.remove('active');
+    // Menyesuaikan teks tombol dengan nilai kategori
+    const btnText = btn.innerText.replace('MLBB', 'Mobile Legends').replace('FF', 'Free Fire');
+    if (btnText === kategori || (kategori === "Semua" && btn.innerText === "Semua")) {
+       btn.classList.add('active');
+    }
+  });
+
+  // Tampilkan data yang sudah difilter
+  tampilProduk(kategori);
 };
 
 // --- 2. FUNGSI SIMPAN/UPDATE PRODUK ---
@@ -68,33 +101,23 @@ window.submitProduk = async function() {
   if (!nama || !harga || !gambar) return alert("Wajib isi Nama, Harga, dan Gambar!");
 
   try {
-    const dataObj = { 
-      nama, 
-      harga: Number(harga), 
-      gambar, 
-      deskripsi, 
-      kategori, 
-      status 
-    };
-
+    const dataObj = { nama, harga: Number(harga), gambar, deskripsi, kategori, status };
     if (editId) {
       await updateDoc(doc(db, "produk", editId), dataObj);
-      alert("Data Akun Berhasil Diupdate!");
+      alert("Data Berhasil Diupdate!");
     } else {
       await addDoc(collection(db, "produk"), dataObj);
-      alert("Akun Baru Berhasil Ditambahkan!");
+      alert("Akun Berhasil Ditambahkan!");
     }
     location.reload();
-  } catch (e) { 
-    alert("Gagal menyimpan: " + e.message); 
-  }
+  } catch (e) { alert("Gagal menyimpan: " + e.message); }
 };
 
 // --- 3. FUNGSI HAPUS ---
 window.hapusProduk = async function(id) {
-  if (confirm("Hapus data akun ini dari database?")) {
+  if (confirm("Hapus data akun ini?")) {
     await deleteDoc(doc(db, "produk", id));
-    tampilProduk();
+    location.reload(); // Reload agar data allProducts diperbarui
   }
 };
 
@@ -116,5 +139,5 @@ window.beliWhatsApp = (nama) => {
   window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
-// Jalankan otomatis saat web dibuka
+// Jalankan otomatis
 tampilProduk();
