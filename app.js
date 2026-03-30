@@ -13,24 +13,16 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// Variabel global untuk menampung data agar tidak fetch bolak-balik
 let allProducts = [];
 
-// --- 1. FUNGSI TAMPIL PRODUK (UTAMA) ---
+// --- 1. FUNGSI TAMPIL PRODUK ---
 window.tampilProduk = async function(kategoriFilter = "Semua") {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
-  // Efek Skeleton Loading
-  let skeletonHTML = "";
-  for (let i = 0; i < 4; i++) {
-    skeletonHTML += `<div class="skeleton skeleton-card"></div>`;
-  }
-  produkDiv.innerHTML = skeletonHTML;
+  // Skeleton Loading
+  produkDiv.innerHTML = Array(4).fill('<div class="skeleton skeleton-card"></div>').join('');
 
-  await new Promise(resolve => setTimeout(resolve, 300));
-
-  // Ambil data dari Firebase hanya jika allProducts masih kosong
   if (allProducts.length === 0) {
     try {
       const data = await getDocs(collection(db, "produk"));
@@ -44,35 +36,35 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
     }
   }
 
-  // Panggil fungsi pencarian untuk memfilter dan menampilkan data
+  // Langsung jalankan filter pencarian/kategori
   window.searchProduk(); 
 };
 
-// --- 2. FUNGSI SEARCH (PENCARIAN REAL-TIME) ---
+// --- 2. FUNGSI SEARCH (REAL-TIME) ---
 window.searchProduk = function() {
-  const keyword = document.getElementById("searchInput") ? document.getElementById("searchInput").value.toLowerCase() : "";
+  const searchInput = document.getElementById("searchInput");
+  const keyword = searchInput ? searchInput.value.toLowerCase().trim() : "";
   
-  // Ambil kategori yang sedang aktif dari tombol filter
   const activeBtn = document.querySelector('.btn-filter.active');
   let kategoriAktif = activeBtn ? activeBtn.innerText.trim() : "Semua";
   
-  // Normalisasi nama kategori (MLBB -> Mobile Legends, dsb)
+  // Normalisasi Nama Kategori
   if(kategoriAktif === "MLBB") kategoriAktif = "Mobile Legends";
   if(kategoriAktif === "FF") kategoriAktif = "Free Fire";
   if(kategoriAktif === "PUBG") kategoriAktif = "PUBG Mobile";
 
-  // Logika Filter Gabungan (Kategori + Keyword Search)
   const filteredData = allProducts.filter(p => {
     const cocokKategori = (kategoriAktif === "Semua" || p.kategori === kategoriAktif);
-    const cocokKeyword = p.nama.toLowerCase().includes(keyword) || 
-                         (p.deskripsi && p.deskripsi.toLowerCase().includes(keyword));
+    const namaProduk = (p.nama || "").toLowerCase();
+    const deskripsiProduk = (p.deskripsi || "").toLowerCase();
+    const cocokKeyword = namaProduk.includes(keyword) || deskripsiProduk.includes(keyword);
     return cocokKategori && cocokKeyword;
   });
 
   renderHTML(filteredData);
 };
 
-// --- 3. FUNGSI HELPER RENDER HTML ---
+// --- 3. FUNGSI RENDER KE LAYAR ---
 function renderHTML(data) {
   const produkDiv = document.getElementById("produk");
   const isAdmin = window.location.href.includes("admin.html");
@@ -82,7 +74,7 @@ function renderHTML(data) {
     const isSold = p.status === "Sold"; 
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const namaAman = p.nama.replace(/'/g, "\\'");
-    const deskripsiAman = deskripsi.replace(/'/g, "\\'").replace(/\n/g, " ");
+    const deskripsiAman = deskripsi.toString().replace(/'/g, "\\'").replace(/\n/g, " ");
 
     html += `
       <div class="card">
@@ -95,7 +87,6 @@ function renderHTML(data) {
           <h4>${p.nama}</h4>
           <p class="deskripsi-teks">${deskripsi}</p>
           <p class="harga">Rp${Number(p.harga).toLocaleString('id-ID')}</p>
-          
           ${isAdmin 
             ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
                <button style="background:blue;" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${p.kategori}','${p.status}')">✏️ Edit</button>` 
@@ -109,7 +100,7 @@ function renderHTML(data) {
   produkDiv.innerHTML = html || `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Produk tidak ditemukan.</p>`;
 }
 
-// --- FUNGSI TRIGGER FILTER ---
+// --- 4. FUNGSI FILTER & ADMIN ---
 window.filterGame = function(kategori) {
   const buttons = document.querySelectorAll('.btn-filter');
   buttons.forEach(btn => {
@@ -122,13 +113,10 @@ window.filterGame = function(kategori) {
     if (kategori === "Lainnya" && btnText === "Lainnya") btn.classList.add('active');
   });
   
-  // Setiap ganti kategori, kosongkan kolom search agar tidak membingungkan
   if(document.getElementById("searchInput")) document.getElementById("searchInput").value = "";
-  
   window.searchProduk(); 
 };
 
-// --- 4. FUNGSI ADMIN (SIMPAN, HAPUS, EDIT) ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
@@ -184,4 +172,5 @@ Apakah akun ini masih ready?`;
   window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
+// JALANKAN AWAL
 tampilProduk();
