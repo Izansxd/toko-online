@@ -22,17 +22,14 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
   if (!produkDiv) return;
 
   // --- EFEK SKELETON LOADING ---
-  // Tampilkan 4 kotak skeleton setiap kali filter diganti
   let skeletonHTML = "";
   for (let i = 0; i < 4; i++) {
     skeletonHTML += `<div class="skeleton skeleton-card"></div>`;
   }
   produkDiv.innerHTML = skeletonHTML;
 
-  // Beri sedikit jeda buatan (300ms) agar skeleton terlihat smooth
   await new Promise(resolve => setTimeout(resolve, 300));
 
-  // Ambil data dari Firebase jika variabel lokal masih kosong
   if (allProducts.length === 0) {
     try {
       const data = await getDocs(collection(db, "produk"));
@@ -49,7 +46,6 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
   let html = "";
   const isAdmin = window.location.href.includes("admin.html");
 
-  // Filter data berdasarkan kategori
   const filteredData = kategoriFilter === "Semua" 
     ? allProducts 
     : allProducts.filter(p => p.kategori === kategoriFilter);
@@ -58,6 +54,7 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
     const isSold = p.status === "Sold"; 
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const kategori = p.kategori || "Game";
+    const namaAman = p.nama.replace(/'/g, "\\'"); // Agar tidak error jika ada tanda petik
 
     html += `
       <div class="card">
@@ -73,8 +70,8 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
           
           ${isAdmin 
             ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
-               <button style="background:blue;" onclick="editProduk('${p.id}','${p.nama.replace(/'/g, "\\'")}',${p.harga},'${p.gambar}','${deskripsi.replace(/'/g, "\\'")}','${kategori}','${p.status}')">✏️ Edit</button>` 
-            : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${p.nama}')"`}>
+               <button style="background:blue;" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsi.replace(/'/g, "\\'")}','${kategori}','${p.status}')">✏️ Edit</button>` 
+            : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
                 ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
                </button>`}
         </div>
@@ -90,14 +87,12 @@ window.filterGame = function(kategori) {
   buttons.forEach(btn => {
     btn.classList.remove('active');
     const btnText = btn.innerText.trim();
-    
     if (kategori === "Semua" && btnText === "Semua") btn.classList.add('active');
     if (kategori === "Mobile Legends" && btnText === "MLBB") btn.classList.add('active');
     if (kategori === "Free Fire" && btnText === "FF") btn.classList.add('active');
     if (kategori === "PUBG Mobile" && btnText === "PUBG") btn.classList.add('active');
     if (kategori === "Lainnya" && btnText === "Lainnya") btn.classList.add('active');
   });
-
   window.tampilProduk(kategori);
 };
 
@@ -146,11 +141,17 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
   window.scrollTo(0,0);
 };
 
-// --- 5. FUNGSI WHATSAPP ---
-window.beliWhatsApp = (nama) => {
-  const pesan = `Halo Admin, saya tertarik untuk membeli akun: ${nama}. Apakah masih tersedia?`;
+// --- 5. FUNGSI WHATSAPP (WITH DETAILS) ---
+window.beliWhatsApp = (nama, harga) => {
+  const hargaFormatted = Number(harga).toLocaleString('id-ID');
+  const pesan = `Halo Admin 👋, saya mau beli akun ini:
+
+📌 *Produk:* ${nama}
+💰 *Harga:* Rp${hargaFormatted}
+
+Apakah akun ini masih ready?`;
+
   window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
-// Jalankan fungsi tampil produk saat halaman dimuat
 tampilProduk();
