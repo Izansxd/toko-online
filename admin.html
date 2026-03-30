@@ -10,6 +10,14 @@
     .box { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #334155; }
     h1 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px; }
     
+    /* DASHBOARD STYLE */
+    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 500px; margin: 0 auto 20px; }
+    .stat-card { background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; text-align: center; }
+    .stat-card span { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+    .stat-card h2 { margin: 5px 0 0; font-size: 24px; }
+    .stat-total h2 { color: #00d2ff; }
+    .stat-sold h2 { color: #10b981; }
+
     label { font-size: 11px; color: #94a3b8; margin-top: 12px; display: block; font-weight: 600; text-transform: uppercase; }
     input, textarea, select { 
       width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; 
@@ -21,40 +29,14 @@
     .flex-row { display: flex; gap: 10px; }
     .flex-row > div { flex: 1; }
 
-    /* FIX FLASH SALE: Center & Solid */
     .promo-box {
-      background: rgba(239, 68, 68, 0.1);
-      padding: 15px;
-      border-radius: 12px;
-      margin-top: 15px;
-      border: 1px solid #ef4444;
-      display: flex;
-      align-items: center; 
-      justify-content: center; 
-      gap: 12px;
-      cursor: pointer;
-      transition: 0.2s;
+      background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 12px;
+      margin-top: 15px; border: 1px solid #ef4444; display: flex;
+      align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: 0.2s;
     }
     .promo-box:active { transform: scale(0.98); background: rgba(239, 68, 68, 0.2); }
-    
-    .promo-box input[type="checkbox"] { 
-      width: 20px; 
-      height: 20px; 
-      margin: 0; 
-      cursor: pointer; 
-      accent-color: #ef4444; 
-      flex-shrink: 0; 
-    }
-    
-    .promo-box label { 
-      margin: 0; 
-      color: #ef4444; 
-      font-weight: 800; 
-      cursor: pointer; 
-      font-size: 13px;
-      line-height: 1; 
-      text-transform: uppercase;
-    }
+    .promo-box input[type="checkbox"] { width: 20px; height: 20px; margin: 0; cursor: pointer; accent-color: #ef4444; flex-shrink: 0; }
+    .promo-box label { margin: 0; color: #ef4444; font-weight: 800; cursor: pointer; font-size: 13px; line-height: 1; text-transform: uppercase; }
 
     textarea { height: 80px; resize: vertical; }
 
@@ -75,6 +57,17 @@
 </head>
 
 <body>
+
+<div class="dashboard-grid">
+  <div class="stat-card stat-total">
+    <span>Total Produk</span>
+    <h2 id="statTotal">0</h2>
+  </div>
+  <div class="stat-card stat-sold">
+    <span>Akun Terjual</span>
+    <h2 id="statSold">0</h2>
+  </div>
+</div>
 
 <div class="box">
   <h1>🛠️ Atur Produk Akun</h1>
