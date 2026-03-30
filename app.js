@@ -16,28 +16,24 @@ const db = getFirestore();
 let allProducts = [];
 
 // --- 1. FUNGSI TAMPIL PRODUK ---
-window.tampilProduk = async function(kategoriFilter = "Semua") {
+window.tampilProduk = async function() {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
   // Skeleton Loading
   produkDiv.innerHTML = Array(4).fill('<div class="skeleton skeleton-card"></div>').join('');
 
-  if (allProducts.length === 0) {
-    try {
-      const data = await getDocs(collection(db, "produk"));
-      allProducts = []; 
-      data.forEach(docSnap => {
-        allProducts.push({ id: docSnap.id, ...docSnap.data() });
-      });
-    } catch (error) {
-      produkDiv.innerHTML = `<p style="text-align:center; color:red;">Gagal memuat data.</p>`;
-      return;
-    }
+  try {
+    const data = await getDocs(collection(db, "produk"));
+    allProducts = []; 
+    data.forEach(docSnap => {
+      allProducts.push({ id: docSnap.id, ...docSnap.data() });
+    });
+    // Jalankan search/filter pertama kali setelah data masuk
+    window.searchProduk(); 
+  } catch (error) {
+    produkDiv.innerHTML = `<p style="text-align:center; color:red;">Gagal memuat data.</p>`;
   }
-
-  // Langsung jalankan filter pencarian/kategori
-  window.searchProduk(); 
 };
 
 // --- 2. FUNGSI SEARCH (REAL-TIME) ---
@@ -67,26 +63,39 @@ window.searchProduk = function() {
 // --- 3. FUNGSI RENDER KE LAYAR ---
 function renderHTML(data) {
   const produkDiv = document.getElementById("produk");
+  if (!produkDiv) return;
+
   const isAdmin = window.location.href.includes("admin.html");
   let html = "";
 
+  if (data.length === 0) {
+    produkDiv.innerHTML = `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Produk tidak ditemukan.</p>`;
+    return;
+  }
+
   data.forEach((p) => {
     const isSold = p.status === "Sold"; 
+    const isPromo = p.isPromo === true; // Ambil status promo
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const namaAman = p.nama.replace(/'/g, "\\'");
     const deskripsiAman = deskripsi.toString().replace(/'/g, "\\'").replace(/\n/g, " ");
+    
+    // Format Harga
+    const hargaFormat = Number(p.harga).toLocaleString('id-ID');
+    const hargaLamaHTML = p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : "";
 
     html += `
       <div class="card">
         <div class="card-img-container">
           <img src="${p.gambar}" alt="${p.nama}">
           <div class="badge">${p.kategori || 'Game'}</div>
+          ${isPromo ? `<div class="badge-promo">🔥 HOT ITEM</div>` : ''}
           ${isSold ? `<div class="sold-overlay"><div class="sold-label">SOLD OUT</div></div>` : ''}
         </div>
         <div class="card-info">
           <h4>${p.nama}</h4>
           <p class="deskripsi-teks">${deskripsi}</p>
-          <p class="harga">Rp${Number(p.harga).toLocaleString('id-ID')}</p>
+          <p class="harga">${hargaLamaHTML} Rp${hargaFormat}</p>
           ${isAdmin 
             ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
                <button style="background:blue;" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskripsiAman}','${p.kategori}','${p.status}')">✏️ Edit</button>` 
@@ -97,26 +106,24 @@ function renderHTML(data) {
       </div>`;
   });
 
-  produkDiv.innerHTML = html || `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Produk tidak ditemukan.</p>`;
+  produkDiv.innerHTML = html;
 }
 
-// --- 4. FUNGSI FILTER & ADMIN ---
-window.filterGame = function(kategori) {
+// --- 4. FUNGSI FILTER ---
+window.filterGame = function(elemen, kategori) {
   const buttons = document.querySelectorAll('.btn-filter');
-  buttons.forEach(btn => {
-    btn.classList.remove('active');
-    const btnText = btn.innerText.trim();
-    if (kategori === "Semua" && btnText === "Semua") btn.classList.add('active');
-    if (kategori === "Mobile Legends" && btnText === "MLBB") btn.classList.add('active');
-    if (kategori === "Free Fire" && btnText === "FF") btn.classList.add('active');
-    if (kategori === "PUBG Mobile" && btnText === "PUBG") btn.classList.add('active');
-    if (kategori === "Lainnya" && btnText === "Lainnya") btn.classList.add('active');
-  });
+  buttons.forEach(btn => btn.classList.remove('active'));
   
+  // Jika dipanggil dari HTML dengan 'this', elemen akan terisi
+  if (elemen && elemen.classList) {
+    elemen.classList.add('active');
+  }
+
   if(document.getElementById("searchInput")) document.getElementById("searchInput").value = "";
   window.searchProduk(); 
 };
 
+// --- 5. FUNGSI ADMIN & WA ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
@@ -159,7 +166,6 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
   window.scrollTo(0,0);
 };
 
-// --- 5. FUNGSI WHATSAPP ---
 window.beliWhatsApp = (nama, harga) => {
   const hargaFormatted = Number(harga).toLocaleString('id-ID');
   const pesan = `Halo Admin 👋, saya mau beli akun ini:
@@ -172,5 +178,4 @@ Apakah akun ini masih ready?`;
   window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
-// JALANKAN AWAL
 tampilProduk();
