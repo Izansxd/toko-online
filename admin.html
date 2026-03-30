@@ -21,19 +21,40 @@
     .flex-row { display: flex; gap: 10px; }
     .flex-row > div { flex: 1; }
 
-    /* STYLING FLASH SALE TOGGLE */
+    /* FIX FLASH SALE: Center & Solid */
     .promo-box {
       background: rgba(239, 68, 68, 0.1);
       padding: 15px;
-      border-radius: 10px;
+      border-radius: 12px;
       margin-top: 15px;
       border: 1px solid #ef4444;
       display: flex;
-      align-items: center;
+      align-items: center; 
+      justify-content: center; 
       gap: 12px;
+      cursor: pointer;
+      transition: 0.2s;
     }
-    .promo-box input[type="checkbox"] { width: 22px; height: 22px; margin: 0; cursor: pointer; accent-color: #ef4444; }
-    .promo-box label { margin: 0; color: #ef4444; font-weight: 800; cursor: pointer; font-size: 13px; }
+    .promo-box:active { transform: scale(0.98); background: rgba(239, 68, 68, 0.2); }
+    
+    .promo-box input[type="checkbox"] { 
+      width: 20px; 
+      height: 20px; 
+      margin: 0; 
+      cursor: pointer; 
+      accent-color: #ef4444; 
+      flex-shrink: 0; 
+    }
+    
+    .promo-box label { 
+      margin: 0; 
+      color: #ef4444; 
+      font-weight: 800; 
+      cursor: pointer; 
+      font-size: 13px;
+      line-height: 1; 
+      text-transform: uppercase;
+    }
 
     textarea { height: 80px; resize: vertical; }
 
@@ -48,8 +69,6 @@
     .produk-container { max-width: 600px; margin: 40px auto; }
     h2 { border-left: 4px solid #00d2ff; padding-left: 10px; font-size: 18px; color: white; margin-bottom: 20px; }
     
-    #produk { margin-top: 20px; }
-    /* Card list produk di admin */
     .card-admin { background: #1e293b; padding: 12px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid #334155; }
     .card-admin img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
   </style>
@@ -65,9 +84,10 @@
   
   <div class="flex-row">
     <div>
-      <label>Harga Jual (Titik Otomatis)</label>
+      <label>Harga Jual</label>
       <input type="text" id="displayHarga" placeholder="Rp 0" oninput="formatRupiah(this, 'harga')">
-      <input type="hidden" id="harga"> </div>
+      <input type="hidden" id="harga"> 
+    </div>
     <div>
       <label>Harga Coret (Diskon)</label>
       <input type="text" id="displayHargaLama" placeholder="Rp 0" oninput="formatRupiah(this, 'hargaLama')">
@@ -94,8 +114,8 @@
     </div>
   </div>
 
-  <div class="promo-box">
-    <input type="checkbox" id="isPromo">
+  <div class="promo-box" onclick="document.getElementById('isPromo').click()">
+    <input type="checkbox" id="isPromo" onclick="event.stopPropagation()">
     <label for="isPromo">⚡ AKTIFKAN MODE FLASH SALE</label>
   </div>
   
@@ -151,7 +171,6 @@
 </div>
 
 <script>
-// Fungsi sakti buat kasih titik otomatis pas ngetik harga
 function formatRupiah(el, hiddenId) {
     let value = el.value.replace(/[^0-9]/g, ""); 
     document.getElementById(hiddenId).value = value;
