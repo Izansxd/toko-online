@@ -58,7 +58,7 @@ window.searchProduk = function() {
   renderHTML(filteredData);
 };
 
-// --- 3. FUNGSI RENDER KE LAYAR ---
+// --- 3. FUNGSI RENDER KE LAYAR (PERBAIKAN HARGA CORET) ---
 function renderHTML(data) {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
@@ -74,7 +74,12 @@ function renderHTML(data) {
     const deskripsiAman = deskripsi.toString().replace(/'/g, "\\'").replace(/\n/g, " ");
     
     const hargaFormat = Number(p.harga).toLocaleString('id-ID');
-    const hargaLamaHTML = p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : "";
+    
+    // Perbaikan Logika Harga Lama (Coret)
+    let hargaLamaHTML = "";
+    if (p.hargaLama && Number(p.hargaLama) > 0) {
+      hargaLamaHTML = `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>`;
+    }
 
     if (isAdmin) {
       html += `
@@ -101,7 +106,10 @@ function renderHTML(data) {
           <div class="card-info">
             <h4>${p.nama}</h4>
             <p class="deskripsi-teks">${deskripsi}</p>
-            <p class="harga">${hargaLamaHTML} Rp${hargaFormat}</p>
+            <div class="harga">
+                ${hargaLamaHTML}
+                <span class="harga-baru">Rp${hargaFormat}</span>
+            </div>
             <button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${namaAman}', ${p.harga})"`}>
                 ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
             </button>
