@@ -10,13 +10,20 @@
     .box { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #334155; }
     h1 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px; }
     
-    /* DASHBOARD STYLE */
-    .dashboard-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; max-width: 500px; margin: 0 auto 20px; }
+    /* DASHBOARD STYLE - UPDATED TO 3 COLUMNS */
+    .dashboard-grid { 
+      display: grid; 
+      grid-template-columns: repeat(3, 1fr); 
+      gap: 10px; 
+      max-width: 600px; 
+      margin: 0 auto 20px; 
+    }
     .stat-card { background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; text-align: center; }
-    .stat-card span { font-size: 10px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
-    .stat-card h2 { margin: 5px 0 0; font-size: 24px; }
+    .stat-card span { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
+    .stat-card h2 { margin: 5px 0 0; font-size: 18px; }
     .stat-total h2 { color: #00d2ff; }
     .stat-sold h2 { color: #10b981; }
+    .stat-cuan h2 { color: #f1c40f; } /* Warna kuning untuk cuan */
 
     label { font-size: 11px; color: #94a3b8; margin-top: 12px; display: block; font-weight: 600; text-transform: uppercase; }
     input, textarea, select { 
@@ -69,8 +76,12 @@
     <h2 id="statTotal">0</h2>
   </div>
   <div class="stat-card stat-sold">
-    <span>Akun Terjual</span>
+    <span>Sold Out</span>
     <h2 id="statSold">0</h2>
+  </div>
+  <div class="stat-card stat-cuan">
+    <span>Total Cuan</span>
+    <h2 id="statCuan">Rp0</h2>
   </div>
 </div>
 
