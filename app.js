@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // --- KONFIGURASI ---
 const NOMOR_WA_ADMIN = "6282298627146"; 
@@ -164,7 +164,7 @@ window.tutupStruk = () => {
   document.getElementById("modalStruk").style.display = "none";
 };
 
-// --- 6. FUNGSI PENGUMUMAN (NEW) ---
+// --- 6. FUNGSI PENGUMUMAN ---
 window.updatePengumuman = async function() {
   const teks = document.getElementById("teksBaru").value;
   if (!teks) return alert("Isi dulu teks pengumumannya!");
@@ -190,7 +190,51 @@ window.ambilPengumuman = async function() {
   } catch (e) { console.error("Gagal ambil pengumuman:", e); }
 };
 
-// --- 7. FUNGSI ADMIN PRODUK ---
+// --- 7. FITUR STATUS PESANAN (BARU) ---
+window.updateStatusPesanan = async function() {
+  const id = document.getElementById("adminIdPesanan").value.trim();
+  const status = document.getElementById("adminStatusUpdate").value;
+
+  if (!id) return alert("Masukkan ID Pesanan dulu!");
+
+  try {
+    await setDoc(doc(db, "pesanan", id), {
+      status: status,
+      updateAt: new Date().getTime()
+    });
+    alert("Status " + id + " berhasil diupdate!");
+  } catch (e) { alert("Gagal update status: " + e.message); }
+};
+
+window.cekStatusPesanan = async function() {
+  const id = document.getElementById("inputCekStatus").value.trim();
+  const boxHasil = document.getElementById("hasilStatus");
+
+  if (!id) return alert("Masukkan ID Pesanan kamu!");
+
+  boxHasil.style.display = "block";
+  boxHasil.innerHTML = "🔍 Mencari data...";
+  boxHasil.style.background = "#1e293b";
+
+  try {
+    const docRef = doc(db, "pesanan", id);
+    const docSnap = await getDoc(docRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      boxHasil.innerHTML = `
+        <b style="color:var(--primary)">ID: ${id}</b><br>
+        <span style="font-size:14px; color:white;">Status: ${data.status}</span>
+      `;
+      boxHasil.style.border = "1px solid var(--success)";
+    } else {
+      boxHasil.innerHTML = "❌ ID Tidak Ditemukan. Pastikan ID benar!";
+      boxHasil.style.border = "1px solid var(--danger)";
+    }
+  } catch (e) { boxHasil.innerHTML = "Gagal mengecek: " + e.message; }
+};
+
+// --- 8. FUNGSI ADMIN PRODUK ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
@@ -247,7 +291,7 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPro
   window.scrollTo(0,0);
 };
 
-// --- 8. FITUR TESTIMONI ---
+// --- 9. FITUR TESTIMONI ---
 window.submitTestimoni = async function() {
   const foto = document.getElementById("fotoTesti").value;
   const ket = document.getElementById("ketTesti").value;
