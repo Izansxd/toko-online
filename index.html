@@ -85,8 +85,8 @@
 
     /* Kategori & Search */
     .filter-container { display: flex; gap: 10px; padding: 20px 15px 5px; overflow-x: auto; scrollbar-width: none; }
-    .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
-    .btn-filter.active { background-color: var(--primary) !important; color: var(--dark) !important; }
+    .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: 0.3s; }
+    .btn-filter.active { background-color: var(--primary) !important; color: var(--dark) !important; border-color: var(--primary); }
 
     .search-container { max-width: 1000px; margin: 15px auto; padding: 0 15px; }
     .search-box { position: relative; display: flex; align-items: center; }
@@ -95,7 +95,7 @@
 
     /* Produk Grid */
     #produk { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 1000px; margin: 10px auto; padding: 0 15px; }
-    .card { background: var(--card-bg); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: transform 0.2s; }
+    .card { background: var(--card-bg); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: transform 0.2s; border: 1px solid var(--input-border); }
     .card:active { transform: scale(0.98); }
     .card-img-container { position: relative; height: 140px; }
     .card img { width: 100%; height: 100%; object-fit: cover; }
@@ -168,6 +168,13 @@
   <button class="btn-filter" onclick="filterGame(this, 'PUBG Mobile')">PUBG</button>
 </div>
 
+<div class="filter-container" style="padding-top: 5px; margin-top: -5px;">
+  <button class="btn-filter active" style="font-size: 11px; padding: 8px 15px;" onclick="filterHarga(this, 0, 999999999)">Semua Harga</button>
+  <button class="btn-filter" style="font-size: 11px; padding: 8px 15px;" onclick="filterHarga(this, 0, 100000)">Dibawah 100k</button>
+  <button class="btn-filter" style="font-size: 11px; padding: 8px 15px;" onclick="filterHarga(this, 100000, 500000)">100k - 500k</button>
+  <button class="btn-filter" style="font-size: 11px; padding: 8px 15px;" onclick="filterHarga(this, 500000, 999999999)">Sultan 500k+</button>
+</div>
+
 <div class="search-container">
   <div class="search-box">
     <i>🔍</i>
@@ -233,41 +240,38 @@
   // PERSISTENT FLASH SALE TIMER (LOGIC ANTI-REFRESH)
   function startRealTimer() {
     let endTime = localStorage.getItem('faza_flash_sale_end');
-
-    // Jika belum ada waktu target, buat baru (misal: 6 jam dari sekarang)
     if (!endTime) {
       endTime = new Date().getTime() + (6 * 60 * 60 * 1000); 
       localStorage.setItem('faza_flash_sale_end', endTime);
     }
-
     const display = document.querySelector('#timer');
-
     const x = setInterval(function() {
       const now = new Date().getTime();
       const distance = endTime - now;
-
-      // Hitung jam, menit, detik
       const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
       const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
       const seconds = Math.floor((distance % (1000 * 60)) / 1000);
-
-      // Format 00:00:00
-      display.innerHTML = 
-        (hours < 10 ? "0" + hours : hours) + ":" + 
-        (minutes < 10 ? "0" + minutes : minutes) + ":" + 
-        (seconds < 10 ? "0" + seconds : seconds);
-
-      // Jika waktu habis, reset atau berhenti
+      display.innerHTML = (hours < 10 ? "0" + hours : hours) + ":" + (minutes < 10 ? "0" + minutes : minutes) + ":" + (seconds < 10 ? "0" + seconds : seconds);
       if (distance < 0) {
         clearInterval(x);
         display.innerHTML = "BERAKHIR";
-        // localStorage.removeItem('faza_flash_sale_end'); // Aktifkan jika ingin reset saat habis
       }
     }, 1000);
   }
-
-  // Jalankan timer saat web dibuka
   startRealTimer();
+
+  // DRAWER TOGGLE
+  window.toggleDrawer = function(open) {
+    const drawer = document.getElementById("statusDrawer");
+    const overlay = document.getElementById("drawerOverlay");
+    if (open) {
+      overlay.style.display = "block";
+      setTimeout(() => drawer.classList.add("active"), 10);
+    } else {
+      drawer.classList.remove("active");
+      setTimeout(() => overlay.style.display = "none", 400);
+    }
+  }
 </script>
 </body>
 </html>
