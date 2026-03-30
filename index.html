@@ -70,7 +70,16 @@
       display: flex; justify-content: space-between; align-items: center;
       color: white; font-weight: 700; font-size: 14px;
       box-shadow: 0 5px 15px rgba(255, 65, 108, 0.3);
+      position: relative; overflow: hidden;
     }
+    /* Animasi Kilau (Shimmer) */
+    .flash-sale-box::after {
+      content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+      transform: skewX(-25deg); animation: shimmer 3s infinite;
+    }
+    @keyframes shimmer { 100% { left: 150%; } }
+
     #timer { background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 8px; font-family: monospace; font-size: 16px; }
 
     /* Pengumuman */
@@ -149,9 +158,13 @@
     #modalStruk { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
     .struk-box { background: white; color: #333; width: 85%; max-width: 350px; padding: 25px; border-radius: 15px; font-family: monospace; }
     
-    /* MODAL DETAIL STYLE */
+    /* MODAL DETAIL STYLE UPDATED */
     #modalDetail { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9998; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 20px; }
-    .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 24px; overflow: hidden; border: 1px solid var(--input-border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+    .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 24px; overflow: hidden; border: 1px solid var(--input-border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); position: relative; }
+    
+    #timerFlashSale { 
+      background: var(--danger); color: white; padding: 5px 12px; font-size: 11px; font-weight: 800; border-radius: 8px; margin-bottom: 15px; display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -220,23 +233,28 @@
 
 <div id="modalDetail">
   <div class="detail-box">
-    <div style="height: 180px; width: 100%; position: relative;">
-      <img id="detailGambar" src="" style="width: 100%; height: 100%; object-fit: cover;">
-      <button onclick="tutupDetail()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer;">✕</button>
-    </div>
-    <div style="padding: 20px;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+    <div id="detailGambarWadah" style="width: 100%; position: relative; padding: 10px;">
+      </div>
+    
+    <button onclick="tutupDetail()" style="position: absolute; top: 12px; right: 12px; background: rgba(0,0,0,0.6); color: white; border: none; border-radius: 50%; width: 32px; height: 32px; cursor: pointer; z-index: 10;">✕</button>
+
+    <div style="padding: 0 20px 20px 20px;">
+      <div id="timerFlashSale" style="display:none;"></div>
+      
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
         <h3 id="detailNama" style="margin: 0; font-size: 18px; flex: 1;"></h3>
         <span style="color: var(--verified);">🔵</span>
       </div>
+      
       <p style="font-size: 11px; font-weight: 700; color: var(--primary); margin-bottom: 5px; letter-spacing: 1px;">SPESIFIKASI AKUN:</p>
-      <div id="detailDeskripsi" style="font-size: 13px; line-height: 1.6; color: #94a3b8; max-height: 180px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px solid var(--input-border);"></div>
-      <button id="btnLanjutBeli" style="width: 100%; padding: 16px; background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; border-radius: 14px; font-weight: 800; cursor: pointer; font-size: 14px;">LANJUT KE PEMBAYARAN</button>
+      <div id="detailDeskripsi" style="font-size: 13px; line-height: 1.6; color: #94a3b8; max-height: 150px; overflow-y: auto; white-space: pre-wrap; margin-bottom: 20px; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 12px; border: 1px solid var(--input-border);"></div>
       
-      <button id="btnShareWA" style="width: 100%; padding: 12px; background: #25d366; color: white; border: none; border-radius: 14px; font-weight: 700; cursor: pointer; font-size: 13px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
-        <span>🟢</span> Bagikan ke WhatsApp
-      </button>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <button id="btnNegoWA" style="background: #25d366; color: white; border: none; border-radius: 14px; font-weight: 800; padding: 15px; cursor: pointer; font-size: 13px; display: flex; align-items: center; justify-content: center; gap: 5px;">💬 NEGO</button>
+        <button id="btnLanjutBeli" style="background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; border-radius: 14px; font-weight: 800; padding: 15px; cursor: pointer; font-size: 13px;">BELI</button>
+      </div>
       
+      <button id="btnShareWA" style="width: 100%; padding: 10px; background: rgba(255,255,255,0.05); color: #94a3b8; border: 1px solid var(--input-border); border-radius: 14px; font-weight: 600; cursor: pointer; font-size: 11px; margin-top: 10px;">🔗 Bagikan Akun Ini</button>
     </div>
   </div>
 </div>
@@ -261,7 +279,7 @@
 
 <footer>&copy; 2026 Faza Store Indonesia.</footer>
 
-<script type="module" src="app.js?v=706"></script>
+<script type="module" src="app.js?v=999"></script>
 <script>
   function toggleTheme() {
     document.body.classList.toggle('light-mode');
@@ -272,6 +290,7 @@
     document.body.classList.add('light-mode');
   }
 
+  // Timer Utama Sinkron dengan Admin (Local Storage Backup)
   function startRealTimer() {
     let endTime = localStorage.getItem('faza_flash_sale_end');
     if (!endTime) {
