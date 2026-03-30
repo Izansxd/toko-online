@@ -7,7 +7,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Poppins', sans-serif; background: #0f172a; color: white; padding: 20px; margin: 0; }
-    .box { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 500px; margin: auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #334155; }
+    .box { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #334155; }
     h1 { text-align: center; margin-bottom: 20px; font-size: 22px; color: #00d2ff; }
     
     label { font-size: 12px; color: #94a3b8; margin-top: 10px; display: block; }
@@ -41,15 +41,22 @@
     .btn-lihat { background: #64748b; color: white; margin-top: 10px; }
     
     .produk-container { max-width: 600px; margin: 40px auto; }
-    h2 { border-bottom: 2px solid #334155; padding-bottom: 10px; font-size: 18px; }
+    h2 { border-bottom: 2px solid #334155; padding-bottom: 10px; font-size: 18px; color: #00d2ff; }
     
-    /* Style untuk list produk di admin */
-    #produk { margin-top: 20px; }
+    /* Style untuk list di admin */
+    #produk, #list-testimoni { margin-top: 20px; }
     .card-admin { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 15px; display: flex; align-items: center; gap: 15px; border: 1px solid #334155; }
     .card-admin img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
     .info-admin { flex-grow: 1; }
     .info-admin h4 { margin: 0; font-size: 14px; }
     .info-admin p { margin: 2px 0; font-size: 12px; color: #10b981; }
+    
+    /* Horizontal Scroll untuk Testi di Admin */
+    #list-testimoni { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: thin; }
+    .card-testi { min-width: 150px; background: #1e293b; padding: 10px; border-radius: 10px; border: 1px solid #334155; text-align: center; }
+    .card-testi img { width: 100%; height: 150px; object-fit: cover; border-radius: 8px; }
+    .card-testi p { font-size: 10px; margin: 5px 0; color: #94a3b8; }
+
     .btn-group { display: flex; flex-direction: column; gap: 5px; }
     .btn-edit { background: #3a7bd5; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
     .btn-hapus { background: #ef4444; color: white; border: none; padding: 5px 10px; border-radius: 4px; font-size: 11px; cursor: pointer; }
@@ -108,16 +115,28 @@
   <input type="hidden" id="editId">
   
   <button class="btn-tambah" onclick="submitProduk()">+ SIMPAN DATA AKUN</button>
+</div>
+
+<div class="box">
+  <h1>📸 Tambah Testimoni</h1>
+  <label>Link Foto Bukti Chat/Transfer</label>
+  <input type="text" id="fotoTesti" placeholder="Tempel link foto testimoni">
+  <label>Nama Pembeli / Keterangan</label>
+  <input type="text" id="ketTesti" placeholder="Contoh: Done Akun ML Sultan">
+  
+  <button class="btn-tambah" onclick="submitTestimoni()" style="background: #10b981;">+ SIMPAN TESTIMONI</button>
   <button class="btn-lihat" onclick="window.location.href='index.html'">👀 LIHAT TOKO</button>
 </div>
 
 <div class="produk-container">
   <h2>Daftar Akun Kamu</h2>
-  <div id="produk">
-    </div>
+  <div id="produk"></div>
+
+  <h2 style="margin-top: 40px;">Daftar Testimoni</h2>
+  <div id="list-testimoni"></div>
 </div>
 
-<script type="module" src="app.js?v=2"></script>
+<script type="module" src="app.js?v=500"></script>
 
 </body>
 </html>
