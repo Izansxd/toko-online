@@ -31,16 +31,13 @@ window.tampilProduk = async function() {
     let totalCuan = 0;
     pesananSnap.forEach(docP => {
         const p = docP.data();
-        // Hanya menghitung pesanan yang statusnya Selesai
         if(p.status === "🎉 Pesanan Selesai") {
             totalCuan += Number(p.total || 0);
         }
     });
     
-    // Update angka cuan di Admin Panel jika elemennya ada
     const statCuan = document.getElementById("statCuan");
     if(statCuan) statCuan.innerText = "Rp" + totalCuan.toLocaleString('id-ID');
-    // ------------------------------------------
 
     const infoSnap = await getDoc(doc(db, "pengaturan", "toko"));
     if (infoSnap.exists()) {
@@ -107,13 +104,7 @@ window.filterHarga = function(el, min, max) {
   window.searchProduk();
 };
 
-window.filterGame = (el, kat) => {
-  el.parentElement.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  window.searchProduk();
-};
-
-// --- 4. RENDER HTML (DENGAN TOMBOL DETAIL) ---
+// --- 4. RENDER HTML ---
 function renderHTML(data) {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
@@ -128,22 +119,22 @@ function renderHTML(data) {
     const diskonValue = hargaLamaValue > hargaBaruValue ? hargaLamaValue - hargaBaruValue : 0;
     
     const namaAman = p.nama.replace(/'/g, "\\'");
-    const deskripsiAman = (p.deskripsi || "Tidak ada detail spek.").replace(/'/g, "\\'").replace(/\n/g, "\\n");
+    const deskripsiAman = (p.deskripsi || "").replace(/'/g, "\\'").replace(/\n/g, "\\n");
     const gambarAman = p.gambar;
 
     if (isAdmin) {
       html += `
         <div class="card-admin">
-          <img src="${p.gambar}">
+          <img src="${p.gambar.split(',')[0]}">
           <div style="flex:1"><h4 style="margin:0; font-size:13px;">${p.nama}</h4><p style="margin:0; color:#10b981; font-size:12px;">Rp${hargaFormat} [${p.status}]</p></div>
-          <button onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${p.deskripsi}','${p.kategori}','${p.status}',${p.isPromo},'${p.hargaLama || ''}')">✏️</button>
+          <button onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${p.deskripsi}','${p.kategori}','${p.status}',${p.isPromo},'${p.hargaLama || ''}','${p.flashSaleEnd || ''}')">✏️</button>
           <button onclick="hapusProduk('${p.id}')">🗑️</button>
         </div>`;
     } else {
       html += `
         <div class="card">
           <div class="card-img-container">
-            <img src="${p.gambar}">
+            <img src="${p.gambar.split(',')[0]}">
             <div class="badge">${p.kategori}</div>
             ${p.isPromo ? `<div class="badge-promo">⚡ FLASH SALE</div>` : ''}
             ${isSold ? `<div class="sold-overlay"><div class="sold-label">SOLD OUT</div></div>` : ''}
@@ -151,7 +142,7 @@ function renderHTML(data) {
           <div class="card-info">
             <div style="display:flex; align-items:center; gap:5px;"><h4 style="font-size:13px;">${p.nama}</h4><span style="color:#38bdf8;">🔵</span></div>
             
-            <p onclick="bukaDetail('${namaAman}', '${deskripsiAman}', '${gambarAman}', ${hargaBaruValue}, ${diskonValue})" style="font-size: 11px; color: var(--primary); cursor: pointer; text-decoration: underline; margin: 5px 0; font-weight: 600;">🔍 Cek Detail Akun</p>
+            <p onclick="bukaDetail('${namaAman}', '${deskripsiAman}', '${gambarAman}', ${hargaBaruValue}, ${diskonValue}, '${p.flashSaleEnd || ''}')" style="font-size: 11px; color: #00d2ff; cursor: pointer; text-decoration: underline; margin: 5px 0; font-weight: 600;">🔍 Cek Detail Akun</p>
             
             <div class="garansi-tag">🛡️ Garansi Anti-HB</div>
             <div class="harga">
@@ -168,24 +159,50 @@ function renderHTML(data) {
   produkDiv.innerHTML = html || `<p style="text-align:center; padding:20px;">Produk tidak ditemukan.</p>`;
 }
 
-// --- 5. SISTEM DETAIL & PEMBAYARAN ---
+// --- 5. SISTEM DETAIL (MULTI IMAGE & NEGO) ---
+window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon, flashSaleEnd) {
+  const daftarGambar = gambar.split(",");
+  let htmlGambar = `<img src="${daftarGambar[0].trim()}" id="mainDetailImg" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #334155;">`;
+  
+  if(daftarGambar.length > 1) {
+    htmlGambar += `<div style="display:flex; gap:8px; overflow-x:auto; padding-bottom:10px; scrollbar-width: none;">`;
+    daftarGambar.forEach(img => {
+      htmlGambar += `<img src="${img.trim()}" onclick="document.getElementById('mainDetailImg').src='${img.trim()}'" style="width:70px; height:70px; object-fit:cover; border-radius:8px; cursor:pointer; border:2px solid #334155;">`;
+    });
+    htmlGambar += `</div>`;
+  }
 
-// FUNGSI MODAL DETAIL (DENGAN FITUR SHARE WHATSAPP)
-window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon) {
   document.getElementById("detailNama").innerText = nama;
   document.getElementById("detailDeskripsi").innerText = deskripsi.replace(/\\n/g, '\n');
-  document.getElementById("detailGambar").src = gambar;
+  document.getElementById("detailGambarWadah").innerHTML = htmlGambar;
+
+  // FITUR TIMER FLASH SALE
+  const timerDiv = document.getElementById("timerFlashSale");
+  if(timerDiv) {
+    if(flashSaleEnd) {
+      timerDiv.style.display = "block";
+      const countdown = setInterval(() => {
+        const now = new Date().getTime();
+        const distance = new Date(flashSaleEnd).getTime() - now;
+        if (distance < 0) {
+          clearInterval(countdown);
+          timerDiv.innerText = "PROMO BERAKHIR";
+        } else {
+          const jam = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const menit = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+          const detik = Math.floor((distance % (1000 * 60)) / 1000);
+          timerDiv.innerText = `Sisa Waktu: ${jam}j ${menit}m ${detik}s`;
+        }
+      }, 1000);
+    } else { timerDiv.style.display = "none"; }
+  }
   
-  // LOGIKA TOMBOL SHARE WA
-  const btnShare = document.getElementById("btnShareWA");
-  if(btnShare) {
-    btnShare.onclick = function() {
-      const teksShare = `🔥 *AKUN SULTAN READY DI FAZA STORE* 🔥\n\n` +
-                        `*Produk:* ${nama}\n` +
-                        `*Harga:* Rp${harga.toLocaleString('id-ID')}\n` +
-                        `*Spek Singkat:* \n${deskripsi.replace(/\\n/g, '\n').substring(0, 150)}...\n\n` +
-                        `Buruan cek di Faza Store sebelum disikat orang!`;
-      window.open(`https://wa.me/?text=${encodeURIComponent(teksShare)}`, "_blank");
+  // TOMBOL NEGO WA
+  const btnNego = document.getElementById("btnNegoWA");
+  if(btnNego) {
+    btnNego.onclick = function() {
+      const pesanNego = `Halo Faza Store, saya tertarik nego akun: *${nama}*.\nHarganya bisa kurang dikit gak ya?`;
+      window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesanNego)}`, "_blank");
     };
   }
 
@@ -226,16 +243,8 @@ window.tutupStruk = () => document.getElementById("modalStruk").style.display = 
 window.kirimInvoiceWA = async function() {
   const metode = document.getElementById("metodeBayar").value;
   const { nama, harga, inv } = dataPesananSementera;
-  
   try {
-    await setDoc(doc(db, "pesanan", inv), {
-      produk: nama,
-      total: harga,
-      metode: metode,
-      status: "⏳ Menunggu Pembayaran",
-      tanggal: new Date()
-    });
-    
+    await setDoc(doc(db, "pesanan", inv), { produk: nama, total: harga, metode: metode, status: "⏳ Menunggu Pembayaran", tanggal: new Date() });
     const pesan = `*PESANAN BARU - FAZA STORE*\n` +
                   `----------------------------------\n` +
                   `*No. Invoice :* ${inv}\n` +
@@ -244,7 +253,6 @@ window.kirimInvoiceWA = async function() {
                   `*Metode      :* ${metode}\n` +
                   `----------------------------------\n\n` +
                   `_Mohon kirimkan detail pembayaran/QRIS nya ya Min!_`;
-                  
     window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
     tutupStruk();
   } catch (e) { alert("Gagal membuat pesanan."); }
@@ -255,21 +263,17 @@ window.cekStatusPesanan = async function() {
   const idInput = document.getElementById("inputCekStatus").value.trim().toUpperCase();
   const hasilDiv = document.getElementById("hasilStatus");
   if(!idInput) return alert("Masukkan ID Invoice!");
-
   try {
     const docSnap = await getDoc(doc(db, "pesanan", idInput));
     if (docSnap.exists()) {
       const data = docSnap.data();
       hasilDiv.style.display = "block";
-      hasilDiv.innerHTML = `
-        <p style="margin:5px 0; font-size:13px;"><b>ID:</b> ${idInput}</p>
-        <p style="margin:5px 0; font-size:13px;"><b>Status:</b> <span style="color:#00d2ff; font-weight:700;">${data.status}</span></p>
-      `;
+      hasilDiv.innerHTML = `<p><b>ID:</b> ${idInput}</p><p><b>Status:</b> <span style="color:#00d2ff; font-weight:700;">${data.status}</span></p>`;
     } else { alert("ID Invoice tidak ditemukan!"); }
   } catch (e) { alert("Terjadi kesalahan."); }
 };
 
-// --- 7. FITUR ADMIN (CRUD & PENGATURAN) ---
+// --- 7. FITUR ADMIN ---
 window.submitProduk = async function() {
   const editId = document.getElementById("editId").value;
   const dataObj = {
@@ -280,7 +284,8 @@ window.submitProduk = async function() {
     deskripsi: document.getElementById("deskripsi").value,
     kategori: document.getElementById("kategori").value,
     status: document.getElementById("status").value,
-    isPromo: document.getElementById("isPromo").checked
+    isPromo: document.getElementById("isPromo").checked,
+    flashSaleEnd: document.getElementById("flashSaleEnd")?.value || ""
   };
   try {
     if (editId) { await updateDoc(doc(db, "produk", editId), dataObj); } 
@@ -289,7 +294,7 @@ window.submitProduk = async function() {
   } catch (e) { alert(e.message); }
 };
 
-window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPromo, hargaLama) => {
+window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPromo, hargaLama, flashSaleEnd) => {
   document.getElementById("nama").value = nama;
   document.getElementById("harga").value = harga;
   document.getElementById("displayHarga").value = new Intl.NumberFormat('id-ID').format(harga);
@@ -300,6 +305,7 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPro
   document.getElementById("kategori").value = kategori;
   document.getElementById("status").value = status;
   document.getElementById("isPromo").checked = isPromo;
+  if(document.getElementById("flashSaleEnd")) document.getElementById("flashSaleEnd").value = flashSaleEnd || "";
   document.getElementById("editId").value = id;
   window.scrollTo(0,0);
 };
