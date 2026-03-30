@@ -129,6 +129,69 @@
       left: 15px;
       color: #94a3b8;
       font-size: 16px;
+      font-style: normal;
+    }
+
+    /* --- CSS CEK STATUS --- */
+    .status-container {
+      max-width: 1000px;
+      margin: 10px auto 20px;
+      padding: 0 15px;
+    }
+    .status-box {
+      background: rgba(0, 210, 255, 0.05);
+      border: 1px dashed var(--primary);
+      padding: 15px;
+      border-radius: 18px;
+    }
+    .status-box label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--primary);
+      display: block;
+      margin-bottom: 8px;
+      letter-spacing: 1px;
+    }
+    .status-input-group {
+      display: flex;
+      gap: 10px;
+    }
+    .status-input-group input {
+      flex-grow: 1;
+      background: var(--dark);
+      border: 1px solid var(--input-border);
+      color: white;
+      padding: 12px 15px;
+      border-radius: 12px;
+      font-size: 13px;
+      outline: none;
+      font-family: 'Poppins', sans-serif;
+    }
+    .btn-cek {
+      background: var(--primary);
+      color: var(--dark);
+      border: none;
+      padding: 0 20px;
+      border-radius: 12px;
+      font-weight: 700;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn-cek:hover { background: var(--secondary); color: white; }
+    #hasilStatus {
+      margin-top: 12px;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 12px;
+      display: none;
+      background: #1e293b;
+      border: 1px solid #334155;
+      animation: slideDown 0.3s ease;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* Grid Produk */
@@ -281,6 +344,17 @@
   <div class="search-box">
     <i>🔍</i>
     <input type="text" id="searchInput" placeholder="Cari akun impianmu..." oninput="searchProduk()" autocomplete="off">
+  </div>
+</div>
+
+<div class="status-container">
+  <div class="status-box">
+    <label>CEK STATUS PESANAN (INPUT ID INVOICE):</label>
+    <div class="status-input-group">
+      <input type="text" id="inputCekStatus" placeholder="Masukkan ID Pesanan (Contoh: INV-8273)">
+      <button class="btn-cek" onclick="cekStatusPesanan()">CEK</button>
+    </div>
+    <div id="hasilStatus"></div>
   </div>
 </div>
 
