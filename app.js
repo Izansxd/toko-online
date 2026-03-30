@@ -22,18 +22,17 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
   if (!produkDiv) return;
 
   // --- EFEK SKELETON LOADING ---
-  // Tampilkan 4 kotak skeleton saat data sedang dimuat
+  // Tampilkan 4 kotak skeleton setiap kali filter diganti
   let skeletonHTML = "";
   for (let i = 0; i < 4; i++) {
     skeletonHTML += `<div class="skeleton skeleton-card"></div>`;
   }
-  
-  // Hanya tampilkan skeleton jika data memang belum ada (saat awal buka)
-  if (allProducts.length === 0) {
-    produkDiv.innerHTML = skeletonHTML;
-  }
+  produkDiv.innerHTML = skeletonHTML;
 
-  // Ambil data dari Firebase jika variabel lokal kosong
+  // Beri sedikit jeda buatan (300ms) agar skeleton terlihat smooth
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  // Ambil data dari Firebase jika variabel lokal masih kosong
   if (allProducts.length === 0) {
     try {
       const data = await getDocs(collection(db, "produk"));
@@ -74,7 +73,7 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
           
           ${isAdmin 
             ? `<button style="background:red; margin-bottom:5px;" onclick="hapusProduk('${p.id}')">🗑️ Hapus</button>
-               <button style="background:blue;" onclick="editProduk('${p.id}','${p.nama}',${p.harga},'${p.gambar}','${deskripsi.replace(/'/g, "\\'")}','${kategori}','${p.status}')">✏️ Edit</button>` 
+               <button style="background:blue;" onclick="editProduk('${p.id}','${p.nama.replace(/'/g, "\\'")}',${p.harga},'${p.gambar}','${deskripsi.replace(/'/g, "\\'")}','${kategori}','${p.status}')">✏️ Edit</button>` 
             : `<button ${isSold ? 'disabled' : `onclick="beliWhatsApp('${p.nama}')"`}>
                 ${isSold ? 'SUDAH TERJUAL' : 'BELI SEKARANG'}
                </button>`}
