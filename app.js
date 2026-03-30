@@ -14,6 +14,7 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
 let allProducts = [];
+let pesananSekarang = {}; // Simpan data pesanan sementara
 
 // --- 1. FUNGSI TAMPIL PRODUK ---
 window.tampilProduk = async function() {
@@ -120,7 +121,51 @@ window.filterGame = function(elemen, kategori) {
   window.searchProduk(); 
 };
 
-// --- 5. FUNGSI ADMIN PRODUK ---
+// --- 5. FUNGSI STRUK DIGITAL (NEW) ---
+window.beliWhatsApp = (nama, harga) => {
+  pesananSekarang = { nama, harga };
+  const hargaFormat = Number(harga).toLocaleString('id-ID');
+  
+  const isiStruk = document.getElementById("isiStruk");
+  if(isiStruk) {
+      isiStruk.innerHTML = `
+        <div style="display: flex; justify-content: space-between;"><span>Produk:</span> <b style="color:#00d2ff">${nama}</b></div>
+        <div style="display: flex; justify-content: space-between;"><span>Harga:</span> <b>Rp${hargaFormat}</b></div>
+        <div style="display: flex; justify-content: space-between;"><span>Biaya Admin:</span> <b style="color:#10b981">Rp0 (GRATIS)</b></div>
+        <hr style="border: 0; border-top: 1px solid #334155; margin: 10px 0;">
+        <div style="display: flex; justify-content: space-between; font-size: 16px;"><span>Total Bayar:</span> <b style="color:#f1c40f">Rp${hargaFormat}</b></div>
+      `;
+      document.getElementById("modalStruk").style.display = "flex";
+  } else {
+      // Fallback jika modal belum terpasang di HTML
+      const pesan = `Halo Admin 👋, saya mau beli akun ini:\n\n📌 *Produk:* ${nama}\n💰 *Harga:* Rp${hargaFormat}\n\nApakah akun ini masih ready?`;
+      window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
+  }
+};
+
+window.kirimInvoiceWA = () => {
+  const metode = document.getElementById("metodeBayar").value;
+  const hargaFormat = Number(pesananSekarang.harga).toLocaleString('id-ID');
+  const invoiceID = "INV-" + Math.floor(Math.random() * 100000);
+
+  const pesan = `*📄 INVOICE PESANAN - FAZA STORE*\n` +
+                `--------------------------------------------\n` +
+                `🆔 *ID Pesanan:* ${invoiceID}\n` +
+                `🎮 *Produk:* ${pesananSekarang.nama}\n` +
+                `💰 *Harga:* Rp${hargaFormat}\n` +
+                `💳 *Metode Bayar:* ${metode}\n` +
+                `--------------------------------------------\n` +
+                `Halo Admin 👋, saya sudah membuat pesanan di web. Saya ingin membayar menggunakan *${metode}*. Mohon instruksi selanjutnya!`;
+
+  window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
+  window.tutupStruk();
+};
+
+window.tutupStruk = () => {
+  document.getElementById("modalStruk").style.display = "none";
+};
+
+// --- 6. FUNGSI ADMIN PRODUK ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
@@ -177,7 +222,7 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPro
   window.scrollTo(0,0);
 };
 
-// --- 6. FITUR TESTIMONI ---
+// --- 7. FITUR TESTIMONI ---
 window.submitTestimoni = async function() {
   const foto = document.getElementById("fotoTesti").value;
   const ket = document.getElementById("ketTesti").value;
@@ -237,12 +282,6 @@ window.hapusTestimoni = async function(id) {
       location.reload();
     } catch (e) { alert("Gagal hapus testi"); }
   }
-};
-
-window.beliWhatsApp = (nama, harga) => {
-  const hargaFormatted = Number(harga).toLocaleString('id-ID');
-  const pesan = `Halo Admin 👋, saya mau beli akun ini:\n\n📌 *Produk:* ${nama}\n💰 *Harga:* Rp${hargaFormatted}\n\nApakah akun ini masih ready?`;
-  window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
 // Jalankan fungsi awal
