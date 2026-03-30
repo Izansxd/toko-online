@@ -38,7 +38,7 @@
     .promo-box input[type="checkbox"] { width: 20px; height: 20px; margin: 0; cursor: pointer; accent-color: #ef4444; flex-shrink: 0; }
     .promo-box label { margin: 0; color: #ef4444; font-weight: 800; cursor: pointer; font-size: 13px; line-height: 1; text-transform: uppercase; }
 
-    textarea { height: 80px; resize: vertical; }
+    textarea { height: 100px; resize: vertical; }
 
     button { width: 100%; padding: 14px; margin-top: 15px; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 800; transition: 0.3s; text-transform: uppercase; }
     .btn-tambah { background: linear-gradient(90deg, #3a7bd5, #00d2ff); color: white; }
@@ -48,11 +48,16 @@
     .btn-warning { background: #f1c40f; color: #0f172a; }
     .btn-success { background: #10b981; color: white; }
     
-    .produk-container { max-width: 600px; margin: 40px auto; }
+    .produk-container { max-width: 600px; margin: 40px auto; padding: 0 15px; }
     h2 { border-left: 4px solid #00d2ff; padding-left: 10px; font-size: 18px; color: white; margin-bottom: 20px; }
     
-    .card-admin { background: #1e293b; padding: 12px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid #334155; }
-    .card-admin img { width: 50px; height: 50px; object-fit: cover; border-radius: 6px; }
+    .card-admin { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid #334155; }
+    .card-admin img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #334155; }
+    .card-admin button { width: auto; padding: 8px 12px; margin: 0; }
+
+    #list-testimoni { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    .card-testi { background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; }
+    .card-testi img { width: 100%; border-radius: 5px; margin-bottom: 5px; }
   </style>
 </head>
 
@@ -112,8 +117,11 @@
     <label for="isPromo">⚡ AKTIFKAN MODE FLASH SALE</label>
   </div>
   
-  <label>Spesifikasi Singkat</label>
-  <textarea id="deskripsi" placeholder="Contoh: Skin 200+, Login Moonton, No Minus"></textarea>
+  <label>Spesifikasi Lengkap (Muncul di Cek Detail)</label>
+  <textarea id="deskripsi" placeholder="Tulis per baris, contoh:
+- Skin Legend: Gusion
+- Hero: 120
+- Login: Moonton (Sepaket)"></textarea>
   
   <label>Link Foto Akun</label>
   <input type="text" id="gambar" placeholder="Tempel link foto di sini">
@@ -121,6 +129,7 @@
   <input type="hidden" id="editId">
   
   <button class="btn-tambah" onclick="submitProduk()">💾 SIMPAN DATA PRODUK</button>
+  <button class="btn-lihat" onclick="resetForm()">➕ RESET FORM / TAMBAH BARU</button>
 </div>
 
 <div class="box">
@@ -148,8 +157,6 @@
   <h1>📸 Tambah Testimoni</h1>
   <label>Link Foto Bukti</label>
   <input type="text" id="fotoTesti" placeholder="Link gambar testi">
-  <label>Keterangan</label>
-  <input type="text" id="ketTesti" placeholder="Contoh: Akun aman, fast respon!">
   
   <button class="btn-tambah" onclick="submitTestimoni()" style="background: #10b981;">+ SIMPAN TESTIMONI</button>
   <button class="btn-lihat" onclick="window.location.href='index.html'">👀 LIHAT TAMPILAN TOKO</button>
@@ -172,6 +179,19 @@ function formatRupiah(el, hiddenId) {
         return;
     }
     el.value = new Intl.NumberFormat('id-ID').format(value);
+}
+
+function resetForm() {
+    document.getElementById("nama").value = "";
+    document.getElementById("harga").value = "";
+    document.getElementById("displayHarga").value = "";
+    document.getElementById("hargaLama").value = "";
+    document.getElementById("displayHargaLama").value = "";
+    document.getElementById("gambar").value = "";
+    document.getElementById("deskripsi").value = "";
+    document.getElementById("editId").value = "";
+    document.getElementById("isPromo").checked = false;
+    alert("Form siap untuk tambah produk baru!");
 }
 </script>
 
