@@ -21,13 +21,30 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
+  // --- EFEK SKELETON LOADING ---
+  // Tampilkan 4 kotak skeleton saat data sedang dimuat
+  let skeletonHTML = "";
+  for (let i = 0; i < 4; i++) {
+    skeletonHTML += `<div class="skeleton skeleton-card"></div>`;
+  }
+  
+  // Hanya tampilkan skeleton jika data memang belum ada (saat awal buka)
+  if (allProducts.length === 0) {
+    produkDiv.innerHTML = skeletonHTML;
+  }
+
   // Ambil data dari Firebase jika variabel lokal kosong
   if (allProducts.length === 0) {
-    const data = await getDocs(collection(db, "produk"));
-    allProducts = []; 
-    data.forEach(docSnap => {
-      allProducts.push({ id: docSnap.id, ...docSnap.data() });
-    });
+    try {
+      const data = await getDocs(collection(db, "produk"));
+      allProducts = []; 
+      data.forEach(docSnap => {
+        allProducts.push({ id: docSnap.id, ...docSnap.data() });
+      });
+    } catch (error) {
+      produkDiv.innerHTML = `<p style="text-align:center; color:red;">Gagal memuat data.</p>`;
+      return;
+    }
   }
 
   let html = "";
@@ -68,24 +85,20 @@ window.tampilProduk = async function(kategoriFilter = "Semua") {
   produkDiv.innerHTML = html || `<p style="text-align:center; width:100%; color:#94a3b8; padding:20px;">Belum ada akun di kategori ini.</p>`;
 };
 
-// --- FUNGSI TRIGGER FILTER (PERBAIKAN WARNA TOMBOL) ---
+// --- FUNGSI TRIGGER FILTER ---
 window.filterGame = function(kategori) {
-  // 1. Update warna tombol aktif di UI
   const buttons = document.querySelectorAll('.btn-filter');
   buttons.forEach(btn => {
     btn.classList.remove('active');
-    
     const btnText = btn.innerText.trim();
     
-    // Logika pencocokan teks tombol dengan kategori di Database
     if (kategori === "Semua" && btnText === "Semua") btn.classList.add('active');
     if (kategori === "Mobile Legends" && btnText === "MLBB") btn.classList.add('active');
     if (kategori === "Free Fire" && btnText === "FF") btn.classList.add('active');
-    if (kategori === "PUBG Mobile" && btnText === "PUBG") btn.classList.add('active'); // Perbaikan tombol PUBG
+    if (kategori === "PUBG Mobile" && btnText === "PUBG") btn.classList.add('active');
     if (kategori === "Lainnya" && btnText === "Lainnya") btn.classList.add('active');
   });
 
-  // 2. Tampilkan produk sesuai filter
   window.tampilProduk(kategori);
 };
 
