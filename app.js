@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, query, orderBy } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // --- KONFIGURASI ---
 const NOMOR_WA_ADMIN = "6282298627146"; 
@@ -67,7 +67,6 @@ function renderHTML(data) {
 
   data.forEach((p) => {
     const isSold = p.status === "Sold"; 
-    // Paksa cek tipe data agar selalu benar
     const isPromo = p.isPromo === true || p.isPromo === "true"; 
     const deskripsi = p.deskripsi || "Tidak ada detail spek.";
     const namaAman = p.nama.replace(/'/g, "\\'");
@@ -76,7 +75,6 @@ function renderHTML(data) {
     const hargaFormat = Number(p.harga).toLocaleString('id-ID');
     const hargaLamaHTML = p.hargaLama ? `<span class="harga-lama">Rp${Number(p.hargaLama).toLocaleString('id-ID')}</span>` : "";
 
-    // Versi Admin (List bawah)
     if (isAdmin) {
       html += `
         <div class="card-admin">
@@ -91,7 +89,6 @@ function renderHTML(data) {
           </div>
         </div>`;
     } else {
-      // Versi Toko (Index)
       html += `
         <div class="card">
           <div class="card-img-container">
@@ -123,7 +120,7 @@ window.filterGame = function(elemen, kategori) {
   window.searchProduk(); 
 };
 
-// --- 5. FUNGSI ADMIN ---
+// --- 5. FUNGSI ADMIN PRODUK ---
 window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
@@ -180,10 +177,74 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status, isPro
   window.scrollTo(0,0);
 };
 
+// --- 6. FITUR TESTIMONI ---
+window.submitTestimoni = async function() {
+  const foto = document.getElementById("fotoTesti").value;
+  const ket = document.getElementById("ketTesti").value;
+
+  if (!foto) return alert("Link foto testimoni wajib diisi!");
+
+  try {
+    await addDoc(collection(db, "testimoni"), {
+      foto: foto,
+      keterangan: ket || "Testimoni Pelanggan",
+      tanggal: new Date().getTime()
+    });
+    alert("Testimoni Berhasil Ditambahkan!");
+    location.reload();
+  } catch (e) { alert("Gagal: " + e.message); }
+};
+
+window.tampilTestimoni = async function() {
+  const testiDiv = document.getElementById("list-testimoni");
+  if (!testiDiv) return;
+
+  const isAdmin = window.location.href.includes("admin.html");
+
+  try {
+    const q = query(collection(db, "testimoni"), orderBy("tanggal", "desc"));
+    const querySnapshot = await getDocs(q);
+    let html = "";
+    
+    querySnapshot.forEach((docSnap) => {
+      const t = docSnap.data();
+      const id = docSnap.id;
+      
+      if (isAdmin) {
+        html += `
+          <div class="card-testi" style="min-width:150px">
+            <img src="${t.foto}" style="height:150px">
+            <p>${t.keterangan}</p>
+            <button onclick="hapusTestimoni('${id}')" style="background:red; color:white; border:none; padding:5px; width:100%; border-radius:5px; margin-top:5px; cursor:pointer">Hapus</button>
+          </div>`;
+      } else {
+        html += `
+          <div class="card-testi">
+            <img src="${t.foto}" alt="Testi" onclick="window.open('${t.foto}', '_blank')">
+            <p>${t.keterangan}</p>
+          </div>`;
+      }
+    });
+    testiDiv.innerHTML = html || "<p style='color:#94a3b8'>Belum ada testimoni.</p>";
+  } catch (e) { console.error(e); }
+};
+
+window.hapusTestimoni = async function(id) {
+  if (confirm("Hapus testimoni ini?")) {
+    try {
+      await deleteDoc(doc(db, "testimoni", id));
+      alert("Testimoni terhapus!");
+      location.reload();
+    } catch (e) { alert("Gagal hapus testi"); }
+  }
+};
+
 window.beliWhatsApp = (nama, harga) => {
   const hargaFormatted = Number(harga).toLocaleString('id-ID');
   const pesan = `Halo Admin 👋, saya mau beli akun ini:\n\n📌 *Produk:* ${nama}\n💰 *Harga:* Rp${hargaFormatted}\n\nApakah akun ini masih ready?`;
   window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
 };
 
+// Jalankan fungsi awal
 tampilProduk();
+tampilTestimoni();
