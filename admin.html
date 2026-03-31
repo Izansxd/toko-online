@@ -2,12 +2,12 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Admin Panel - Faza Store</title>
+  <title>Admin Panel - SIWO STORE</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
      (function(){
-        // GANTI "YOUR_PUBLIC_KEY" dengan Public Key dari akun EmailJS kamu
+        // Public Key tetap sesuai milikmu
         emailjs.init("vj_Kj-N52AowtKruT"); 
      })();
   </script>
@@ -17,13 +17,11 @@
     .box { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #334155; }
     h1 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px; }
     
-    /* DASHBOARD STYLE */
-    .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 600px; margin: 0 auto 20px; }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 600px; margin: 0 auto 20px; }
     .stat-card { background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; text-align: center; }
     .stat-card span { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
     .stat-card h2 { margin: 5px 0 0; font-size: 18px; }
     .stat-total h2 { color: #00d2ff; }
-    .stat-sold h2 { color: #10b981; }
     .stat-cuan h2 { color: #f1c40f; }
 
     label { font-size: 11px; color: #94a3b8; margin-top: 12px; display: block; font-weight: 600; text-transform: uppercase; }
@@ -35,19 +33,6 @@
     
     .flex-row { display: flex; gap: 10px; }
     .flex-row > div { flex: 1; }
-
-    /* STYLE BARU UNTUK LIST PESANAN */
-    .order-card { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #10b981; }
-    .order-card p { margin: 5px 0; font-size: 13px; }
-    .order-card b { color: #00d2ff; }
-    .btn-action { display: flex; gap: 5px; margin-top: 10px; }
-
-    .promo-box {
-      background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 12px;
-      margin-top: 15px; border: 1px solid #ef4444; display: flex;
-      align-items: center; justify-content: center; gap: 12px; cursor: pointer;
-    }
-    .promo-box label { margin: 0; color: #ef4444; font-weight: 800; cursor: pointer; font-size: 13px; text-transform: uppercase; }
 
     button { width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 800; transition: 0.3s; text-transform: uppercase; }
     .btn-tambah { background: linear-gradient(90deg, #3a7bd5, #00d2ff); color: white; }
@@ -65,13 +50,12 @@
 
 <div class="dashboard-grid">
   <div class="stat-card stat-total"><span>Total Produk</span><h2 id="statTotal">0</h2></div>
-  <div class="stat-card stat-sold"><span>Sold Out</span><h2 id="statSold">0</h2></div>
   <div class="stat-card stat-cuan"><span>Total Cuan</span><h2 id="statCuan">Rp0</h2></div>
 </div>
 
 <div class="box" style="max-width: 600px; border: 1px solid #10b981;">
   <h1>📥 Pesanan Masuk & Kirim Akun</h1>
-  <p style="font-size: 10px; color: #94a3b8; text-align: center;">Cek bukti transfer, lalu ketik data akun untuk dikirim ke email pembeli.</p>
+  <p style="font-size: 10px; color: #94a3b8; text-align: center;">Kirim data akun ke email pembeli lewat tombol di bawah.</p>
   <div id="listPesananAdmin">
     <p style="text-align: center; font-size: 12px; color: #64748b;">Memuat data pesanan...</p>
   </div>
@@ -89,14 +73,6 @@
       <input type="hidden" id="harga"> 
     </div>
     <div>
-      <label>Harga Coret</label>
-      <input type="text" id="displayHargaLama" placeholder="Rp 0" oninput="formatRupiah(this, 'hargaLama')">
-      <input type="hidden" id="hargaLama">
-    </div>
-  </div>
-  
-  <div class="flex-row">
-    <div>
       <label>Kategori Game</label>
       <select id="kategori">
         <option value="Mobile Legends">Mobile Legends</option>
@@ -105,22 +81,13 @@
         <option value="Lainnya">Lainnya</option>
       </select>
     </div>
-    <div>
-      <label>Status Stock</label>
-      <select id="status">
-        <option value="Ready">READY STOK</option>
-        <option value="Sold">TERJUAL (SOLD)</option>
-      </select>
-    </div>
-  </div>
-
-  <div class="promo-box" onclick="document.getElementById('isPromo').click()">
-    <input type="checkbox" id="isPromo" onclick="event.stopPropagation()">
-    <label for="isPromo">⚡ AKTIFKAN MODE FLASH SALE</label>
   </div>
   
-  <label>Waktu Berakhir Flash Sale</label>
-  <input type="datetime-local" id="flashSaleEnd">
+  <label>Status Stock</label>
+  <select id="status">
+    <option value="Ready">READY STOK</option>
+    <option value="Sold">TERJUAL (SOLD)</option>
+  </select>
   
   <label>Spesifikasi Lengkap</label>
   <textarea id="deskripsi" placeholder="- Skin Legend: Gusion..."></textarea>
@@ -130,41 +97,43 @@
   
   <input type="hidden" id="editId">
   <button class="btn-tambah" onclick="submitProduk()">💾 SIMPAN DATA PRODUK</button>
-  <button class="btn-lihat" onclick="resetForm()">➕ RESET FORM</button>
+  <button style="background: #475569; color: white;" onclick="resetForm()">➕ RESET FORM</button>
 </div>
 
 <div class="box">
   <h1>🎟️ Kelola Voucher Belanja</h1>
   <label>Kode Voucher</label>
-  <input type="text" id="v_kode" placeholder="Contoh: HEMAT10K">
+  <input type="text" id="vKode" placeholder="Contoh: HEMAT10K">
   <div class="flex-row">
-    <div><label>Potongan (Rp)</label><input type="number" id="v_potongan"></div>
-    <div><label>Kuota</label><input type="number" id="v_kuota"></div>
+    <div><label>Potongan (Rp)</label><input type="number" id="vDiskon"></div>
+    <div><label>Kuota</label><input type="number" id="vKuota"></div>
   </div>
-  <button class="btn-voucher" style="background:#8b5cf6; color:white;" onclick="updateVoucher()">💾 SIMPAN VOUCHER</button>
+  <button class="btn-success" onclick="tambahVoucher()">💾 SIMPAN VOUCHER</button>
+  <div id="listVoucherAdmin" style="margin-top:15px;"></div>
 </div>
 
 <div class="box">
   <h1>📢 Pengumuman Toko</h1>
-  <textarea id="teksBaru" placeholder="Tulis info toko..."></textarea>
+  <textarea id="inputPengumuman" placeholder="Tulis info toko..."></textarea>
   <button class="btn-warning" onclick="updatePengumuman()">📢 UPDATE RUNNING TEXT</button>
 </div>
 
 <div class="box">
   <h1>📸 Tambah Testimoni</h1>
-  <input type="text" id="fotoTesti" placeholder="Link gambar testi">
-  <button class="btn-success" onclick="submitTestimoni()">+ SIMPAN TESTIMONI</button>
-  <button class="btn-lihat" onclick="window.location.href='index.html'">👀 LIHAT TAMPILAN TOKO</button>
+  <input type="text" id="inputTesti" placeholder="Link gambar testi">
+  <button class="btn-success" onclick="tambahTesti()">+ SIMPAN TESTIMONI</button>
+  <button style="background: #3b82f6; color:white;" onclick="window.location.href='index.html'">👀 LIHAT TAMPILAN TOKO</button>
 </div>
 
 <div class="produk-container">
-  <h2>Daftar Akun Aktif</h2>
+  <h2 style="border-bottom: 1px solid #334155; padding-bottom: 10px;">Daftar Akun Aktif</h2>
   <div id="produk"></div>
-  <h2 style="margin-top: 40px;">Daftar Testimoni</h2>
+  <h2 style="margin-top: 40px; border-bottom: 1px solid #334155; padding-bottom: 10px;">Daftar Testimoni</h2>
   <div id="list-testimoni"></div>
 </div>
 
 <script>
+// Fungsi format rupiah tetap ada agar input tetap rapi
 function formatRupiah(el, hiddenId) {
     let value = el.value.replace(/[^0-9]/g, ""); 
     document.getElementById(hiddenId).value = value;
@@ -176,18 +145,14 @@ function resetForm() {
     document.getElementById("nama").value = "";
     document.getElementById("harga").value = "";
     document.getElementById("displayHarga").value = "";
-    document.getElementById("hargaLama").value = "";
-    document.getElementById("displayHargaLama").value = "";
     document.getElementById("gambar").value = "";
     document.getElementById("deskripsi").value = "";
-    document.getElementById("flashSaleEnd").value = "";
     document.getElementById("editId").value = "";
-    document.getElementById("isPromo").checked = false;
     alert("Form di-reset!");
 }
 </script>
 
-<script type="module" src="app.js?v=999"></script>
+<script type="module" src="app.js?v=1.0.1"></script>
 
 </body>
 </html>
