@@ -3,9 +3,9 @@ import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, g
 
 // --- 1. KONFIGURASI FIREBASE & PEMBAYARAN ---
 const NOMOR_WA_ADMIN = "6282298627146"; 
-const NO_DANA = "082298627146"; // Ganti dengan nomor DANA kamu
-const NO_OVO = "082298627146";  // Ganti dengan nomor OVO kamu
-const URL_QRIS = "https://link-foto-qris-kamu.com/qris.jpg"; // Ganti link foto QRIS kamu
+const NO_DANA = "082298627146"; 
+const NO_OVO = "082298627146";  
+const URL_QRIS = "https://link-foto-qris-kamu.com/qris.jpg"; 
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
@@ -57,7 +57,6 @@ window.tampilProduk = async function() {
 
     window.searchProduk(); 
     muatTestimoni(); 
-    // Jika di halaman admin, muat pesanan masuk
     if(window.location.href.includes("admin.html")) muatPesananMasuk();
   } catch (error) { console.error(error); }
 };
@@ -328,7 +327,7 @@ window.kirimInvoiceWA = async function() {
   } catch (e) { alert("Gagal membuat pesanan."); }
 };
 
-// --- 7. DASHBOARD ADMIN ---
+// --- 7. DASHBOARD ADMIN (BAGIAN EMAILJS DIPERBAIKI) ---
 async function muatPesananMasuk() {
     const list = document.getElementById("listPesananAdmin");
     if(!list) return;
@@ -355,25 +354,31 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
     const dataAkun = document.getElementById(`dataAkun_${invId}`).value;
     if(!dataAkun) return alert("Isi data akun manual dulu!");
 
+    const btn = event.target;
+    btn.innerText = "⏳ Mengirim...";
+    btn.disabled = true;
+
     try {
-        // GANTI ID DI BAWAH DENGAN MILIKMU
+        // PERBAIKAN: Nama variabel disesuaikan dengan template {{...}} yang kita buat
         await emailjs.send("service_xe358l6", "template_2j4eu9o", {
             nama_pembeli: namaPembeli,
             email_pembeli: emailTujuan,
-            produk_nama: produk,
-            data_akun: dataAkun,
-            invoice_id: invId
+            nama_akun: produk, // Di template kita pakai nama_akun
+            data_akun: dataAkun   // Di template kita pakai data_akun
         });
 
         await updateDoc(doc(db, "pesanan", invId), { status: "🎉 Pesanan Selesai" });
-        alert("Email Terkirim & Pesanan Selesai!");
+        alert("✅ Berhasil! Email terkirim ke " + emailTujuan);
         location.reload();
-    } catch (e) { alert("Gagal kirim email: " + e.message); }
+    } catch (e) { 
+        alert("❌ Gagal kirim email: " + e.text); 
+        btn.innerText = "📧 Kirim Email";
+        btn.disabled = false;
+    }
 };
 
-window.hapusPesanan = async (id) => { if(confirm("Hapus?")) { await deleteDoc(doc(db, "pesanan", id)); location.reload(); } };
+window.hapusPesanan = async (id) => { if(confirm("Hapus?")) { await deleteDoc(doc(doc(db, "pesanan", id))); location.reload(); } };
 
-// --- LOGIKA LAIN-LAIN ---
 window.pakaiVoucher = async function() {
   const kode = document.getElementById("inputVoucher").value.trim().toUpperCase();
   const notif = document.getElementById("notifVoucher");
@@ -390,7 +395,6 @@ window.pakaiVoucher = async function() {
   } catch (e) { console.error(e); }
 };
 
-// ... (Sisa fungsi admin submitProduk, editProduk tetap sama) ...
 window.submitProduk = async function() {
   const editId = document.getElementById("editId").value;
   const dataObj = {
