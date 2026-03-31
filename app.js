@@ -26,7 +26,6 @@ window.tampilProduk = async function() {
       allProducts.push({ id: docSnap.id, ...docSnap.data() });
     });
 
-    // --- FITUR INCOME TRACKER (TOTAL CUAN) ---
     const pesananSnap = await getDocs(collection(db, "pesanan"));
     let totalCuan = 0;
     pesananSnap.forEach(docP => {
@@ -159,7 +158,7 @@ function renderHTML(data) {
   produkDiv.innerHTML = html || `<p style="text-align:center; padding:20px;">Produk tidak ditemukan.</p>`;
 }
 
-// --- 5. SISTEM DETAIL (MULTI IMAGE & NEGO) ---
+// --- 5. SISTEM DETAIL ---
 window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon, flashSaleEnd) {
   const daftarGambar = gambar.split(",");
   let htmlGambar = `<img src="${daftarGambar[0].trim()}" id="mainDetailImg" style="width:100%; border-radius:10px; margin-bottom:10px; border:1px solid #334155;">`;
@@ -176,7 +175,6 @@ window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon, flashSaleEn
   document.getElementById("detailDeskripsi").innerText = deskripsi.replace(/\\n/g, '\n');
   document.getElementById("detailGambarWadah").innerHTML = htmlGambar;
 
-  // FITUR TIMER FLASH SALE
   const timerDiv = document.getElementById("timerFlashSale");
   if(timerDiv) {
     if(flashSaleEnd) {
@@ -197,7 +195,6 @@ window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon, flashSaleEn
     } else { timerDiv.style.display = "none"; }
   }
   
-  // TOMBOL NEGO WA
   const btnNego = document.getElementById("btnNegoWA");
   if(btnNego) {
     btnNego.onclick = function() {
@@ -217,7 +214,6 @@ window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon, flashSaleEn
 
 window.tutupDetail = () => document.getElementById("modalDetail").style.display = "none";
 
-// FUNGSI BUKA STRUK
 window.bukaStruk = function(nama, harga, diskon) {
   const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
   dataPesananSementera = { nama, harga, inv, diskon };
@@ -240,22 +236,39 @@ window.bukaStruk = function(nama, harga, diskon) {
 
 window.tutupStruk = () => document.getElementById("modalStruk").style.display = "none";
 
+// --- UPDATE: NOTIFIKASI WHATSAPP OTOMATIS KE OWNER ---
 window.kirimInvoiceWA = async function() {
   const metode = document.getElementById("metodeBayar").value;
   const { nama, harga, inv } = dataPesananSementera;
   try {
-    await setDoc(doc(db, "pesanan", inv), { produk: nama, total: harga, metode: metode, status: "⏳ Menunggu Pembayaran", tanggal: new Date() });
-    const pesan = `*PESANAN BARU - FAZA STORE*\n` +
+    // Tetap simpan ke database agar tracker cuan & status tetap sinkron
+    await setDoc(doc(db, "pesanan", inv), { 
+      produk: nama, 
+      total: harga, 
+      metode: metode, 
+      status: "⏳ Menunggu Pembayaran", 
+      tanggal: new Date() 
+    });
+
+    // Format Pesan untuk Kamu (Owner) yang akan dikirim pembeli
+    const pesan = `*NOTIFIKASI PESANAN BARU - FAZA STORE* 🎮\n` +
                   `----------------------------------\n` +
-                  `*No. Invoice :* ${inv}\n` +
-                  `*Produk      :* ${nama}\n` +
-                  `*Total Bayar :* Rp${Number(harga).toLocaleString('id-ID')}\n` +
-                  `*Metode      :* ${metode}\n` +
-                  `----------------------------------\n\n` +
-                  `_Mohon kirimkan detail pembayaran/QRIS nya ya Min!_`;
+                  `*ID Invoice :* ${inv}\n` +
+                  `*Akun Game  :* ${nama}\n` +
+                  `*Total Bayar:* Rp${Number(harga).toLocaleString('id-ID')}\n` +
+                  `*Pembayaran:* ${metode}\n` +
+                  `----------------------------------\n` +
+                  `_Halo Admin, saya sudah memesan akun di atas. Mohon info detail pembayarannya ya!_`;
+
+    // Arahkan pembeli ke WA kamu
     window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
+    
     tutupStruk();
-  } catch (e) { alert("Gagal membuat pesanan."); }
+    alert("Pesanan dicatat! Silakan kirim pesan WhatsApp yang terbuka untuk melanjutkan.");
+  } catch (e) { 
+    console.error(e);
+    alert("Gagal membuat pesanan."); 
+  }
 };
 
 // --- 6. FITUR LACAK PESANAN ---
