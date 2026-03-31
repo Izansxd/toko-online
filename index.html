@@ -7,7 +7,6 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
      (function(){
-        // GANTI "YOUR_PUBLIC_KEY" dengan milikmu nanti
         emailjs.init("vj_Kj-N52AowtKruT"); 
      })();
   </script>
@@ -26,10 +25,8 @@
 
     body { font-family: 'Poppins', sans-serif; background-color: var(--dark); color: var(--text); margin: 0; padding: 0; overflow-x: hidden; }
 
-    /* Header & Branding */
     header { background: linear-gradient(135deg, var(--secondary), var(--primary)); padding: 40px 15px; text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
     
-    /* Announcement & Filter */
     .announcement-bar { background: #1e293b; border-bottom: 1px solid var(--input-border); padding: 10px 0; overflow: hidden; display: flex; align-items: center; }
     .announcement-label { background: var(--danger); color: white; padding: 2px 10px; font-size: 10px; font-weight: 800; border-radius: 4px; margin-left: 15px; }
     
@@ -37,7 +34,6 @@
     .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
     .btn-filter.active { background-color: var(--primary) !important; color: var(--dark) !important; }
 
-    /* Produk Grid */
     #produk { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 1000px; margin: 10px auto; padding: 0 15px; }
     .card { background: var(--card-bg); border-radius: 18px; overflow: hidden; border: 1px solid var(--input-border); position: relative; }
     .card img { width: 100%; height: 140px; object-fit: cover; }
@@ -47,23 +43,22 @@
     .harga-baru { color: var(--success); font-weight: 700; font-size: 15px; display: block; margin-bottom: 10px; }
     .btn-beli { background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; padding: 10px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
 
-    /* Modal Struk & Detail */
     #modalStruk, #modalDetail { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px; }
     .struk-box { background: white; color: #333; width: 100%; max-width: 380px; padding: 20px; border-radius: 15px; font-family: 'Poppins', sans-serif; overflow-y: auto; max-height: 90vh; }
     .struk-box label { font-size: 11px; font-weight: 700; color: #64748b; display: block; margin-top: 10px; }
-    .struk-box input, .struk-box select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; }
-
+    
     .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); }
     
     .sold-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 5; }
     .sold-label { background: var(--danger); color: white; padding: 5px 15px; font-weight: 800; transform: rotate(-15deg); border: 2px solid white; }
 
-    /* Testimoni */
     .testimoni-section { max-width: 1000px; margin: 30px auto; padding: 0 15px; }
     #list-testimoni { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
-    .card-testi img { width: 150px; height: 200px; object-fit: cover; border-radius: 10px; }
     
     .btn-buka-status { position: fixed; bottom: 20px; right: 20px; background: var(--primary); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; font-size: 20px; }
+    
+    /* Input Styling agar rapi */
+    input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
   </style>
 </head>
 <body>
@@ -99,14 +94,7 @@
     
     <div id="isiStruk"></div>
 
-    <label>Voucher (Opsional)</label>
-    <div style="display: flex; gap: 5px;">
-      <input type="text" id="inputVoucher" placeholder="KODE VOUCHER">
-      <button onclick="pakaiVoucher()" style="background:#000; color:#fff; border:none; padding:10px; border-radius:8px; margin-top:5px; font-size:10px;">CEK</button>
-    </div>
-    <div id="notifVoucher" style="font-size: 10px; margin-top: 2px;"></div>
-
-    <button onclick="kirimInvoiceWA()" style="width:100%; padding:15px; background:#10b981; color:#fff; border:none; border-radius:10px; font-weight:800; margin-top:20px; cursor:pointer;">KONFIRMASI & BAYAR</button>
+    <button onclick="kirimInvoiceWA()" style="width:100%; padding:15px; background:#10b981; color:#fff; border:none; border-radius:10px; font-weight:800; margin-top:20px; cursor:pointer;">KONFIRMASI & BAYAR SEKARANG</button>
     <button onclick="tutupStruk()" style="width:100%; background:none; border:none; color:#888; font-size:11px; margin-top:10px; cursor:pointer;">Kembali</button>
   </div>
 </div>
@@ -115,7 +103,6 @@
   <div class="detail-box">
     <div id="detailGambarWadah"></div>
     <h3 id="detailNama" style="margin: 15px 0 5px 0;"></h3>
-    <div id="timerFlashSale"></div>
     <div id="detailDeskripsi" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; font-size: 12px; white-space: pre-wrap; margin-bottom: 15px;"></div>
     
     <div style="display: flex; gap: 10px;">
