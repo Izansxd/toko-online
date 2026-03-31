@@ -357,7 +357,7 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
 
     try {
         // GANTI ID DI BAWAH DENGAN MILIKMU
-        await emailjs.send("service_xxxx", "template_xxxx", {
+        await emailjs.send("service_xe358l6", "template_2j4eu9o", {
             nama_pembeli: namaPembeli,
             email_pembeli: emailTujuan,
             produk_nama: produk,
