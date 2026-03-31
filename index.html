@@ -43,7 +43,7 @@
     .harga-baru { color: var(--success); font-weight: 700; font-size: 15px; display: block; margin-bottom: 10px; }
     .btn-beli { background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; padding: 10px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
 
-    #modalStruk, #modalDetail { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px; }
+    #modalStruk, #modalDetail, #modalLacak { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px; }
     .struk-box { background: white; color: #333; width: 100%; max-width: 380px; padding: 20px; border-radius: 15px; font-family: 'Poppins', sans-serif; overflow-y: auto; max-height: 90vh; }
     .struk-box label { font-size: 11px; font-weight: 700; color: #64748b; display: block; margin-top: 10px; }
     
@@ -55,10 +55,12 @@
     .testimoni-section { max-width: 1000px; margin: 30px auto; padding: 0 15px; }
     #list-testimoni { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
     
-    .btn-buka-status { position: fixed; bottom: 20px; right: 20px; background: var(--primary); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; font-size: 20px; }
+    .btn-buka-status { position: fixed; bottom: 20px; right: 20px; background: var(--primary); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; font-size: 20px; cursor: pointer; }
     
-    /* Input Styling agar rapi */
     input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+    /* Tambahan Style Modal Lacak */
+    .lacak-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 350px; padding: 20px; border-radius: 15px; border: 1px solid var(--primary); text-align: center; }
   </style>
 </head>
 <body>
@@ -91,9 +93,7 @@
   <div class="struk-box">
     <h3 style="text-align:center; margin: 0;">STRUK PESANAN</h3>
     <hr style="border: 0.5px dashed #ccc; margin: 15px 0;">
-    
     <div id="isiStruk"></div>
-
     <button onclick="kirimInvoiceWA()" style="width:100%; padding:15px; background:#10b981; color:#fff; border:none; border-radius:10px; font-weight:800; margin-top:20px; cursor:pointer;">KONFIRMASI & BAYAR SEKARANG</button>
     <button onclick="tutupStruk()" style="width:100%; background:none; border:none; color:#888; font-size:11px; margin-top:10px; cursor:pointer;">Kembali</button>
   </div>
@@ -104,7 +104,6 @@
     <div id="detailGambarWadah"></div>
     <h3 id="detailNama" style="margin: 15px 0 5px 0;"></h3>
     <div id="detailDeskripsi" style="background: rgba(0,0,0,0.2); padding: 10px; border-radius: 10px; font-size: 12px; white-space: pre-wrap; margin-bottom: 15px;"></div>
-    
     <div style="display: flex; gap: 10px;">
       <button id="btnNegoWA" style="flex:1; padding:12px; border-radius:10px; border:none; background:#25d366; color:#fff; font-weight:700;">💬 NEGO</button>
       <button id="btnLanjutBeli" style="flex:1; padding:12px; border-radius:10px; border:none; background:var(--primary); color:#fff; font-weight:700;">BELI</button>
@@ -113,7 +112,17 @@
   </div>
 </div>
 
-<button class="btn-buka-status" onclick="window.location.href='#status'" title="Lacak Pesanan">🚚</button>
+<div id="modalLacak">
+  <div class="lacak-box">
+    <h3 style="margin-top:0; color: var(--primary);">🚚 Lacak Pesanan</h3>
+    <p style="font-size: 12px; color: #94a3b8;">Masukkan ID Invoice untuk cek status</p>
+    <input type="text" id="inputCekPesanan" placeholder="Contoh: FZ-1234" style="text-align:center; text-transform:uppercase; margin-bottom:15px;">
+    <button onclick="cekStatusPesanan()" style="width:100%; padding:12px; background:var(--primary); color:var(--dark); border:none; border-radius:10px; font-weight:800; cursor:pointer;">CEK STATUS</button>
+    <button onclick="document.getElementById('modalLacak').style.display='none'" style="width:100%; background:none; border:none; color:#94a3b8; margin-top:15px; cursor:pointer; font-size:12px;">Tutup</button>
+  </div>
+</div>
+
+<button class="btn-buka-status" onclick="document.getElementById('modalLacak').style.display='flex'" title="Lacak Pesanan">🚚</button>
 
 <footer style="text-align:center; padding:30px; font-size:11px; color:#64748b;">
   &copy; 2026 Faza Store Indonesia. All Rights Reserved.
