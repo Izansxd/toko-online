@@ -72,7 +72,6 @@
       box-shadow: 0 5px 15px rgba(255, 65, 108, 0.3);
       position: relative; overflow: hidden;
     }
-    /* Animasi Kilau (Shimmer) */
     .flash-sale-box::after {
       content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
       background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
@@ -82,7 +81,6 @@
 
     #timer { background: rgba(0,0,0,0.2); padding: 4px 10px; border-radius: 8px; font-family: monospace; font-size: 16px; }
 
-    /* Pengumuman */
     .announcement-bar {
       background: #1e293b; border-bottom: 1px solid var(--input-border);
       padding: 10px 0; overflow: hidden; display: flex; align-items: center;
@@ -92,7 +90,6 @@
       font-size: 10px; font-weight: 800; border-radius: 4px; margin-left: 15px; z-index: 10;
     }
 
-    /* Kategori & Search */
     .filter-container { display: flex; gap: 10px; padding: 20px 15px 5px; overflow-x: auto; scrollbar-width: none; }
     .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: 0.3s; }
     .btn-filter.active { background-color: var(--primary) !important; color: var(--dark) !important; border-color: var(--primary); }
@@ -102,7 +99,6 @@
     .search-box input { width: 100%; padding: 12px 15px 12px 45px; border-radius: 15px; border: 1px solid var(--input-border); background: var(--input-bg); color: var(--text); outline: none; }
     .search-box i { position: absolute; left: 15px; color: #94a3b8; font-style: normal; }
 
-    /* Produk Grid */
     #produk { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 1000px; margin: 10px auto; padding: 0 15px; }
     .card { background: var(--card-bg); border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; position: relative; transition: transform 0.2s; border: 1px solid var(--input-border); }
     .card:active { transform: scale(0.98); }
@@ -139,7 +135,6 @@
 
     .card button { background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 700; width: 100%; font-size: 13px; }
 
-    /* Testimoni & Footer */
     .testimoni-section { max-width: 1000px; margin: 40px auto; padding: 0 15px; }
     #list-testimoni { display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; }
     .card-testi { min-width: 180px; background: var(--card-bg); border-radius: 15px; padding: 10px; border: 1px solid var(--input-border); flex-shrink: 0; }
@@ -150,7 +145,6 @@
     footer { text-align: center; padding: 40px 20px; font-size: 12px; color: #64748b; }
     @media (min-width: 768px) { #produk { grid-template-columns: repeat(3, 1fr); } }
 
-    /* Modal & Drawer */
     .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); display: none; z-index: 1000; backdrop-filter: blur(4px); }
     .drawer-content { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--card-bg); padding: 30px 20px; z-index: 1001; transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); border-top-left-radius: 25px; border-top-right-radius: 25px; }
     .drawer-content.active { bottom: 0; }
@@ -158,7 +152,6 @@
     #modalStruk { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px); }
     .struk-box { background: white; color: #333; width: 85%; max-width: 350px; padding: 25px; border-radius: 15px; font-family: monospace; }
     
-    /* MODAL DETAIL STYLE UPDATED */
     #modalDetail { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9998; align-items: center; justify-content: center; backdrop-filter: blur(8px); padding: 20px; }
     .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 24px; overflow: hidden; border: 1px solid var(--input-border); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); position: relative; }
     
@@ -263,8 +256,20 @@
   <div class="struk-box">
     <h2 style="text-align:center; margin: 0 0 10px 0;">FAZA STORE</h2>
     <div style="border-top: 1px dashed #ccc; margin-bottom: 10px;"></div>
+    
     <div id="isiStruk"></div>
+    
+    <div style="margin-top: 15px; border-top: 1px dashed #ccc; padding-top: 10px;">
+      <label style="font-size: 11px; font-weight: 700;">Gunakan Voucher (Opsional):</label>
+      <div style="display: flex; gap: 5px; margin-top: 5px;">
+        <input type="text" id="inputVoucher" placeholder="KODE VOUCHER" style="flex: 1; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-family: 'Poppins'; font-size: 11px; outline: none;">
+        <button onclick="pakaiVoucher()" style="padding: 8px 12px; background: #000; color: #fff; border-radius: 5px; border: none; font-size: 11px; font-weight: 700; cursor: pointer;">CEK</button>
+      </div>
+      <div id="notifVoucher" style="font-size: 10px; margin-top: 5px; font-weight: 600;"></div>
+    </div>
+
     <div style="border-top: 1px dashed #ccc; margin: 10px 0;"></div>
+    
     <label style="font-size: 11px; font-weight: 700;">Metode Pembayaran:</label>
     <select id="metodeBayar" style="width:100%; padding:12px; margin-top:8px; border-radius:8px; border: 1px solid #ddd; background: #f9f9f9; font-family: 'Poppins';">
       <option value="QRIS (All Payment)">QRIS (All Payment)</option>
@@ -272,6 +277,7 @@
       <option value="GoPay">GoPay</option>
       <option value="OVO">OVO</option>
     </select>
+    
     <button onclick="kirimInvoiceWA()" style="width:100%; padding:14px; background:#000; color:#fff; border-radius:8px; border:none; font-weight:800; margin-top:15px; cursor: pointer;">BAYAR SEKARANG</button>
     <button onclick="tutupStruk()" style="width:100%; margin-top:10px; background:none; border:none; color:#888; font-size: 11px; cursor:pointer;">Batalkan Pesanan</button>
   </div>
@@ -290,7 +296,6 @@
     document.body.classList.add('light-mode');
   }
 
-  // Timer Utama Sinkron dengan Admin (Local Storage Backup)
   function startRealTimer() {
     let endTime = localStorage.getItem('faza_flash_sale_end');
     if (!endTime) {
