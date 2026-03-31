@@ -7,7 +7,6 @@
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
      (function(){
-        // Public Key tetap sesuai milikmu
         emailjs.init("vj_Kj-N52AowtKruT"); 
      })();
   </script>
@@ -44,6 +43,13 @@
     .card-admin { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid #334155; }
     .card-admin img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
     .card-admin button { width: auto; padding: 8px 12px; margin: 0; }
+
+    /* Gaya Khusus List Pesanan Admin */
+    .order-item-admin {
+      background: white; color: #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #10b981;
+    }
+    .order-item-admin p { margin: 3px 0; font-size: 12px; }
+    .wa-tag { background: #25d366; color: white; padding: 2px 6px; border-radius: 4px; text-decoration: none; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -54,8 +60,8 @@
 </div>
 
 <div class="box" style="max-width: 600px; border: 1px solid #10b981;">
-  <h1>📥 Pesanan Masuk & Kirim Akun</h1>
-  <p style="font-size: 10px; color: #94a3b8; text-align: center;">Kirim data akun ke email pembeli lewat tombol di bawah.</p>
+  <h1>📥 Pesanan Masuk (Otomatis)</h1>
+  <p style="font-size: 10px; color: #94a3b8; text-align: center; margin-bottom: 15px;">Nomor WA pembeli otomatis tampil di sini.</p>
   <div id="listPesananAdmin">
     <p style="text-align: center; font-size: 12px; color: #64748b;">Memuat data pesanan...</p>
   </div>
@@ -133,7 +139,6 @@
 </div>
 
 <script>
-// Fungsi format rupiah tetap ada agar input tetap rapi
 function formatRupiah(el, hiddenId) {
     let value = el.value.replace(/[^0-9]/g, ""); 
     document.getElementById(hiddenId).value = value;
