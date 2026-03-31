@@ -4,6 +4,13 @@
   <meta charset="UTF-8">
   <title>Admin Panel - Faza Store</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+     (function(){
+        // GANTI "YOUR_PUBLIC_KEY" dengan Public Key dari akun EmailJS kamu
+        emailjs.init("YOUR_PUBLIC_KEY"); 
+     })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Poppins', sans-serif; background: #0f172a; color: white; padding: 20px; margin: 0; }
@@ -11,13 +18,7 @@
     h1 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px; }
     
     /* DASHBOARD STYLE */
-    .dashboard-grid { 
-      display: grid; 
-      grid-template-columns: repeat(3, 1fr); 
-      gap: 10px; 
-      max-width: 600px; 
-      margin: 0 auto 20px; 
-    }
+    .dashboard-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 600px; margin: 0 auto 20px; }
     .stat-card { background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; text-align: center; }
     .stat-card span { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
     .stat-card h2 { margin: 5px 0 0; font-size: 18px; }
@@ -31,64 +32,53 @@
       border: 1px solid #334155; box-sizing: border-box; background: #0f172a; color: white;
       font-family: 'Poppins', sans-serif; outline: none;
     }
-    input:focus { border-color: #00d2ff; }
     
     .flex-row { display: flex; gap: 10px; }
     .flex-row > div { flex: 1; }
 
+    /* STYLE BARU UNTUK LIST PESANAN */
+    .order-card { background: #0f172a; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 4px solid #10b981; }
+    .order-card p { margin: 5px 0; font-size: 13px; }
+    .order-card b { color: #00d2ff; }
+    .btn-action { display: flex; gap: 5px; margin-top: 10px; }
+
     .promo-box {
       background: rgba(239, 68, 68, 0.1); padding: 15px; border-radius: 12px;
       margin-top: 15px; border: 1px solid #ef4444; display: flex;
-      align-items: center; justify-content: center; gap: 12px; cursor: pointer; transition: 0.2s;
+      align-items: center; justify-content: center; gap: 12px; cursor: pointer;
     }
-    .promo-box:active { transform: scale(0.98); background: rgba(239, 68, 68, 0.2); }
-    .promo-box input[type="checkbox"] { width: 20px; height: 20px; margin: 0; cursor: pointer; accent-color: #ef4444; flex-shrink: 0; }
-    .promo-box label { margin: 0; color: #ef4444; font-weight: 800; cursor: pointer; font-size: 13px; line-height: 1; text-transform: uppercase; }
+    .promo-box label { margin: 0; color: #ef4444; font-weight: 800; cursor: pointer; font-size: 13px; text-transform: uppercase; }
 
-    textarea { height: 100px; resize: vertical; }
-
-    button { width: 100%; padding: 14px; margin-top: 15px; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 800; transition: 0.3s; text-transform: uppercase; }
+    button { width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 800; transition: 0.3s; text-transform: uppercase; }
     .btn-tambah { background: linear-gradient(90deg, #3a7bd5, #00d2ff); color: white; }
-    .btn-tambah:active { transform: scale(0.95); }
-    
-    .btn-lihat { background: #475569; color: white; margin-top: 10px; }
-    .btn-warning { background: #f1c40f; color: #0f172a; }
     .btn-success { background: #10b981; color: white; }
-    .btn-voucher { background: #8b5cf6; color: white; } /* Ungu untuk voucher */
+    .btn-warning { background: #f1c40f; color: #0f172a; }
+    .btn-danger { background: #ef4444; color: white; }
     
     .produk-container { max-width: 600px; margin: 40px auto; padding: 0 15px; }
-    h2 { border-left: 4px solid #00d2ff; padding-left: 10px; font-size: 18px; color: white; margin-bottom: 20px; }
-    
     .card-admin { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid #334155; }
-    .card-admin img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 1px solid #334155; }
+    .card-admin img { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; }
     .card-admin button { width: auto; padding: 8px 12px; margin: 0; }
-
-    #list-testimoni { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-    .card-testi { background: #1e293b; padding: 8px; border-radius: 10px; border: 1px solid #334155; }
-    .card-testi img { width: 100%; border-radius: 5px; margin-bottom: 5px; }
   </style>
 </head>
-
 <body>
 
 <div class="dashboard-grid">
-  <div class="stat-card stat-total">
-    <span>Total Produk</span>
-    <h2 id="statTotal">0</h2>
-  </div>
-  <div class="stat-card stat-sold">
-    <span>Sold Out</span>
-    <h2 id="statSold">0</h2>
-  </div>
-  <div class="stat-card stat-cuan">
-    <span>Total Cuan</span>
-    <h2 id="statCuan">Rp0</h2>
+  <div class="stat-card stat-total"><span>Total Produk</span><h2 id="statTotal">0</h2></div>
+  <div class="stat-card stat-sold"><span>Sold Out</span><h2 id="statSold">0</h2></div>
+  <div class="stat-card stat-cuan"><span>Total Cuan</span><h2 id="statCuan">Rp0</h2></div>
+</div>
+
+<div class="box" style="max-width: 600px; border: 1px solid #10b981;">
+  <h1>📥 Pesanan Masuk & Kirim Akun</h1>
+  <p style="font-size: 10px; color: #94a3b8; text-align: center;">Cek bukti transfer, lalu ketik data akun untuk dikirim ke email pembeli.</p>
+  <div id="listPesananAdmin">
+    <p style="text-align: center; font-size: 12px; color: #64748b;">Memuat data pesanan...</p>
   </div>
 </div>
 
 <div class="box">
   <h1>🛠️ Atur Produk Akun</h1>
-
   <label>Nama Akun</label>
   <input type="text" id="nama" placeholder="Contoh: Akun ML Mythic Glory">
   
@@ -99,7 +89,7 @@
       <input type="hidden" id="harga"> 
     </div>
     <div>
-      <label>Harga Coret (Diskon)</label>
+      <label>Harga Coret</label>
       <input type="text" id="displayHargaLama" placeholder="Rp 0" oninput="formatRupiah(this, 'hargaLama')">
       <input type="hidden" id="hargaLama">
     </div>
@@ -129,76 +119,47 @@
     <label for="isPromo">⚡ AKTIFKAN MODE FLASH SALE</label>
   </div>
   
-  <label>Waktu Berakhir Flash Sale (Opsional)</label>
+  <label>Waktu Berakhir Flash Sale</label>
   <input type="datetime-local" id="flashSaleEnd">
   
-  <label>Spesifikasi Lengkap (Muncul di Cek Detail)</label>
-  <textarea id="deskripsi" placeholder="Tulis per baris, contoh:
-- Skin Legend: Gusion
-- Hero: 120
-- Login: Moonton (Sepaket)"></textarea>
+  <label>Spesifikasi Lengkap</label>
+  <textarea id="deskripsi" placeholder="- Skin Legend: Gusion..."></textarea>
   
-  <label>Link Foto Akun (Gunakan koma [,] jika lebih dari 1 foto)</label>
-  <input type="text" id="gambar" placeholder="link1.jpg, link2.jpg, link3.jpg">
+  <label>Link Foto Akun (Gunakan koma [,] jika > 1)</label>
+  <input type="text" id="gambar" placeholder="link1.jpg, link2.jpg">
   
   <input type="hidden" id="editId">
-  
   <button class="btn-tambah" onclick="submitProduk()">💾 SIMPAN DATA PRODUK</button>
-  <button class="btn-lihat" onclick="resetForm()">➕ RESET FORM / TAMBAH BARU</button>
+  <button class="btn-lihat" onclick="resetForm()">➕ RESET FORM</button>
 </div>
 
 <div class="box">
   <h1>🎟️ Kelola Voucher Belanja</h1>
   <label>Kode Voucher</label>
   <input type="text" id="v_kode" placeholder="Contoh: HEMAT10K">
-  
   <div class="flex-row">
-    <div>
-      <label>Potongan Harga (Rp)</label>
-      <input type="number" id="v_potongan" placeholder="Contoh: 10000">
-    </div>
-    <div>
-      <label>Kuota (Limit Orang)</label>
-      <input type="number" id="v_kuota" placeholder="Contoh: 5">
-    </div>
+    <div><label>Potongan (Rp)</label><input type="number" id="v_potongan"></div>
+    <div><label>Kuota</label><input type="number" id="v_kuota"></div>
   </div>
-  <button class="btn-voucher" onclick="updateVoucher()">💾 SIMPAN VOUCHER</button>
-</div>
-
-<div class="box">
-  <h1>🧾 Update Status Pesanan</h1>
-  <label>ID Pesanan</label>
-  <input type="text" id="adminIdPesanan" placeholder="Masukkan ID Invoice (FZ-XXXX)">
-  <label>Pilih Status Terbaru</label>
-  <select id="adminStatusUpdate">
-    <option value="⏳ Menunggu Pembayaran">⏳ Menunggu Pembayaran</option>
-    <option value="✅ Pembayaran Diterima (Proses)">✅ Pembayaran Diterima (Proses)</option>
-    <option value="🚚 Data Akun Sedang Dikirim">🚚 Data Akun Sedang Dikirim</option>
-    <option value="🎉 Pesanan Selesai">🎉 Pesanan Selesai</option>
-    <option value="❌ Pesanan Dibatalkan">❌ Pesanan Dibatalkan</option>
-  </select>
-  <button class="btn-success" onclick="updateStatusPesanan()">💾 UPDATE STATUS</button>
+  <button class="btn-voucher" style="background:#8b5cf6; color:white;" onclick="updateVoucher()">💾 SIMPAN VOUCHER</button>
 </div>
 
 <div class="box">
   <h1>📢 Pengumuman Toko</h1>
-  <textarea id="teksBaru" placeholder="Tulis info toko di sini..."></textarea>
+  <textarea id="teksBaru" placeholder="Tulis info toko..."></textarea>
   <button class="btn-warning" onclick="updatePengumuman()">📢 UPDATE RUNNING TEXT</button>
 </div>
 
 <div class="box">
   <h1>📸 Tambah Testimoni</h1>
-  <label>Link Foto Bukti</label>
   <input type="text" id="fotoTesti" placeholder="Link gambar testi">
-  
-  <button class="btn-tambah" onclick="submitTestimoni()" style="background: #10b981;">+ SIMPAN TESTIMONI</button>
+  <button class="btn-success" onclick="submitTestimoni()">+ SIMPAN TESTIMONI</button>
   <button class="btn-lihat" onclick="window.location.href='index.html'">👀 LIHAT TAMPILAN TOKO</button>
 </div>
 
 <div class="produk-container">
   <h2>Daftar Akun Aktif</h2>
   <div id="produk"></div>
-
   <h2 style="margin-top: 40px;">Daftar Testimoni</h2>
   <div id="list-testimoni"></div>
 </div>
@@ -207,10 +168,7 @@
 function formatRupiah(el, hiddenId) {
     let value = el.value.replace(/[^0-9]/g, ""); 
     document.getElementById(hiddenId).value = value;
-    if (value === "") {
-        el.value = "";
-        return;
-    }
+    if (value === "") { el.value = ""; return; }
     el.value = new Intl.NumberFormat('id-ID').format(value);
 }
 
@@ -225,7 +183,7 @@ function resetForm() {
     document.getElementById("flashSaleEnd").value = "";
     document.getElementById("editId").value = "";
     document.getElementById("isPromo").checked = false;
-    alert("Form siap untuk tambah produk baru!");
+    alert("Form di-reset!");
 }
 </script>
 
