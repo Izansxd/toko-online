@@ -95,6 +95,15 @@ window.searchProduk = function() {
   renderHTML(filteredData);
 };
 
+// --- FUNGSI BARU: FILTER GAME (SINKRON DENGAN TOMBOL HTML) ---
+window.filterGame = function(el, kategori) {
+  // Pindahkan class active ke tombol yang diklik
+  el.parentElement.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  // Jalankan pencarian ulang berdasarkan kategori baru
+  window.searchProduk();
+};
+
 window.filterHarga = function(el, min, max) {
   el.parentElement.querySelectorAll('.btn-filter').forEach(b => b.classList.remove('active'));
   el.classList.add('active');
