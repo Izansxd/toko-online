@@ -215,42 +215,93 @@ window.bukaDetail = function(nama, deskripsi, gambar, harga, diskon, flashSaleEn
 window.tutupDetail = () => document.getElementById("modalDetail").style.display = "none";
 
 window.bukaStruk = function(nama, harga, diskon) {
-  const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
-  dataPesananSementera = { nama, harga, inv, diskon };
+  const inv = dataPesananSementera.inv || "FZ-" + Math.floor(1000 + Math.random() * 9999);
+  
+  // Pastikan harga tidak minus karena voucher
+  const hargaTampil = harga < 0 ? 0 : harga;
+  
+  dataPesananSementera = { ...dataPesananSementera, nama, harga: hargaTampil, inv, diskon };
   
   document.getElementById("isiStruk").innerHTML = `
     <div style="font-size: 13px; color: #333; line-height: 1.6;">
       <div style="display:flex; justify-content:space-between;"><span>No. Invoice</span><b>${inv}</b></div>
       <div style="display:flex; justify-content:space-between;"><span>Produk</span><b style="text-align:right; max-width:60%">${nama}</b></div>
-      <div style="display:flex; justify-content:space-between;"><span>Harga</span><span>Rp${(harga + diskon).toLocaleString('id-ID')}</span></div>
-      ${diskon > 0 ? `<div style="display:flex; justify-content:space-between; color:#ef4444;"><span>Potongan</span><span>-Rp${diskon.toLocaleString('id-ID')}</span></div>` : ''}
+      <div style="display:flex; justify-content:space-between;"><span>Harga</span><span>Rp${(hargaTampil + diskon + (dataPesananSementera.potonganVoucher || 0)).toLocaleString('id-ID')}</span></div>
+      
+      ${diskon > 0 ? `<div style="display:flex; justify-content:space-between; color:#ef4444;"><span>Diskon Item</span><span>-Rp${diskon.toLocaleString('id-ID')}</span></div>` : ''}
+      
+      ${dataPesananSementera.potonganVoucher ? `<div style="display:flex; justify-content:space-between; color:#10b981;"><span>Voucher (${dataPesananSementera.voucherDipakai})</span><span>-Rp${dataPesananSementera.potonganVoucher.toLocaleString('id-ID')}</span></div>` : ''}
+      
       <hr style="border: 0.5px dashed #ccc; margin: 10px 0;">
       <div style="display:flex; justify-content:space-between; font-size:16px; color:#10b981; font-weight:800;">
         <span>TOTAL</span>
-        <span>Rp${harga.toLocaleString('id-ID')}</span>
+        <span>Rp${hargaTampil.toLocaleString('id-ID')}</span>
       </div>
     </div>
   `;
   document.getElementById("modalStruk").style.display = "flex";
 };
 
-window.tutupStruk = () => document.getElementById("modalStruk").style.display = "none";
+window.tutupStruk = () => {
+    document.getElementById("modalStruk").style.display = "none";
+    dataPesananSementera = {}; // Reset data saat tutup
+};
 
-// --- UPDATE: NOTIFIKASI WHATSAPP OTOMATIS KE OWNER ---
+// --- LOGIKA VOUCHER (CEK & PAKAI) ---
+window.pakaiVoucher = async function() {
+  const kode = document.getElementById("inputVoucher").value.trim().toUpperCase();
+  const notif = document.getElementById("notifVoucher");
+  if(!kode) return;
+
+  try {
+    const vSnap = await getDoc(doc(db, "vouchers", kode));
+    if (vSnap.exists()) {
+      const vData = vSnap.data();
+      if (vData.kuota > 0) {
+        const potongan = Number(vData.potongan);
+        const hargaBaru = dataPesananSementera.harga - potongan;
+        
+        dataPesananSementera.voucherDipakai = kode;
+        dataPesananSementera.potonganVoucher = potongan;
+        
+        window.bukaStruk(dataPesananSementera.nama, hargaBaru, dataPesananSementera.diskon);
+        notif.innerText = "✅ Voucher Berhasil!";
+        notif.style.color = "green";
+      } else {
+        notif.innerText = "❌ Kuota Voucher Habis!";
+        notif.style.color = "red";
+      }
+    } else {
+      notif.innerText = "❌ Kode Salah!";
+      notif.style.color = "red";
+    }
+  } catch (e) { console.error(e); }
+};
+
+// --- KIRIM INVOICE + POTONG KUOTA VOUCHER ---
 window.kirimInvoiceWA = async function() {
   const metode = document.getElementById("metodeBayar").value;
-  const { nama, harga, inv } = dataPesananSementera;
+  const { nama, harga, inv, voucherDipakai } = dataPesananSementera;
   try {
-    // Tetap simpan ke database agar tracker cuan & status tetap sinkron
+    // 1. Jika pakai voucher, kurangi kuota di DB
+    if(voucherDipakai) {
+        const vRef = doc(db, "vouchers", voucherDipakai);
+        const vSnap = await getDoc(vRef);
+        if(vSnap.exists()) {
+            await updateDoc(vRef, { kuota: vSnap.data().kuota - 1 });
+        }
+    }
+
+    // 2. Simpan pesanan
     await setDoc(doc(db, "pesanan", inv), { 
       produk: nama, 
       total: harga, 
       metode: metode, 
       status: "⏳ Menunggu Pembayaran", 
-      tanggal: new Date() 
+      tanggal: new Date(),
+      voucher: voucherDipakai || "Tidak Ada"
     });
 
-    // Format Pesan untuk Kamu (Owner) yang akan dikirim pembeli
     const pesan = `*NOTIFIKASI PESANAN BARU - FAZA STORE* 🎮\n` +
                   `----------------------------------\n` +
                   `*ID Invoice :* ${inv}\n` +
@@ -260,15 +311,9 @@ window.kirimInvoiceWA = async function() {
                   `----------------------------------\n` +
                   `_Halo Admin, saya sudah memesan akun di atas. Mohon info detail pembayarannya ya!_`;
 
-    // Arahkan pembeli ke WA kamu
     window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesan)}`, "_blank");
-    
     tutupStruk();
-    alert("Pesanan dicatat! Silakan kirim pesan WhatsApp yang terbuka untuk melanjutkan.");
-  } catch (e) { 
-    console.error(e);
-    alert("Gagal membuat pesanan."); 
-  }
+  } catch (e) { alert("Gagal membuat pesanan."); }
 };
 
 // --- 6. FITUR LACAK PESANAN ---
@@ -349,6 +394,19 @@ window.updateStatusPesanan = async function() {
   try {
     await setDoc(doc(db, "pesanan", invId), { status: status }, { merge: true });
     alert("Status Terupdate!");
+  } catch (e) { alert("Gagal!"); }
+};
+
+// ADMIN: SIMPAN VOUCHER BARU
+window.updateVoucher = async function() {
+  const kode = document.getElementById("v_kode").value.trim().toUpperCase();
+  const potongan = Number(document.getElementById("v_potongan").value);
+  const kuota = Number(document.getElementById("v_kuota").value);
+  if(!kode || !potongan) return alert("Isi data voucher!");
+  try {
+    await setDoc(doc(db, "vouchers", kode), { potongan, kuota });
+    alert("Voucher Aktif!");
+    location.reload();
   } catch (e) { alert("Gagal!"); }
 };
 
