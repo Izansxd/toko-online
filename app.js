@@ -331,5 +331,36 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
 
 window.hapusPesanan = async (id) => { if(confirm("Hapus pesanan?")) { await deleteDoc(doc(db, "pesanan", id)); location.reload(); } };
 
+// --- 11. FITUR LACAK PESANAN (UNTUK PEMBELI) ---
+window.cekStatusPesanan = async function() {
+    const invId = document.getElementById("inputCekPesanan").value.trim().toUpperCase();
+    if(!invId) return alert("Masukkan ID Invoice (FZ-xxxx)!");
+
+    try {
+        const docRef = doc(db, "pesanan", invId);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+            const p = docSnap.data();
+            let msg = `📌 STATUS PESANAN: ${invId}\n`;
+            msg += `--------------------------\n`;
+            msg += `Produk: ${p.produk}\n`;
+            msg += `Status: ${p.status}\n`;
+            
+            if(p.status === "⏳ Menunggu Validasi") {
+                msg += `\nInfo: Pembayaran kamu sedang dicek admin. Mohon ditunggu ya!`;
+            } else if(p.status === "🎉 Pesanan Selesai") {
+                msg += `\nInfo: Data akun sudah dikirim ke email ${p.email}. Cek inbox/spam kamu!`;
+            }
+
+            alert(msg);
+        } else {
+            alert("❌ ID Invoice tidak ditemukan. Pastikan kodenya benar.");
+        }
+    } catch (e) {
+        alert("Gagal mengecek status.");
+    }
+};
+
 // Jalankan Awal
 window.tampilProduk();
