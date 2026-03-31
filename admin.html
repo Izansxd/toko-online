@@ -10,7 +10,7 @@
     .box { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #334155; }
     h1 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px; }
     
-    /* DASHBOARD STYLE - UPDATED TO 3 COLUMNS */
+    /* DASHBOARD STYLE */
     .dashboard-grid { 
       display: grid; 
       grid-template-columns: repeat(3, 1fr); 
@@ -23,7 +23,7 @@
     .stat-card h2 { margin: 5px 0 0; font-size: 18px; }
     .stat-total h2 { color: #00d2ff; }
     .stat-sold h2 { color: #10b981; }
-    .stat-cuan h2 { color: #f1c40f; } /* Warna kuning untuk cuan */
+    .stat-cuan h2 { color: #f1c40f; }
 
     label { font-size: 11px; color: #94a3b8; margin-top: 12px; display: block; font-weight: 600; text-transform: uppercase; }
     input, textarea, select { 
@@ -54,6 +54,7 @@
     .btn-lihat { background: #475569; color: white; margin-top: 10px; }
     .btn-warning { background: #f1c40f; color: #0f172a; }
     .btn-success { background: #10b981; color: white; }
+    .btn-voucher { background: #8b5cf6; color: white; } /* Ungu untuk voucher */
     
     .produk-container { max-width: 600px; margin: 40px auto; padding: 0 15px; }
     h2 { border-left: 4px solid #00d2ff; padding-left: 10px; font-size: 18px; color: white; margin-bottom: 20px; }
@@ -144,6 +145,24 @@
   
   <button class="btn-tambah" onclick="submitProduk()">💾 SIMPAN DATA PRODUK</button>
   <button class="btn-lihat" onclick="resetForm()">➕ RESET FORM / TAMBAH BARU</button>
+</div>
+
+<div class="box">
+  <h1>🎟️ Kelola Voucher Belanja</h1>
+  <label>Kode Voucher</label>
+  <input type="text" id="v_kode" placeholder="Contoh: HEMAT10K">
+  
+  <div class="flex-row">
+    <div>
+      <label>Potongan Harga (Rp)</label>
+      <input type="number" id="v_potongan" placeholder="Contoh: 10000">
+    </div>
+    <div>
+      <label>Kuota (Limit Orang)</label>
+      <input type="number" id="v_kuota" placeholder="Contoh: 5">
+    </div>
+  </div>
+  <button class="btn-voucher" onclick="updateVoucher()">💾 SIMPAN VOUCHER</button>
 </div>
 
 <div class="box">
