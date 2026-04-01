@@ -50,7 +50,6 @@ window.tampilProduk = async function() {
     muatVoucher();
     if(window.location.href.includes("admin.html")) muatPesananMasuk();
     
-    // Panggil Live Notif setelah produk tampil
     jalankanLiveNotif();
   } catch (error) { console.error(error); }
 };
@@ -212,7 +211,7 @@ window.filterGame = function(el, kategori) {
   }
 };
 
-// --- 8. MODAL DETAIL & STRUK ---
+// --- 8. MODAL DETAIL ---
 window.bukaDetail = function(nama, deskripsi, gambar, harga) {
   const daftarGambar = gambar.split(",");
   let htmlGambar = `<img src="${daftarGambar[0].trim()}" id="mainDetailImg" style="width:100%; border-radius:10px; margin-bottom:10px;">`;
@@ -237,23 +236,26 @@ window.bukaDetail = function(nama, deskripsi, gambar, harga) {
 
 window.tutupDetail = () => document.getElementById("modalDetail").style.display = "none";
 
-// --- UPDATE: BUKA STRUK DENGAN VOUCHER ---
+// --- 9. BUKA STRUK (DENGAN KOLOM VOUCHER) ---
 window.bukaStruk = function(nama, harga) {
   const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
-  // Simpan harga asli untuk keperluan hitung voucher
   dataPesananSementera = { produk: nama, hargaAsli: harga, total: harga, inv: inv, voucherPakai: "" };
   
   document.getElementById("isiStruk").innerHTML = `
-    <p style="margin:5px 0;"><b>Invoice:</b> ${inv}</p>
-    <p style="margin:5px 0;"><b>Produk:</b> ${nama}</p>
-    <p style="margin:5px 0; color:#10b981;"><b>Total Bayar:</b> <span id="displayTotalStruk" style="font-weight:bold;">Rp${harga.toLocaleString('id-ID')}</span></p>
-    <hr>
-    
-    <div style="display:flex; gap:5px; margin-bottom:10px;">
-      <input type="text" id="inputVoucher" placeholder="Kode Voucher" style="flex:1; margin-top:0; text-transform:uppercase;">
-      <button onclick="cekVoucherAktif()" style="padding:10px; background:#0f172a; color:white; border:none; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;">PAKAI</button>
+    <div style="font-size: 13px; color: #333;">
+        <p style="margin:5px 0;"><b>Invoice:</b> ${inv}</p>
+        <p style="margin:5px 0;"><b>Produk:</b> ${nama}</p>
+        <p style="margin:5px 0; color:#10b981;"><b>Total Bayar:</b> <span id="displayTotalStruk" style="font-weight:bold;">Rp${harga.toLocaleString('id-ID')}</span></p>
     </div>
-    <div id="pesanVoucher" style="font-size:10px; margin-bottom:10px;"></div>
+    
+    <label style="margin-top:15px; display:block; font-size:11px; font-weight:700;">MASUKKAN VOUCHER (OPSIONAL)</label>
+    <div style="display:flex; gap:5px; margin-bottom:15px;">
+      <input type="text" id="inputVoucher" placeholder="KODE VOUCHER" style="flex:1; margin-top:0; text-transform:uppercase; border:1px solid #ccc; padding:8px; border-radius:5px;">
+      <button onclick="cekVoucherAktif()" style="padding:0 15px; background:#0f172a; color:white; border:none; border-radius:5px; cursor:pointer; font-size:11px; font-weight:bold;">PAKAI</button>
+    </div>
+    <div id="pesanVoucher" style="font-size:10px; margin-top:-10px; margin-bottom:10px;"></div>
+
+    <hr style="border:0.5px solid #eee; margin:15px 0;">
 
     <label>Nama Pembeli:</label><input type="text" id="pembeliNama">
     <label>WhatsApp:</label><input type="number" id="pembeliWA" placeholder="628xxx">
@@ -270,7 +272,7 @@ window.bukaStruk = function(nama, harga) {
   document.getElementById("modalStruk").style.display = "flex";
 };
 
-// --- FUNGSI CEK VOUCHER ---
+// --- 10. FUNGSI CEK VOUCHER ---
 window.cekVoucherAktif = async function() {
     const kode = document.getElementById("inputVoucher").value.trim().toUpperCase();
     const pesan = document.getElementById("pesanVoucher");
@@ -291,13 +293,12 @@ window.cekVoucherAktif = async function() {
                 dataPesananSementera.voucherPakai = kode;
 
                 document.getElementById("displayTotalStruk").innerText = "Rp" + dataPesananSementera.total.toLocaleString('id-ID');
-                pesan.innerHTML = `<span style="color:green;">✔️ Berhasil! Potongan Rp${potongan.toLocaleString()}</span>`;
-                alert("Voucher Berhasil Dipasang!");
+                pesan.innerHTML = `<span style="color:green; font-weight:bold;">✔️ Voucher Berhasil! Potongan Rp${potongan.toLocaleString()}</span>`;
             } else {
-                pesan.innerHTML = `<span style="color:red;">❌ Kuota voucher habis!</span>`;
+                pesan.innerHTML = `<span style="color:red;">❌ Kuota voucher sudah habis!</span>`;
             }
         } else {
-            pesan.innerHTML = `<span style="color:red;">❌ Kode tidak valid!</span>`;
+            pesan.innerHTML = `<span style="color:red;">❌ Kode voucher tidak valid!</span>`;
         }
     } catch (e) { console.error(e); }
 };
@@ -311,7 +312,7 @@ window.pilihPembayaran = function(val) {
 
 window.tutupStruk = () => document.getElementById("modalStruk").style.display = "none";
 
-// --- 9. PROSES PESANAN ---
+// --- 11. PROSES PESANAN ---
 window.kirimInvoiceWA = async function() {
   const pNama = document.getElementById("pembeliNama").value;
   const pWA = document.getElementById("pembeliWA").value;
@@ -319,10 +320,9 @@ window.kirimInvoiceWA = async function() {
   const metode = document.getElementById("metodeBayar").value;
   const bukti = document.getElementById("buktiTransfer").value;
 
-  if(!pNama || !pWA || !pEmail || !metode || !bukti) return alert("Lengkapi data!");
+  if(!pNama || !pWA || !pEmail || !metode || !bukti) return alert("Lengkapi data pembeli & bukti bayar!");
 
   try {
-    // Jika pakai voucher, kurangi kuota di DB
     if(dataPesananSementera.voucherPakai) {
         const vRef = doc(db, "vouchers", dataPesananSementera.voucherPakai);
         const vSnap = await getDoc(vRef);
@@ -341,119 +341,4 @@ window.kirimInvoiceWA = async function() {
       status: "⏳ Menunggu Validasi", 
       tanggal: new Date() 
     });
-    alert("Pesanan Berhasil! Menunggu validasi admin.");
-    location.reload();
-  } catch (e) { alert("Gagal!"); }
-};
-
-// --- 10. ADMIN: PESANAN MASUK ---
-async function muatPesananMasuk() {
-  const list = document.getElementById("listPesananAdmin");
-  if(!list) return;
-  const snap = await getDocs(collection(db, "pesanan"));
-  let html = "";
-  snap.forEach(d => {
-    const p = d.data();
-    html += `
-      <div class="order-item-admin" style="background:white; color:#333; padding:15px; border-radius:10px; margin-bottom:10px; border-left:5px solid #10b981;">
-        <p><b>ID:</b> ${d.id} | <b>Penerima:</b> ${p.pembeli}</p>
-        <p><b>WA:</b> <a href="https://wa.me/${p.whatsapp}" target="_blank" class="wa-tag">${p.whatsapp}</a></p>
-        <p><b>Email:</b> ${p.email}</p>
-        <p><b>Voucher:</b> ${p.voucherPakai || "-"}</p>
-        <p><b>Bukti:</b> <a href="${p.bukti}" target="_blank">Lihat Bukti</a></p>
-        <textarea id="dataAkun_${d.id}" placeholder="Isi data akun di sini..." style="width:100%; height:50px; color:#000; background:#eee;"></textarea>
-        <button onclick="kirimDataEmail('${d.id}', '${p.email}', '${p.produk}', '${p.pembeli}')" class="btn-success" style="padding:5px; font-size:12px;">📧 KIRIM KE EMAIL</button>
-        <button onclick="hapusPesanan('${d.id}')" style="background:none; color:red; border:none; cursor:pointer; font-size:10px;">Hapus Data</button>
-      </div>`;
-  });
-  list.innerHTML = html || "Kosong.";
-}
-
-window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) {
-    const dataAkun = document.getElementById(`dataAkun_${invId}`).value;
-    if(!dataAkun) return alert("Isi data akun dulu!");
-    try {
-        await emailjs.send("service_xe358l6", "template_2j4eu9o", {
-            nama_pembeli: namaPembeli,
-            email_pembeli: emailTujuan,
-            nama_akun: produk,
-            data_akun: dataAkun
-        });
-        await updateDoc(doc(db, "pesanan", invId), { status: "🎉 Pesanan Selesai" });
-        alert("Email Berhasil Terkirim!"); location.reload();
-    } catch (e) { alert("Gagal Kirim Email!"); }
-};
-
-window.hapusPesanan = async (id) => { if(confirm("Hapus pesanan?")) { await deleteDoc(doc(db, "pesanan", id)); location.reload(); } };
-
-// --- 11. FITUR LACAK PESANAN ---
-window.cekStatusPesanan = async function() {
-    const invId = document.getElementById("inputCekPesanan").value.trim().toUpperCase();
-    if(!invId) return alert("Masukkan ID Invoice (FZ-xxxx)!");
-
-    try {
-        const docRef = doc(db, "pesanan", invId);
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-            const p = docSnap.data();
-            let msg = `📌 STATUS PESANAN: ${invId}\n`;
-            msg += `--------------------------\n`;
-            msg += `Produk: ${p.produk}\n`;
-            msg += `Status: ${p.status}\n`;
-            
-            if(p.status === "⏳ Menunggu Validasi") {
-                msg += `\nInfo: Pembayaran kamu sedang dicek admin. Mohon ditunggu ya!`;
-            } else if(p.status === "🎉 Pesanan Selesai") {
-                msg += `\nInfo: Data akun sudah dikirim ke email ${p.email}. Cek inbox/spam kamu!`;
-            }
-
-            alert(msg);
-        } else {
-            alert("❌ ID Invoice tidak ditemukan.");
-        }
-    } catch (e) { alert("Gagal mengecek status."); }
-};
-
-// --- 12. FITUR LIVE SALES NOTIFICATION ---
-async function jalankanLiveNotif() {
-  const notifBox = document.getElementById("salesNotif");
-  const notifUser = document.getElementById("notifUser");
-  const notifProduk = document.getElementById("notifProduk");
-
-  if(!notifBox) return;
-
-  try {
-    const q = collection(db, "pesanan");
-    const snap = await getDocs(q);
-    let listSelesai = [];
-    
-    snap.forEach(d => {
-      const data = d.data();
-      if(data.status === "🎉 Pesanan Selesai") {
-        listSelesai.push(data);
-      }
-    });
-
-    if(listSelesai.length === 0) return;
-
-    setInterval(() => {
-      const dataAcak = listSelesai[Math.floor(Math.random() * listSelesai.length)];
-      const nama = dataAcak.pembeli || "Pembeli";
-      const namaSensor = nama.length > 2 ? nama.substring(0, 2) + "***" : nama + "***";
-      
-      notifUser.innerText = namaSensor + " (Verified Buyer)";
-      notifProduk.innerText = "Baru saja membeli " + dataAcak.produk;
-      notifBox.classList.add("show");
-
-      setTimeout(() => {
-        notifBox.classList.remove("show");
-      }, 5000);
-
-    }, 15000);
-
-  } catch (e) { console.error("Notif Error:", e); }
-}
-
-// Jalankan Awal
-window.tampilProduk();
+    alert("Pesanan Berhasil! Moh
