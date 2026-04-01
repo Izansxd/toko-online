@@ -130,7 +130,7 @@ window.updatePengumuman = async function() {
   } catch (e) { alert("Gagal!"); }
 };
 
-// --- 5. TESTIMONI ---
+// --- 5. TESTIMONI (VERSI SIMPEL & TRUNCATE LINK) ---
 window.tambahTesti = async function() {
   const img = document.getElementById("inputTesti").value;
   if(!img) return alert("Masukkan link gambar!");
@@ -141,27 +141,38 @@ window.tambahTesti = async function() {
 };
 
 async function muatTestimoni() {
-  // Gunakan ID admin jika sedang di halaman admin agar rapi
   const isAdmin = window.location.href.includes("admin.html");
   const testiDiv = isAdmin ? document.getElementById("list-testimoni-admin") : document.getElementById("list-testimoni");
   
   if (!testiDiv) return;
   const snap = await getDocs(collection(db, "testimoni"));
   let html = "";
+  
   snap.forEach(d => {
-    html += `
-      <div class="card-testi" style="position:relative; flex-shrink:0; ${isAdmin ? 'display:flex; align-items:center; gap:10px; background:#1e293b; padding:10px; border-radius:10px; border:1px solid #334155; margin-bottom:5px;' : ''}">
-        <img src="${d.data().gambar}" style="width:${isAdmin ? '50px' : '120px'}; height:${isAdmin ? '50px' : '160px'}; object-fit:cover; border-radius:8px; border:1px solid #334155;">
-        ${isAdmin ? `
-          <div style="flex:1; font-size:11px; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data().gambar}</div>
-          <button onclick="hapusTesti('${d.id}')" class="btn-danger" style="width:auto; padding:5px 10px; font-size:10px;">HAPUS</button>
-        ` : ''}
-      </div>`;
+    const linkFull = d.data().gambar;
+    // Potong link: Jika lebih dari 25 huruf, potong dan kasih titik-titik
+    const linkSimpel = linkFull.length > 25 ? linkFull.substring(0, 25) + "..." : linkFull;
+
+    if (isAdmin) {
+      html += `
+        <div class="card-admin" style="display:flex; align-items:center; justify-content:space-between; background:#1e293b; padding:10px; border-radius:12px; border:1px solid #334155; margin-bottom:8px;">
+          <div style="display:flex; align-items:center; gap:12px; overflow:hidden; flex:1;">
+            <img src="${linkFull}" style="width:45px; height:45px; object-fit:cover; border-radius:8px; border:1px solid #334155;">
+            <div style="font-size:11px; color:#94a3b8; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${linkSimpel}</div>
+          </div>
+          <button onclick="window.hapusTesti('${d.id}')" class="btn-danger" style="width:auto; padding:6px 12px; font-size:10px; margin:0; border-radius:8px;">HAPUS</button>
+        </div>`;
+    } else {
+      html += `
+        <div class="card-testi" style="position:relative; flex-shrink:0;">
+          <img src="${linkFull}" style="width:120px; height:160px; object-fit:cover; border-radius:10px; border:1px solid #334155;">
+        </div>`;
+    }
   });
-  testiDiv.innerHTML = html || "<p>Belum ada testimoni.</p>";
+  testiDiv.innerHTML = html || "<p style='text-align:center; font-size:12px; color:#64748b;'>Belum ada testimoni.</p>";
 }
 
-window.hapusTesti = async (id) => { if(confirm("Hapus?")) { await deleteDoc(doc(db, "testimoni", id)); location.reload(); } };
+window.hapusTesti = async (id) => { if(confirm("Hapus testimoni ini?")) { await deleteDoc(doc(db, "testimoni", id)); location.reload(); } };
 
 // --- 6. RENDER HTML ---
 function renderHTML(data) {
@@ -187,8 +198,8 @@ function renderHTML(data) {
             </div>
           </div>
           <div class="admin-actions">
-            <button class="btn-warning" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${p.deskripsi}','${p.kategori}','${p.status}')">✏️</button>
-            <button class="btn-danger" onclick="hapusProduk('${p.id}')">🗑️</button>
+            <button class="btn-warning" onclick="window.editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${p.deskripsi}','${p.kategori}','${p.status}')">✏️</button>
+            <button class="btn-danger" onclick="window.hapusProduk('${p.id}')">🗑️</button>
           </div>
         </div>`;
     } else {
@@ -316,7 +327,7 @@ window.kirimInvoiceWA = async function() {
   } catch (e) { alert("Gagal memproses pesanan!"); }
 };
 
-// --- 11. ADMIN: PESANAN MASUK (SINKRON DENGAN CSS STATUS) ---
+// --- 11. ADMIN: PESANAN MASUK (SINKRON DENGAN CSS STATUS SELESAI) ---
 async function muatPesananMasuk() {
   const list = document.getElementById("listPesananAdmin");
   if(!list) return;
@@ -324,6 +335,7 @@ async function muatPesananMasuk() {
   let html = "";
   snap.forEach(d => {
     const p = d.data();
+    // Cek apakah statusnya sudah selesai
     const isSelesai = p.status === "🎉 Pesanan Selesai";
     
     html += `
@@ -356,9 +368,11 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
             nama_akun: produk,
             data_akun: dataAkun
         });
+        // Update status di Firebase
         await updateDoc(doc(db, "pesanan", invId), { status: "🎉 Pesanan Selesai" });
         alert("Email Berhasil Terkirim!"); 
-        muatPesananMasuk(); // Refresh list tanpa reload total
+        // Render ulang daftar pesanan agar tampilan berubah
+        muatPesananMasuk(); 
     } catch (e) { alert("Gagal Kirim Email!"); }
 };
 
