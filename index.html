@@ -77,54 +77,51 @@
     .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); }
 
     /* --- PERBAIKAN LIVE SALES NOTIFIKASI --- */
-.sales-notification {
+ .sales-notification {
   position: fixed;
   bottom: 85px;
-  left: -400px; /* Sembunyi di kiri */
-  background: #ffffff !important; /* WAJIB putih padat agar tidak transparan */
+  left: -350px;
+  background: #ffffff !important;
   color: #333333 !important;
-  padding: 12px 18px;
-  border-radius: 15px;
+  padding: 8px 12px; /* Ukuran padding dikecilkan */
+  border-radius: 10px; /* Radius lebih lancip dikit */
   display: flex;
   align-items: center;
-  gap: 12px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-  z-index: 99999; /* Pastikan angkanya paling tinggi biar di depan */
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  z-index: 100000;
   transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  border-left: 6px solid #10b981;
-  width: 280px;
-  pointer-events: none; /* Biar tidak ganggu klik di belakangnya */
+  border-left: 4px solid #10b981;
+  width: 210px; /* Lebar dipersempit dari 260px ke 210px */
+  pointer-events: none;
 }
 
 .sales-notification.show {
-  left: 20px; /* Muncul ke kanan */
+  left: 15px; /* Jarak dari pinggir dikecilkan */
 }
 
 .sales-notification img {
-  width: 45px;
-  height: 45px;
+  width: 32px; /* Gambar dikecilkan dari 45px ke 32px */
+  height: 32px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #f0f0f0;
-}
-
-.sales-text {
-  flex: 1;
 }
 
 .sales-text b {
   display: block;
-  font-size: 13px;
+  font-size: 11px; /* Font nama diperkecil */
   color: #0f172a;
-  margin-bottom: 2px;
+  margin: 0;
+  line-height: 1.2;
 }
 
 .sales-text span {
-  font-size: 11px;
+  font-size: 9px; /* Font detail diperkecil */
   color: #64748b;
   display: block;
-  line-height: 1.2;
+  line-height: 1.1;
 }
+
 
 
     /* FLOATING BUTTON TRUCK */
