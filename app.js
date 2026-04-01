@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // --- 1. KONFIGURASI FIREBASE & PEMBAYARAN ---
 const NOMOR_WA_ADMIN = "6282298627146"; 
@@ -130,7 +130,7 @@ window.updatePengumuman = async function() {
   } catch (e) { alert("Gagal!"); }
 };
 
-// --- 5. TESTIMONI (VERSI SIMPEL & TRUNCATE LINK) ---
+// --- 5. TESTIMONI (SIMPEL & TRUNCATE LINK) ---
 window.tambahTesti = async function() {
   const img = document.getElementById("inputTesti").value;
   if(!img) return alert("Masukkan link gambar!");
@@ -150,7 +150,6 @@ async function muatTestimoni() {
   
   snap.forEach(d => {
     const linkFull = d.data().gambar;
-    // Potong link: Jika lebih dari 25 huruf, potong dan kasih titik-titik
     const linkSimpel = linkFull.length > 25 ? linkFull.substring(0, 25) + "..." : linkFull;
 
     if (isAdmin) {
@@ -327,7 +326,7 @@ window.kirimInvoiceWA = async function() {
   } catch (e) { alert("Gagal memproses pesanan!"); }
 };
 
-// --- 11. ADMIN: PESANAN MASUK (SINKRON DENGAN CSS STATUS SELESAI) ---
+// --- 11. ADMIN: PESANAN MASUK & AUTO SOLD ---
 async function muatPesananMasuk() {
   const list = document.getElementById("listPesananAdmin");
   if(!list) return;
@@ -335,7 +334,6 @@ async function muatPesananMasuk() {
   let html = "";
   snap.forEach(d => {
     const p = d.data();
-    // Cek apakah statusnya sudah selesai
     const isSelesai = p.status === "🎉 Pesanan Selesai";
     
     html += `
@@ -349,7 +347,7 @@ async function muatPesananMasuk() {
           <textarea id="dataAkun_${d.id}" placeholder="Tulis data akun (Email:Pass) di sini..." style="width:100%; height:50px; background:#f4f4f4; border:1px solid #ddd; margin:10px 0; border-radius:5px; padding:5px; color:#333;"></textarea>
           <button onclick="window.kirimDataEmail('${d.id}', '${p.email}', '${p.produk}', '${p.pembeli}')" class="btn-success">📧 KIRIM DATA KE EMAIL</button>
         ` : `
-          <button class="btn-selesai-muted" disabled>✅ DATA SUDAH DIKIRIM</button>
+          <button class="btn-selesai-muted" disabled>✅ DATA SUDAH DIKIRIM (SOLD)</button>
         `}
         
         <button onclick="window.hapusPesanan('${d.id}')" style="background:none; color:#ef4444; border:none; cursor:pointer; font-size:11px; margin-top:10px; width:100%;">Hapus Riwayat Pesanan</button>
@@ -362,18 +360,27 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
     const dataAkun = document.getElementById(`dataAkun_${invId}`).value;
     if(!dataAkun) return alert("Isi data akun dulu!");
     try {
+        // 1. Kirim Email via EmailJS
         await emailjs.send("service_xe358l6", "template_2j4eu9o", {
             nama_pembeli: namaPembeli,
             email_pembeli: emailTujuan,
             nama_akun: produk,
             data_akun: dataAkun
         });
-        // Update status di Firebase
+
+        // 2. Update status pesanan di Firebase
         await updateDoc(doc(db, "pesanan", invId), { status: "🎉 Pesanan Selesai" });
-        alert("Email Berhasil Terkirim!"); 
-        // Render ulang daftar pesanan agar tampilan berubah
+
+        // 3. FITUR OTOMATIS: Cari produk & ubah jadi SOLD
+        const q = query(collection(db, "produk"), where("nama", "==", produk));
+        const qSnap = await getDocs(q);
+        qSnap.forEach(async (docProduk) => {
+            await updateDoc(doc(db, "produk", docProduk.id), { status: "Sold" });
+        });
+
+        alert("Email Terkirim & Produk Otomatis SOLD!"); 
         muatPesananMasuk(); 
-    } catch (e) { alert("Gagal Kirim Email!"); }
+    } catch (e) { console.error(e); alert("Gagal Kirim!"); }
 };
 
 window.hapusPesanan = async (id) => { if(confirm("Hapus pesanan?")) { await deleteDoc(doc(db, "pesanan", id)); location.reload(); } };
