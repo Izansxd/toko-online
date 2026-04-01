@@ -49,6 +49,9 @@ window.tampilProduk = async function() {
     muatTestimoni(); 
     muatVoucher();
     if(window.location.href.includes("admin.html")) muatPesananMasuk();
+    
+    // Panggil Live Notif setelah produk tampil
+    jalankanLiveNotif();
   } catch (error) { console.error(error); }
 };
 
@@ -361,6 +364,49 @@ window.cekStatusPesanan = async function() {
         alert("Gagal mengecek status.");
     }
 };
+
+// --- 12. FITUR LIVE SALES NOTIFICATION (BARU) ---
+async function jalankanLiveNotif() {
+  const notifBox = document.getElementById("salesNotif");
+  const notifUser = document.getElementById("notifUser");
+  const notifProduk = document.getElementById("notifProduk");
+
+  if(!notifBox) return;
+
+  try {
+    const q = collection(db, "pesanan");
+    const snap = await getDocs(q);
+    let listSelesai = [];
+    
+    snap.forEach(d => {
+      const data = d.data();
+      if(data.status === "🎉 Pesanan Selesai") {
+        listSelesai.push(data);
+      }
+    });
+
+    if(listSelesai.length === 0) return;
+
+    setInterval(() => {
+      const dataAcak = listSelesai[Math.floor(Math.random() * listSelesai.length)];
+      
+      // Sensor nama pembeli (Contoh: Faza -> Fa***)
+      const nama = dataAcak.pembeli || "Pembeli";
+      const namaSensor = nama.length > 2 ? nama.substring(0, 2) + "***" : nama + "***";
+      
+      notifUser.innerText = namaSensor + " (Verified Buyer)";
+      notifProduk.innerText = "Baru saja membeli " + dataAcak.produk;
+
+      notifBox.classList.add("show");
+
+      setTimeout(() => {
+        notifBox.classList.remove("show");
+      }, 5000);
+
+    }, 15000); // Muncul setiap 15 detik sekali
+
+  } catch (e) { console.error("Notif Error:", e); }
+}
 
 // Jalankan Awal
 window.tampilProduk();
