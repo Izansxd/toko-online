@@ -31,66 +31,96 @@
     .announcement-label { background: var(--danger); color: white; padding: 2px 10px; font-size: 10px; font-weight: 800; border-radius: 4px; margin-left: 15px; }
     
     .filter-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; scrollbar-width: none; }
-    .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; }
-    .btn-filter.active { background-color: var(--primary) !important; color: var(--dark) !important; }
+    .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: 0.3s; }
+    .btn-filter.active { background-color: var(--primary) !important; color: var(--dark) !important; transform: scale(1.05); }
 
-    #produk { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 1000px; margin: 10px auto; padding: 0 15px; }
-    .card { background: var(--card-bg); border-radius: 18px; overflow: hidden; border: 1px solid var(--input-border); position: relative; }
-    .card img { width: 100%; height: 140px; object-fit: cover; }
-    .card-info { padding: 12px; }
-    .badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: var(--primary); padding: 4px 8px; font-size: 10px; border-radius: 5px; }
+    #produk { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 1000px; margin: 10px auto; padding: 0 15px; animation: fadeIn 0.8s ease-out; }
     
-    .harga-baru { color: var(--success); font-weight: 700; font-size: 15px; display: block; margin-bottom: 10px; }
-    .btn-beli { background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; padding: 10px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
-
-    #modalStruk, #modalDetail, #modalLacak { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px; }
-    .struk-box { background: white; color: #333; width: 100%; max-width: 380px; padding: 20px; border-radius: 15px; font-family: 'Poppins', sans-serif; overflow-y: auto; max-height: 90vh; }
-    .struk-box label { font-size: 11px; font-weight: 700; color: #64748b; display: block; margin-top: 10px; }
-    
-    .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); }
-    
-    .sold-overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; z-index: 5; }
-    .sold-label { background: var(--danger); color: white; padding: 5px 15px; font-weight: 800; transform: rotate(-15deg); border: 2px solid white; }
-
-    .testimoni-section { max-width: 1000px; margin: 30px auto; padding: 0 15px; }
-    #list-testimoni { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; }
-    
-    .btn-buka-status { position: fixed; bottom: 20px; right: 20px; background: var(--primary); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 10px rgba(0,0,0,0.3); z-index: 100; font-size: 20px; cursor: pointer; }
-    
-    input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
-
-    /* Tambahan Style Modal Lacak */
-    .lacak-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 350px; padding: 20px; border-radius: 15px; border: 1px solid var(--primary); text-align: center; }
-
-    /* CSS LIVE SALES NOTIFIKASI */
-    .sales-notification {
-      position: fixed;
-      bottom: 85px;
-      left: -350px;
-      background: white;
-      color: #333;
-      padding: 10px 15px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-      z-index: 998;
-      transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      border-left: 5px solid var(--success);
-      max-width: 280px;
+    /* ANIMASI KARTU PRODUK */
+    .card { 
+      background: var(--card-bg); 
+      border-radius: 18px; 
+      overflow: hidden; 
+      border: 1px solid var(--input-border); 
+      position: relative; 
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .sales-notification.show { left: 20px; }
-    .sales-notification img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; background: #f0f0f0; }
-    .sales-text { font-size: 11px; color: #475569; }
-    .sales-text b { color: var(--dark); display: block; font-size: 12px; }
+    .card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0, 210, 255, 0.2); border-color: var(--primary); }
+    .card img { width: 100%; height: 140px; object-fit: cover; transition: 0.5s; }
+    .card:hover img { transform: scale(1.1); }
+    
+    .card-info { padding: 12px; }
+    .badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: var(--primary); padding: 4px 8px; font-size: 10px; border-radius: 5px; z-index: 2; }
+    
+    .harga-baru { color: var(--success); font-weight: 700; font-size: 15px; display: block; margin-bottom: 10px; text-shadow: 0 0 8px rgba(16, 185, 129, 0.2); }
+    
+    .btn-beli { 
+      background: linear-gradient(90deg, var(--secondary), var(--primary)); 
+      color: white; border: none; padding: 10px; border-radius: 10px; width: 100%; 
+      font-weight: 700; cursor: pointer; transition: 0.3s; 
+    }
+    .btn-beli:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--primary); }
+    .btn-beli:active { transform: scale(0.95); }
+
+    /* MODAL ANIMASI */
+    #modalStruk, #modalDetail, #modalLacak { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px; transition: 0.3s; }
+    .struk-box, .detail-box, .lacak-box { 
+      animation: modalBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    
+    @keyframes modalBounce {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .struk-box { background: white; color: #333; width: 100%; max-width: 380px; padding: 20px; border-radius: 15px; max-height: 90vh; overflow-y: auto; }
+    .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); }
+
+    /* LIVE SALES NOTIFIKASI + PULSE */
+    .sales-notification {
+      position: fixed; bottom: 85px; left: -350px; background: white; color: #333;
+      padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 998;
+      transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+      border-left: 5px solid var(--success); max-width: 280px;
+    }
+    .sales-notification.show { left: 20px; animation: pulse-glow 2s infinite; }
+    
+    @keyframes pulse-glow {
+      0% { box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      70% { box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 10px rgba(16, 185, 129, 0); }
+      100% { box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 0 rgba(16, 185, 129, 0); }
+    }
+
+    /* FLOATING BUTTON TRUCK */
+    .btn-buka-status { 
+      position: fixed; bottom: 20px; right: 20px; background: var(--primary); 
+      width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; 
+      justify-content: center; border: none; box-shadow: 0 4px 15px rgba(0,210,255,0.4); 
+      z-index: 100; font-size: 20px; cursor: pointer; 
+      animation: float 3s ease-in-out infinite; transition: 0.3s;
+    }
+    .btn-buka-status:hover { transform: rotate(15deg) scale(1.1); background: white; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    .lacak-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 350px; padding: 20px; border-radius: 15px; border: 1px solid var(--primary); text-align: center; }
   </style>
 </head>
 <body>
 
 <header>
-  <h2>🎮 FAZA STORE</h2>
-  <p style="font-size: 13px; opacity: 0.9;">Akun Game Murah, Aman & Terpercaya</p>
+  <h2 style="margin:0; letter-spacing:1px;">🎮 FAZA STORE</h2>
+  <p style="font-size: 13px; opacity: 0.9; margin-top:5px;">Akun Game Murah, Aman & Terpercaya</p>
 </header>
 
 <div class="announcement-bar">
@@ -107,18 +137,16 @@
 
 <div id="produk"></div>
 
-<div class="testimoni-section">
+<div class="testimoni-section" style="max-width: 1000px; margin: 30px auto; padding: 0 15px;">
   <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--primary);">💬 TESTIMONI</h3>
-  <div id="list-testimoni"></div>
+  <div id="list-testimoni" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px; scrollbar-width: none;"></div>
 </div>
 
 <div id="modalStruk">
   <div class="struk-box">
     <h3 style="text-align:center; margin: 0; color: #333;">STRUK PESANAN</h3>
     <hr style="border: 0.5px dashed #ccc; margin: 15px 0;">
-    
     <div id="isiStruk"></div>
-    
     <hr style="border: 0.5px dashed #ccc; margin: 15px 0;">
     <button onclick="kirimInvoiceWA()" style="width:100%; padding:15px; background:#10b981; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-family: 'Poppins', sans-serif;">KONFIRMASI & BAYAR SEKARANG</button>
     <button onclick="tutupStruk()" style="width:100%; background:none; border:none; color:#888; font-size:11px; margin-top:10px; cursor:pointer;">Kembali</button>
