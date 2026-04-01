@@ -41,7 +41,6 @@
     .btn-warning { background: #f1c40f; color: #0f172a; }
     .btn-danger { background: #ef4444; color: white !important; }
     
-    /* PRODUK & TESTI LIST (DIBIKIN RAPI GA MIRING) */
     .produk-container { max-width: 600px; margin: 40px auto; padding: 0 15px; }
     .card-admin { 
       background: #1e293b; padding: 12px; border-radius: 12px; margin-bottom: 12px; 
@@ -53,7 +52,6 @@
     .admin-actions { display: flex; gap: 8px; }
     .card-admin button { width: auto; padding: 8px 12px; margin: 0; font-size: 11px; }
 
-    /* STYLE PESANAN MASUK & STATUS SELESAI */
     .order-item-admin {
       background: white; color: #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #10b981;
       transition: 0.3s;
@@ -61,10 +59,9 @@
     .order-item-admin p { margin: 3px 0; font-size: 12px; }
     .wa-tag { background: #25d366; color: white; padding: 2px 6px; border-radius: 4px; text-decoration: none; font-weight: bold; }
 
-    /* PESANAN YANG SUDAH SELESAI */
     .order-item-admin.status-selesai {
-      background: #0f172a !important; /* Biru Gelap Sekali */
-      border-left: 5px solid #64748b !important; /* Abu-abu */
+      background: #0f172a !important; 
+      border-left: 5px solid #64748b !important; 
       opacity: 0.7;
     }
     .order-item-admin.status-selesai p { color: #94a3b8 !important; }
@@ -77,7 +74,6 @@
       pointer-events: none;
     }
 
-    /* VOUCHER LIST */
     #listVoucherAdmin div {
       display: flex; justify-content: space-between; align-items: center;
       background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border: 1px solid #334155;
@@ -93,7 +89,7 @@
 
 <div class="box" style="max-width: 600px; border: 1px solid #10b981;">
   <h1>📥 Pesanan Masuk</h1>
-  <p style="font-size: 10px; color: #94a3b8; text-align: center; margin-bottom: 15px;">Kelola pesanan yang masuk ke database.</p>
+  <p style="font-size: 10px; color: #94a3b8; text-align: center; margin-bottom: 15px;">Status produk otomatis berubah jadi SOLD saat data dikirim.</p>
   <div id="listPesananAdmin">
     <p style="text-align: center; font-size: 12px; color: #64748b;">Memuat data pesanan...</p>
   </div>
@@ -120,12 +116,6 @@
       </select>
     </div>
   </div>
-  
-  <label>Status Stock</label>
-  <select id="status">
-    <option value="Ready">READY STOK</option>
-    <option value="Sold">TERJUAL (SOLD)</option>
-  </select>
   
   <label>Spesifikasi Lengkap</label>
   <textarea id="deskripsi" placeholder="- Skin Legend: Gusion..."></textarea>
@@ -190,7 +180,7 @@ function resetForm() {
 }
 </script>
 
-<script type="module" src="app.js?v=2.2"></script>
+<script type="module" src="app.js?v=2.3"></script>
 
 </body>
 </html>
