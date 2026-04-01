@@ -341,4 +341,87 @@ window.kirimInvoiceWA = async function() {
       status: "⏳ Menunggu Validasi", 
       tanggal: new Date() 
     });
-    alert("Pesanan Berhasil! Moh
+    alert("Pesanan Berhasil! Mohon tunggu konfirmasi admin di WhatsApp/Email.");
+    location.reload();
+  } catch (e) { alert("Gagal memproses pesanan!"); }
+};
+
+// --- 12. ADMIN: PESANAN MASUK ---
+async function muatPesananMasuk() {
+  const list = document.getElementById("listPesananAdmin");
+  if(!list) return;
+  const snap = await getDocs(collection(db, "pesanan"));
+  let html = "";
+  snap.forEach(d => {
+    const p = d.data();
+    html += `
+      <div class="order-item-admin" style="background:white; color:#333; padding:15px; border-radius:10px; margin-bottom:10px; border-left:5px solid #10b981;">
+        <p><b>ID:</b> ${d.id} | <b>Penerima:</b> ${p.pembeli}</p>
+        <p><b>WA:</b> <a href="https://wa.me/${p.whatsapp}" target="_blank" class="wa-tag">${p.whatsapp}</a></p>
+        <p><b>Email:</b> ${p.email}</p>
+        <p><b>Voucher:</b> ${p.voucherPakai || "-"}</p>
+        <p><b>Bukti:</b> <a href="${p.bukti}" target="_blank">Lihat Bukti</a></p>
+        <textarea id="dataAkun_${d.id}" placeholder="Isi data akun di sini..." style="width:100%; height:50px; color:#000; background:#eee;"></textarea>
+        <button onclick="kirimDataEmail('${d.id}', '${p.email}', '${p.produk}', '${p.pembeli}')" class="btn-success" style="padding:5px; font-size:12px;">📧 KIRIM KE EMAIL</button>
+        <button onclick="hapusPesanan('${d.id}')" style="background:none; color:red; border:none; cursor:pointer; font-size:10px;">Hapus Data</button>
+      </div>`;
+  });
+  list.innerHTML = html || "Belum ada pesanan masuk.";
+}
+
+window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) {
+    const dataAkun = document.getElementById(`dataAkun_${invId}`).value;
+    if(!dataAkun) return alert("Isi data akun dulu!");
+    try {
+        await emailjs.send("service_xe358l6", "template_2j4eu9o", {
+            nama_pembeli: namaPembeli,
+            email_pembeli: emailTujuan,
+            nama_akun: produk,
+            data_akun: dataAkun
+        });
+        await updateDoc(doc(db, "pesanan", invId), { status: "🎉 Pesanan Selesai" });
+        alert("Email Berhasil Terkirim!"); location.reload();
+    } catch (e) { alert("Gagal Kirim Email!"); }
+};
+
+window.hapusPesanan = async (id) => { if(confirm("Hapus pesanan?")) { await deleteDoc(doc(db, "pesanan", id)); location.reload(); } };
+
+// --- 13. LACAK PESANAN ---
+window.cekStatusPesanan = async function() {
+    const invId = document.getElementById("inputCekPesanan").value.trim().toUpperCase();
+    if(!invId) return alert("Masukkan ID Invoice (FZ-xxxx)!");
+    try {
+        const docRef = doc(db, "pesanan", invId);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+            const p = docSnap.data();
+            let msg = `📌 STATUS PESANAN: ${invId}\nProduk: ${p.produk}\nStatus: ${p.status}`;
+            if(p.status === "🎉 Pesanan Selesai") msg += `\n\nInfo: Data sudah dikirim ke ${p.email}.`;
+            alert(msg);
+        } else { alert("❌ Invoice tidak ditemukan."); }
+    } catch (e) { alert("Gagal mengecek status."); }
+};
+
+// --- 14. LIVE SALES NOTIFIKASI ---
+async function jalankanLiveNotif() {
+  const notifBox = document.getElementById("salesNotif");
+  const notifUser = document.getElementById("notifUser");
+  const notifProduk = document.getElementById("notifProduk");
+  if(!notifBox) return;
+  try {
+    const snap = await getDocs(collection(db, "pesanan"));
+    let listSelesai = [];
+    snap.forEach(d => { if(d.data().status === "🎉 Pesanan Selesai") listSelesai.push(d.data()); });
+    if(listSelesai.length === 0) return;
+    setInterval(() => {
+      const dataAcak = listSelesai[Math.floor(Math.random() * listSelesai.length)];
+      const nama = dataAcak.pembeli || "User";
+      notifUser.innerText = (nama.length > 2 ? nama.substring(0, 2) + "***" : nama) + " (Verified)";
+      notifProduk.innerText = "Baru saja membeli " + dataAcak.produk;
+      notifBox.classList.add("show");
+      setTimeout(() => { notifBox.classList.remove("show"); }, 5000);
+    }, 15000);
+  } catch (e) { console.error(e); }
+}
+
+window.tampilProduk();
