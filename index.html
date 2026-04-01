@@ -76,21 +76,56 @@
     .struk-box { background: white; color: #333; width: 100%; max-width: 380px; padding: 20px; border-radius: 15px; max-height: 90vh; overflow-y: auto; }
     .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); }
 
-    /* LIVE SALES NOTIFIKASI + PULSE */
-    .sales-notification {
-      position: fixed; bottom: 85px; left: -350px; background: white; color: #333;
-      padding: 10px 15px; border-radius: 12px; display: flex; align-items: center; gap: 12px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4); z-index: 998;
-      transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-      border-left: 5px solid var(--success); max-width: 280px;
-    }
-    .sales-notification.show { left: 20px; animation: pulse-glow 2s infinite; }
-    
-    @keyframes pulse-glow {
-      0% { box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 0 rgba(16, 185, 129, 0.4); }
-      70% { box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 10px rgba(16, 185, 129, 0); }
-      100% { box-shadow: 0 10px 25px rgba(0,0,0,0.2), 0 0 0 0 rgba(16, 185, 129, 0); }
-    }
+    /* --- PERBAIKAN LIVE SALES NOTIFIKASI --- */
+.sales-notification {
+  position: fixed;
+  bottom: 85px;
+  left: -400px; /* Sembunyi di kiri */
+  background: #ffffff !important; /* WAJIB putih padat agar tidak transparan */
+  color: #333333 !important;
+  padding: 12px 18px;
+  border-radius: 15px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  z-index: 99999; /* Pastikan angkanya paling tinggi biar di depan */
+  transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  border-left: 6px solid #10b981;
+  width: 280px;
+  pointer-events: none; /* Biar tidak ganggu klik di belakangnya */
+}
+
+.sales-notification.show {
+  left: 20px; /* Muncul ke kanan */
+}
+
+.sales-notification img {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f0f0f0;
+}
+
+.sales-text {
+  flex: 1;
+}
+
+.sales-text b {
+  display: block;
+  font-size: 13px;
+  color: #0f172a;
+  margin-bottom: 2px;
+}
+
+.sales-text span {
+  font-size: 11px;
+  color: #64748b;
+  display: block;
+  line-height: 1.2;
+}
+
 
     /* FLOATING BUTTON TRUCK */
     .btn-buka-status { 
