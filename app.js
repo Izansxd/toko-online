@@ -141,16 +141,21 @@ window.tambahTesti = async function() {
 };
 
 async function muatTestimoni() {
-  const testiDiv = document.getElementById("list-testimoni");
+  // Gunakan ID admin jika sedang di halaman admin agar rapi
+  const isAdmin = window.location.href.includes("admin.html");
+  const testiDiv = isAdmin ? document.getElementById("list-testimoni-admin") : document.getElementById("list-testimoni");
+  
   if (!testiDiv) return;
   const snap = await getDocs(collection(db, "testimoni"));
   let html = "";
   snap.forEach(d => {
-    const isAdmin = window.location.href.includes("admin.html");
     html += `
-      <div class="card-testi" style="position:relative; flex-shrink:0;">
-        <img src="${d.data().gambar}" style="width:120px; height:160px; object-fit:cover; border-radius:10px; border:1px solid #334155;">
-        ${isAdmin ? `<button onclick="hapusTesti('${d.id}')" style="position:absolute; top:5px; right:5px; background:red; color:white; border:none; border-radius:50%; width:25px; height:25px; cursor:pointer;">X</button>` : ''}
+      <div class="card-testi" style="position:relative; flex-shrink:0; ${isAdmin ? 'display:flex; align-items:center; gap:10px; background:#1e293b; padding:10px; border-radius:10px; border:1px solid #334155; margin-bottom:5px;' : ''}">
+        <img src="${d.data().gambar}" style="width:${isAdmin ? '50px' : '120px'}; height:${isAdmin ? '50px' : '160px'}; object-fit:cover; border-radius:8px; border:1px solid #334155;">
+        ${isAdmin ? `
+          <div style="flex:1; font-size:11px; color:#94a3b8; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${d.data().gambar}</div>
+          <button onclick="hapusTesti('${d.id}')" class="btn-danger" style="width:auto; padding:5px 10px; font-size:10px;">HAPUS</button>
+        ` : ''}
       </div>`;
   });
   testiDiv.innerHTML = html || "<p>Belum ada testimoni.</p>";
@@ -173,12 +178,17 @@ function renderHTML(data) {
 
     if (isAdmin) {
       html += `
-        <div class="card-admin" style="display:flex; align-items:center; background:#1e293b; padding:10px; border-radius:8px; margin-bottom:10px; gap:10px; color:white;">
-          <img src="${p.gambar.split(',')[0]}" style="width:50px; height:50px; object-fit:cover; border-radius:5px;">
-          <div style="flex:1"><h4 style="margin:0; font-size:12px;">${p.nama}</h4><p style="margin:0; color:#10b981; font-size:11px;">Rp${hargaFormat}</p></div>
-          <div style="display:flex; gap:5px;">
-            <button onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${p.deskripsi}','${p.kategori}','${p.status}')">✏️</button>
-            <button onclick="hapusProduk('${p.id}')">🗑️</button>
+        <div class="card-admin">
+          <div class="card-admin-info">
+            <img src="${p.gambar.split(',')[0]}">
+            <div class="text-info">
+              <div style="font-size:12px;">${p.nama}</div>
+              <div style="color:#10b981; font-size:11px;">Rp${hargaFormat}</div>
+            </div>
+          </div>
+          <div class="admin-actions">
+            <button class="btn-warning" onclick="editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${p.deskripsi}','${p.kategori}','${p.status}')">✏️</button>
+            <button class="btn-danger" onclick="hapusProduk('${p.id}')">🗑️</button>
           </div>
         </div>`;
     } else {
@@ -306,7 +316,7 @@ window.kirimInvoiceWA = async function() {
   } catch (e) { alert("Gagal memproses pesanan!"); }
 };
 
-// --- 11. ADMIN: PESANAN MASUK ---
+// --- 11. ADMIN: PESANAN MASUK (SINKRON DENGAN CSS STATUS) ---
 async function muatPesananMasuk() {
   const list = document.getElementById("listPesananAdmin");
   if(!list) return;
@@ -314,15 +324,23 @@ async function muatPesananMasuk() {
   let html = "";
   snap.forEach(d => {
     const p = d.data();
+    const isSelesai = p.status === "🎉 Pesanan Selesai";
+    
     html += `
-      <div style="background:white; color:#333; padding:15px; border-radius:10px; margin-bottom:10px; border-left:5px solid #10b981;">
+      <div class="order-item-admin ${isSelesai ? 'status-selesai' : ''}">
         <p><b>ID:</b> ${d.id} | <b>Pembeli:</b> ${p.pembeli}</p>
-        <p><b>WA:</b> <a href="https://wa.me/${p.whatsapp}" target="_blank">${p.whatsapp}</a></p>
+        <p><b>WA:</b> <a class="wa-tag" href="https://wa.me/${p.whatsapp}" target="_blank">WhatsApp</a></p>
         <p><b>Produk:</b> ${p.produk}</p>
-        <p><b>Bukti:</b> <a href="${p.bukti}" target="_blank">Lihat Bukti</a></p>
-        <textarea id="dataAkun_${d.id}" placeholder="Isi data akun..." style="width:100%; height:50px; background:#f4f4f4; border:1px solid #ddd; margin:10px 0;"></textarea>
-        <button onclick="window.kirimDataEmail('${d.id}', '${p.email}', '${p.produk}', '${p.pembeli}')" style="background:#10b981; color:white; border:none; padding:8px; border-radius:5px; cursor:pointer;">📧 KIRIM EMAIL</button>
-        <button onclick="window.hapusPesanan('${d.id}')" style="background:none; color:red; border:none; cursor:pointer; margin-left:10px;">Hapus</button>
+        <p><b>Bukti:</b> <a href="${p.bukti}" target="_blank" style="color:#10b981; font-weight:bold;">Lihat Bukti Transfer</a></p>
+        
+        ${!isSelesai ? `
+          <textarea id="dataAkun_${d.id}" placeholder="Tulis data akun (Email:Pass) di sini..." style="width:100%; height:50px; background:#f4f4f4; border:1px solid #ddd; margin:10px 0; border-radius:5px; padding:5px; color:#333;"></textarea>
+          <button onclick="window.kirimDataEmail('${d.id}', '${p.email}', '${p.produk}', '${p.pembeli}')" class="btn-success">📧 KIRIM DATA KE EMAIL</button>
+        ` : `
+          <button class="btn-selesai-muted" disabled>✅ DATA SUDAH DIKIRIM</button>
+        `}
+        
+        <button onclick="window.hapusPesanan('${d.id}')" style="background:none; color:#ef4444; border:none; cursor:pointer; font-size:11px; margin-top:10px; width:100%;">Hapus Riwayat Pesanan</button>
       </div>`;
   });
   list.innerHTML = html || "Belum ada pesanan.";
@@ -339,7 +357,8 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
             data_akun: dataAkun
         });
         await updateDoc(doc(db, "pesanan", invId), { status: "🎉 Pesanan Selesai" });
-        alert("Email Berhasil Terkirim!"); location.reload();
+        alert("Email Berhasil Terkirim!"); 
+        muatPesananMasuk(); // Refresh list tanpa reload total
     } catch (e) { alert("Gagal Kirim Email!"); }
 };
 
