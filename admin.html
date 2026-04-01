@@ -39,21 +39,45 @@
     .btn-tambah { background: linear-gradient(90deg, #3a7bd5, #00d2ff); color: white; }
     .btn-success { background: #10b981; color: white; }
     .btn-warning { background: #f1c40f; color: #0f172a; }
+    .btn-danger { background: #ef4444; color: white !important; }
     
-    /* Style Produk & Voucher List */
+    /* PRODUK & TESTI LIST (DIBIKIN RAPI GA MIRING) */
     .produk-container { max-width: 600px; margin: 40px auto; padding: 0 15px; }
-    .card-admin { background: #1e293b; padding: 15px; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; border: 1px solid #334155; }
-    .card-admin img { width: 55px; height: 55px; object-fit: cover; border-radius: 8px; }
-    .card-admin button { width: auto; padding: 8px 12px; margin: 0; font-size: 12px; }
+    .card-admin { 
+      background: #1e293b; padding: 12px; border-radius: 12px; margin-bottom: 12px; 
+      display: flex; align-items: center; justify-content: space-between; gap: 12px; 
+      border: 1px solid #334155; 
+    }
+    .card-admin-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .card-admin img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #0f172a; }
+    .admin-actions { display: flex; gap: 8px; }
+    .card-admin button { width: auto; padding: 8px 12px; margin: 0; font-size: 11px; }
 
-    /* Gaya Khusus Pesanan Masuk */
+    /* STYLE PESANAN MASUK & STATUS SELESAI */
     .order-item-admin {
       background: white; color: #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #10b981;
+      transition: 0.3s;
     }
     .order-item-admin p { margin: 3px 0; font-size: 12px; }
     .wa-tag { background: #25d366; color: white; padding: 2px 6px; border-radius: 4px; text-decoration: none; font-weight: bold; }
 
-    /* Gaya List Voucher */
+    /* PESANAN YANG SUDAH SELESAI */
+    .order-item-admin.status-selesai {
+      background: #0f172a !important; /* Biru Gelap Sekali */
+      border-left: 5px solid #64748b !important; /* Abu-abu */
+      opacity: 0.7;
+    }
+    .order-item-admin.status-selesai p { color: #94a3b8 !important; }
+    .order-item-admin.status-selesai .wa-tag { background: #475569; }
+
+    .btn-selesai-muted {
+      background: #334155 !important;
+      color: #64748b !important;
+      cursor: not-allowed !important;
+      pointer-events: none;
+    }
+
+    /* VOUCHER LIST */
     #listVoucherAdmin div {
       display: flex; justify-content: space-between; align-items: center;
       background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border: 1px solid #334155;
@@ -69,7 +93,7 @@
 
 <div class="box" style="max-width: 600px; border: 1px solid #10b981;">
   <h1>📥 Pesanan Masuk</h1>
-  <p style="font-size: 10px; color: #94a3b8; text-align: center; margin-bottom: 15px;">Data pesanan dari Firebase akan muncul di sini.</p>
+  <p style="font-size: 10px; color: #94a3b8; text-align: center; margin-bottom: 15px;">Kelola pesanan yang masuk ke database.</p>
   <div id="listPesananAdmin">
     <p style="text-align: center; font-size: 12px; color: #64748b;">Memuat data pesanan...</p>
   </div>
@@ -144,11 +168,10 @@
   <div id="produk"></div>
   
   <h2 style="margin-top: 40px; border-bottom: 1px solid #334155; padding-bottom: 10px; font-size: 16px;">Daftar Testimoni</h2>
-  <div id="list-testimoni" style="display:flex; gap:10px; overflow-x:auto;"></div>
+  <div id="list-testimoni-admin" style="display: grid; grid-template-columns: 1fr; gap: 10px;"></div>
 </div>
 
 <script>
-// Fungsi format rupiah agar input harga terlihat rapi
 function formatRupiah(el, hiddenId) {
     let value = el.value.replace(/[^0-9]/g, ""); 
     document.getElementById(hiddenId).value = value;
@@ -156,7 +179,6 @@ function formatRupiah(el, hiddenId) {
     el.value = new Intl.NumberFormat('id-ID').format(value);
 }
 
-// Reset form produk
 function resetForm() {
     document.getElementById("nama").value = "";
     document.getElementById("harga").value = "";
@@ -168,7 +190,7 @@ function resetForm() {
 }
 </script>
 
-<script type="module" src="app.js?v=2.0"></script>
+<script type="module" src="app.js?v=2.2"></script>
 
 </body>
 </html>
