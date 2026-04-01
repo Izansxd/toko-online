@@ -237,14 +237,24 @@ window.bukaDetail = function(nama, deskripsi, gambar, harga) {
 
 window.tutupDetail = () => document.getElementById("modalDetail").style.display = "none";
 
+// --- UPDATE: BUKA STRUK DENGAN VOUCHER ---
 window.bukaStruk = function(nama, harga) {
   const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
-  dataPesananSementera = { produk: nama, total: harga, inv: inv };
+  // Simpan harga asli untuk keperluan hitung voucher
+  dataPesananSementera = { produk: nama, hargaAsli: harga, total: harga, inv: inv, voucherPakai: "" };
   
   document.getElementById("isiStruk").innerHTML = `
     <p style="margin:5px 0;"><b>Invoice:</b> ${inv}</p>
     <p style="margin:5px 0;"><b>Produk:</b> ${nama}</p>
+    <p style="margin:5px 0; color:#10b981;"><b>Total Bayar:</b> <span id="displayTotalStruk" style="font-weight:bold;">Rp${harga.toLocaleString('id-ID')}</span></p>
     <hr>
+    
+    <div style="display:flex; gap:5px; margin-bottom:10px;">
+      <input type="text" id="inputVoucher" placeholder="Kode Voucher" style="flex:1; margin-top:0; text-transform:uppercase;">
+      <button onclick="cekVoucherAktif()" style="padding:10px; background:#0f172a; color:white; border:none; border-radius:8px; cursor:pointer; font-size:11px; font-weight:bold;">PAKAI</button>
+    </div>
+    <div id="pesanVoucher" style="font-size:10px; margin-bottom:10px;"></div>
+
     <label>Nama Pembeli:</label><input type="text" id="pembeliNama">
     <label>WhatsApp:</label><input type="number" id="pembeliWA" placeholder="628xxx">
     <label>Email Pengiriman:</label><input type="email" id="pembeliEmail">
@@ -258,6 +268,38 @@ window.bukaStruk = function(nama, harga) {
     <label>Link Bukti Transfer:</label><input type="text" id="buktiTransfer" placeholder="Tempel link foto bukti">
   `;
   document.getElementById("modalStruk").style.display = "flex";
+};
+
+// --- FUNGSI CEK VOUCHER ---
+window.cekVoucherAktif = async function() {
+    const kode = document.getElementById("inputVoucher").value.trim().toUpperCase();
+    const pesan = document.getElementById("pesanVoucher");
+    
+    if(!kode) return alert("Masukkan kode voucher!");
+
+    try {
+        const vRef = doc(db, "vouchers", kode);
+        const vSnap = await getDoc(vRef);
+
+        if (vSnap.exists()) {
+            const vData = vSnap.data();
+            if (vData.kuota > 0) {
+                const potongan = vData.potongan;
+                const hargaBaru = dataPesananSementera.hargaAsli - potongan;
+                
+                dataPesananSementera.total = hargaBaru < 0 ? 0 : hargaBaru;
+                dataPesananSementera.voucherPakai = kode;
+
+                document.getElementById("displayTotalStruk").innerText = "Rp" + dataPesananSementera.total.toLocaleString('id-ID');
+                pesan.innerHTML = `<span style="color:green;">✔️ Berhasil! Potongan Rp${potongan.toLocaleString()}</span>`;
+                alert("Voucher Berhasil Dipasang!");
+            } else {
+                pesan.innerHTML = `<span style="color:red;">❌ Kuota voucher habis!</span>`;
+            }
+        } else {
+            pesan.innerHTML = `<span style="color:red;">❌ Kode tidak valid!</span>`;
+        }
+    } catch (e) { console.error(e); }
 };
 
 window.pilihPembayaran = function(val) {
@@ -280,6 +322,15 @@ window.kirimInvoiceWA = async function() {
   if(!pNama || !pWA || !pEmail || !metode || !bukti) return alert("Lengkapi data!");
 
   try {
+    // Jika pakai voucher, kurangi kuota di DB
+    if(dataPesananSementera.voucherPakai) {
+        const vRef = doc(db, "vouchers", dataPesananSementera.voucherPakai);
+        const vSnap = await getDoc(vRef);
+        if(vSnap.exists()) {
+            await updateDoc(vRef, { kuota: vSnap.data().kuota - 1 });
+        }
+    }
+
     await setDoc(doc(db, "pesanan", dataPesananSementera.inv), { 
       ...dataPesananSementera, 
       pembeli: pNama, 
@@ -308,6 +359,7 @@ async function muatPesananMasuk() {
         <p><b>ID:</b> ${d.id} | <b>Penerima:</b> ${p.pembeli}</p>
         <p><b>WA:</b> <a href="https://wa.me/${p.whatsapp}" target="_blank" class="wa-tag">${p.whatsapp}</a></p>
         <p><b>Email:</b> ${p.email}</p>
+        <p><b>Voucher:</b> ${p.voucherPakai || "-"}</p>
         <p><b>Bukti:</b> <a href="${p.bukti}" target="_blank">Lihat Bukti</a></p>
         <textarea id="dataAkun_${d.id}" placeholder="Isi data akun di sini..." style="width:100%; height:50px; color:#000; background:#eee;"></textarea>
         <button onclick="kirimDataEmail('${d.id}', '${p.email}', '${p.produk}', '${p.pembeli}')" class="btn-success" style="padding:5px; font-size:12px;">📧 KIRIM KE EMAIL</button>
@@ -334,7 +386,7 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
 
 window.hapusPesanan = async (id) => { if(confirm("Hapus pesanan?")) { await deleteDoc(doc(db, "pesanan", id)); location.reload(); } };
 
-// --- 11. FITUR LACAK PESANAN (UNTUK PEMBELI) ---
+// --- 11. FITUR LACAK PESANAN ---
 window.cekStatusPesanan = async function() {
     const invId = document.getElementById("inputCekPesanan").value.trim().toUpperCase();
     if(!invId) return alert("Masukkan ID Invoice (FZ-xxxx)!");
@@ -358,14 +410,12 @@ window.cekStatusPesanan = async function() {
 
             alert(msg);
         } else {
-            alert("❌ ID Invoice tidak ditemukan. Pastikan kodenya benar.");
+            alert("❌ ID Invoice tidak ditemukan.");
         }
-    } catch (e) {
-        alert("Gagal mengecek status.");
-    }
+    } catch (e) { alert("Gagal mengecek status."); }
 };
 
-// --- 12. FITUR LIVE SALES NOTIFICATION (BARU) ---
+// --- 12. FITUR LIVE SALES NOTIFICATION ---
 async function jalankanLiveNotif() {
   const notifBox = document.getElementById("salesNotif");
   const notifUser = document.getElementById("notifUser");
@@ -389,21 +439,18 @@ async function jalankanLiveNotif() {
 
     setInterval(() => {
       const dataAcak = listSelesai[Math.floor(Math.random() * listSelesai.length)];
-      
-      // Sensor nama pembeli (Contoh: Faza -> Fa***)
       const nama = dataAcak.pembeli || "Pembeli";
       const namaSensor = nama.length > 2 ? nama.substring(0, 2) + "***" : nama + "***";
       
       notifUser.innerText = namaSensor + " (Verified Buyer)";
       notifProduk.innerText = "Baru saja membeli " + dataAcak.produk;
-
       notifBox.classList.add("show");
 
       setTimeout(() => {
         notifBox.classList.remove("show");
       }, 5000);
 
-    }, 15000); // Muncul setiap 15 detik sekali
+    }, 15000);
 
   } catch (e) { console.error("Notif Error:", e); }
 }
