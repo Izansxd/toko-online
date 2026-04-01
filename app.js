@@ -68,7 +68,7 @@ window.submitProduk = async function() {
     gambar: document.getElementById("gambar").value,
     deskripsi: document.getElementById("deskripsi").value,
     kategori: document.getElementById("kategori").value,
-    status: document.getElementById("status").value,
+    status: editId ? document.getElementById("status")?.value || "Ready" : "Ready", 
     tanggal: new Date()
   };
 
@@ -86,7 +86,6 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
   document.getElementById("gambar").value = gambar;
   document.getElementById("deskripsi").value = deskripsi;
   document.getElementById("kategori").value = kategori;
-  document.getElementById("status").value = status;
   document.getElementById("editId").value = id;
   window.scrollTo(0,0);
 };
@@ -130,7 +129,7 @@ window.updatePengumuman = async function() {
   } catch (e) { alert("Gagal!"); }
 };
 
-// --- 5. TESTIMONI (SIMPEL & TRUNCATE LINK) ---
+// --- 5. TESTIMONI ---
 window.tambahTesti = async function() {
   const img = document.getElementById("inputTesti").value;
   if(!img) return alert("Masukkan link gambar!");
@@ -193,7 +192,7 @@ function renderHTML(data) {
             <img src="${p.gambar.split(',')[0]}">
             <div class="text-info">
               <div style="font-size:12px;">${p.nama}</div>
-              <div style="color:#10b981; font-size:11px;">Rp${hargaFormat}</div>
+              <div style="color:#10b981; font-size:11px;">${isSold ? 'SOLD' : 'Rp'+hargaFormat}</div>
             </div>
           </div>
           <div class="admin-actions">
@@ -360,7 +359,6 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
     const dataAkun = document.getElementById(`dataAkun_${invId}`).value;
     if(!dataAkun) return alert("Isi data akun dulu!");
     try {
-        // 1. Kirim Email via EmailJS
         await emailjs.send("service_xe358l6", "template_2j4eu9o", {
             nama_pembeli: namaPembeli,
             email_pembeli: emailTujuan,
@@ -368,10 +366,8 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
             data_akun: dataAkun
         });
 
-        // 2. Update status pesanan di Firebase
         await updateDoc(doc(db, "pesanan", invId), { status: "🎉 Pesanan Selesai" });
 
-        // 3. FITUR OTOMATIS: Cari produk & ubah jadi SOLD
         const q = query(collection(db, "produk"), where("nama", "==", produk));
         const qSnap = await getDocs(q);
         qSnap.forEach(async (docProduk) => {
@@ -396,21 +392,37 @@ window.cekStatusPesanan = async function() {
     } else { alert("❌ Invoice tidak ditemukan."); }
 };
 
-// --- 13. LIVE SALES NOTIFIKASI ---
+// --- 13. LIVE SALES NOTIFIKASI (DINAMIS & LOOP) ---
 async function jalankanLiveNotif() {
   const notifBox = document.getElementById("salesNotif");
   if(!notifBox) return;
+
   const snap = await getDocs(collection(db, "pesanan"));
   let listSelesai = [];
-  snap.forEach(d => { if(d.data().status === "🎉 Pesanan Selesai") listSelesai.push(d.data()); });
+  
+  snap.forEach(d => { 
+    if(d.data().status === "🎉 Pesanan Selesai") {
+        listSelesai.push(d.data()); 
+    }
+  });
+
   if(listSelesai.length === 0) return;
+
+  // Interval untuk memunculkan notif secara bergantian
   setInterval(() => {
+    // Ambil user secara acak dari database yang sudah 'Selesai'
     const data = listSelesai[Math.floor(Math.random() * listSelesai.length)];
+    
     document.getElementById("notifUser").innerText = data.pembeli.substring(0, 2) + "*** (Verified)";
     document.getElementById("notifProduk").innerText = "Baru saja membeli " + data.produk;
+    
     notifBox.classList.add("show");
-    setTimeout(() => notifBox.classList.remove("show"), 5000);
-  }, 15000);
+    
+    setTimeout(() => {
+        notifBox.classList.remove("show");
+    }, 5000); // Tampil selama 5 detik
+    
+  }, 15000); // Muncul setiap 15 detik sekali
 }
 
 // Jalankan fungsi awal
