@@ -19,12 +19,13 @@ let allProducts = [];
 let dataPesananSementera = {}; 
 let base64Bukti = ""; 
 
+// Fungsi Notify (Panggil Toast dari Index)
 const notify = (msg, color) => {
     if (window.showToast) window.showToast(msg, color);
-    else console.log(msg); 
+    else console.log(msg);
 };
 
-// --- LOGIKA UPLOAD FOTO ---
+// --- LOGIKA UPLOAD FOTO (ID: buktiTransferFile) ---
 document.addEventListener('change', function(e) {
     if (e.target && e.target.id === 'buktiTransferFile') {
         const file = e.target.files[0];
@@ -44,7 +45,7 @@ document.addEventListener('change', function(e) {
     }
 });
 
-// --- FUNGSI UTAMA TOKO ---
+// --- TAMPIL DATA ---
 window.tampilProduk = async function() {
   try {
     const dataSnap = await getDocs(collection(db, "produk"));
@@ -53,7 +54,11 @@ window.tampilProduk = async function() {
       allProducts.push({ id: docSnap.id, ...docSnap.data() });
     });
     renderHTML(allProducts);
-    if(window.location.href.includes("admin.html")) muatPesananMasuk();
+    
+    const infoSnap = await getDoc(doc(db, "pengaturan", "toko"));
+    if (infoSnap.exists()) {
+      document.getElementById("isiPengumuman").innerText = infoSnap.data().pengumuman;
+    }
   } catch (error) { console.error(error); }
 };
 
@@ -65,78 +70,80 @@ function renderHTML(data) {
     const isSold = p.status === "Sold"; 
     html += `
       <div class="card">
-        <img src="${p.gambar.split(',')[0]}" style="width:100%; border-radius:10px;">
-        <h4>${p.nama}</h4>
-        <p>Rp${Number(p.harga).toLocaleString('id-ID')}</p>
-        <button class="btn-beli" ${isSold ? 'disabled' : `onclick="window.bukaStruk('${p.nama.replace(/'/g, "\\'")}', ${p.harga})"`}>
-          ${isSold ? 'SOLD' : 'BELI'}
-        </button>
+        <div class="badge">${p.kategori}</div>
+        <img src="${p.gambar.split(',')[0]}">
+        <div class="card-info">
+          <h4 style="margin:0; font-size:13px;">${p.nama}</h4>
+          <span class="harga-baru">Rp${Number(p.harga).toLocaleString('id-ID')}</span>
+          <button class="btn-beli" ${isSold ? 'disabled' : `onclick="window.bukaStruk('${p.nama.replace(/'/g, "\\'")}', ${p.harga})"`}>
+            ${isSold ? 'SOLD' : 'BELI'}
+          </button>
+        </div>
       </div>`;
   });
-  produkDiv.innerHTML = html;
+  produkDiv.innerHTML = html || "<p>Produk tidak ditemukan.</p>";
 }
 
-// --- LOGIKA PESANAN (FIX VALIDASI) ---
+// --- LOGIKA STRUK ---
 window.bukaStruk = function(nama, harga) {
   const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
-  base64Bukti = ""; // Reset foto
-  dataPesananSementera = { produk: nama, hargaAsli: harga, total: harga, inv: inv, voucherPakai: "" };
+  base64Bukti = ""; 
+  dataPesananSementera = { produk: nama, hargaAsli: harga, total: harga, inv: inv };
 
   document.getElementById("isiStruk").innerHTML = `
-    <div style="text-align:center;">
+    <div class="struk-header">
       <h3>FAZA STORE</h3>
-      <p>ID: ${inv}</p>
-      <hr>
-      <p>${nama} - Rp${harga.toLocaleString('id-ID')}</p>
-      <h4 id="displayTotalStruk">TOTAL: Rp${harga.toLocaleString('id-ID')}</h4>
+      <p>ID INVOICE: <b>${inv}</b></p>
     </div>
-    <div style="margin-top:15px;">
-      <label>Nama Lengkap</label>
-      <input type="text" id="pembeliNama" placeholder="Nama..." required>
-      <label>WhatsApp</label>
-      <input type="number" id="pembeliWA" placeholder="628..." required>
-      <label>Email</label>
-      <input type="email" id="pembeliEmail" placeholder="Email kirim akun..." required>
-      <label>Metode</label>
-      <select id="metodeBayar" onchange="window.pilihPembayaran(this.value)">
-        <option value="">-- PILIH --</option>
-        <option value="DANA">DANA - ${NO_DANA}</option>
-        <option value="QRIS">QRIS (Otomatis)</option>
-      </select>
-      <div id="wadahBayar"></div>
-      <label>Upload Bukti Transfer</label>
-      <input type="file" id="buktiTransferFile" accept="image/*">
-      <button onclick="window.prosesKonfirmasiAkhir()" style="width:100%; padding:10px; background:#10b981; color:white; border:none; margin-top:10px; border-radius:5px; cursor:pointer;">KONFIRMASI PEMBAYARAN</button>
-    </div>
+    <div class="struk-divider"></div>
+    <div class="struk-item"><span>PRODUK:</span> <span>${nama}</span></div>
+    <div class="struk-total"><span>TOTAL:</span> <span>Rp${harga.toLocaleString('id-ID')}</span></div>
+    <div class="struk-divider"></div>
+    
+    <label>NAMA LENGKAP</label>
+    <input type="text" id="pembeliNama" placeholder="Sesuai KTP/E-Wallet">
+    <label>WHATSAPP (628xxx)</label>
+    <input type="number" id="pembeliWA" placeholder="62822986xxxxx">
+    <label>EMAIL (KIRIM AKUN)</label>
+    <input type="email" id="pembeliEmail" placeholder="nama@email.com">
+    <label>METODE BAYAR</label>
+    <select id="metodeBayar" onchange="window.pilihPembayaran(this.value)">
+      <option value="">-- PILIH PEMBAYARAN --</option>
+      <option value="DANA">DANA (${NO_DANA})</option>
+      <option value="QRIS">QRIS OTOMATIS</option>
+    </select>
+    <div id="wadahBayar"></div>
+    <label>UPLOAD BUKTI TRANSFER</label>
+    <input type="file" id="buktiTransferFile" accept="image/*">
   `;
   document.getElementById("modalStruk").style.display = "flex";
 };
 
 window.pilihPembayaran = function(val) {
   const wadah = document.getElementById("wadahBayar");
-  if(val === "QRIS") wadah.innerHTML = `<img src="${URL_QRIS}" style="width:150px; margin:10px auto; display:block;">`;
-  else if(val === "DANA") wadah.innerHTML = `<div style="background:#eee; padding:10px; border-radius:5px; text-align:center; margin:10px 0;">Transfer ke: <b>${NO_DANA}</b></div>`;
+  if(val === "QRIS") wadah.innerHTML = `<img src="${URL_QRIS}" style="width:150px; display:block; margin:10px auto; border-radius:10px;">`;
+  else if(val === "DANA") wadah.innerHTML = `<div style="background:#f1f5f9; padding:10px; border-radius:5px; text-align:center; font-size:12px; margin:10px 0;">Transfer ke DANA: <b>${NO_DANA}</b></div>`;
   else wadah.innerHTML = "";
 };
 
-// FUNGSI KONFIRMASI YANG SUDAH DIPERBAIKI
-window.prosesKonfirmasiAkhir = async function() {
-  const nama = document.getElementById("pembeliNama").value;
-  const wa = document.getElementById("pembeliWA").value;
-  const email = document.getElementById("pembeliEmail").value;
-  const metode = document.getElementById("metodeBayar").value;
+// --- EKSEKUSI PEMBAYARAN (FIX UNTUK INDEX.HTML) ---
+window.handleConfirmBayar = async function() {
+  const nama = document.getElementById("pembeliNama")?.value;
+  const wa = document.getElementById("pembeliWA")?.value;
+  const email = document.getElementById("pembeliEmail")?.value;
+  const metode = document.getElementById("metodeBayar")?.value;
 
+  // Validasi
   if(!nama || !wa || !email || !metode) {
-    return notify("Woi! Isi dulu semua datanya!", "#ef4444");
+    return notify("Lengkapi semua data pembeli! ⚠️", "#ef4444");
   }
-
   if(!base64Bukti) {
-    return notify("Bukti transfernya mana? Upload dulu!", "#ef4444");
+    return notify("Bukti transfer wajib diupload! 📸", "#ef4444");
   }
 
   try {
-    notify("Sabar, lagi ngirim pesanan... ⏳", "#3a7bd5");
-    
+    notify("Sedang memproses... Jangan tutup halaman", "#3a7bd5");
+
     await setDoc(doc(db, "pesanan", dataPesananSementera.inv), { 
       ...dataPesananSementera, 
       pembeli: nama, 
@@ -148,15 +155,37 @@ window.prosesKonfirmasiAkhir = async function() {
       tanggal: new Date() 
     });
 
-    notify("Pesanan Berhasil! Menuju WhatsApp Admin...", "#10b981");
+    notify("Pesanan Berhasil! Mengalihkan ke WA...", "#10b981");
     
-    const textWA = `Halo Faza Store, saya ${nama} mau konfirmasi order ${dataPesananSementera.produk} (Inv: ${dataPesananSementera.inv}). Cek web ya!`;
-    window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(textWA)}`, '_blank');
+    const pesanWA = `Halo Admin Faza Store, saya *${nama}* ingin konfirmasi pembayaran.\n\n` +
+                    `📦 Produk: ${dataPesananSementera.produk}\n` +
+                    `📑 Inv: ${dataPesananSementera.inv}\n` +
+                    `💰 Total: Rp${dataPesananSementera.total.toLocaleString('id-ID')}\n\n` +
+                    `Mohon segera diproses ya!`;
+
+    window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=${encodeURIComponent(pesanWA)}`, '_blank');
 
     setTimeout(() => location.reload(), 2000);
   } catch (e) {
-    notify("Gagal simpan ke database!", "#ef4444");
+    console.error(e);
+    notify("Gagal menyimpan pesanan!", "#ef4444");
   }
 };
 
+// --- FUNGSI LAIN ---
+window.jalankanFilter = function(game) {
+  if (game === "Semua") renderHTML(allProducts);
+  else renderHTML(allProducts.filter(p => p.kategori === game));
+};
+
+window.cekStatusPesanan = async function(invId) {
+    const docSnap = await getDoc(doc(db, "pesanan", invId.toUpperCase()));
+    if (docSnap.exists()) {
+        notify(`ID: ${invId} | Status: ${docSnap.data().status}`, "#3a7bd5");
+    } else {
+        notify("Invoice tidak ditemukan!", "#ef4444");
+    }
+};
+
+// Jalankan Awal
 window.tampilProduk();
