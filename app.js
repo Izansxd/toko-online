@@ -100,7 +100,7 @@ window.kirimDataAkun = async function(id, emailUser, namaUser, produk) {
     try {
         notify("Sedang mengirim email... 📧", "#3a7bd5");
         // Pastikan ID Service & Template EmailJS lu bener di sini
-        await emailjs.send("service_id", "template_id", {
+        await emailjs.send("service_xe358l6", "template_2j4eu9o", {
             to_email: emailUser,
             to_name: namaUser,
             product_name: produk,
