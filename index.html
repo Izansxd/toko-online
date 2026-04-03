@@ -71,13 +71,8 @@
     .btn-beli { background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; padding: 10px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .btn-beli:active { transform: scale(0.95); }
 
-    /* --- CSS MODAL --- */
     #modalStruk, #modalDetail, #modalLacak { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px; transition: 0.3s; }
-    .detail-box, .lacak-box { animation: modalBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     
-    @keyframes modalBounce { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-
-    /* --- CSS STRUK KASIR BARU --- */
     .struk-box { 
       background: white; 
       color: #1a1a1a; 
@@ -220,9 +215,10 @@
 </footer>
 
 <script>
-// --- FUNGSI GLOBAL ---
+// --- FUNGSI GLOBAL SINKRON DENGAN APP.JS ---
 window.showToast = function(pesan, warna = "#10b981") {
     const x = document.getElementById("toast");
+    if(!x) return;
     x.innerText = pesan;
     x.style.backgroundColor = warna;
     x.className = "show";
@@ -232,47 +228,20 @@ window.showToast = function(pesan, warna = "#10b981") {
 window.tutupStruk = () => document.getElementById('modalStruk').style.display = 'none';
 window.tutupDetail = () => document.getElementById('modalDetail').style.display = 'none';
 
-window.handleConfirmBayar = function() {
-    const pNama = document.getElementById("pembeliNama")?.value;
-    const pWA = document.getElementById("pembeliWA")?.value;
-    const pEmail = document.getElementById("pembeliEmail")?.value;
-    const metode = document.getElementById("metodeBayar")?.value;
-    const bukti = document.getElementById("buktiTransfer")?.value; // ID harus sesuai dengan yang di-generate app.js
-
-    if(!pNama || !pWA || !pEmail || !metode || !bukti) {
-        window.showToast("Lengkapi semua data & bukti bayar! ⚠️", "#ef4444");
-        return;
-    }
-
-    window.showToast("Sedang memproses pesanan... ⏳", "#3a7bd5");
-    
-    // Panggil fungsi kirimInvoiceWA yang ada di app.js
-    if (typeof window.kirimInvoiceWA === "function") {
-        window.kirimInvoiceWA(); 
-    }
-};
-
 window.handleLacak = function() {
     const id = document.getElementById("inputCekPesanan").value;
-    if (!id) {
-        window.showToast("Masukkan ID Invoice dulu! ⚠️", "#ef4444");
-        return;
-    }
-    if (typeof window.cekStatusPesanan === "function") {
-        window.cekStatusPesanan(id);
-    }
+    if (!id) return window.showToast("Masukkan ID Invoice! ⚠️", "#ef4444");
+    if (typeof window.cekStatusPesanan === "function") window.cekStatusPesanan(id);
 };
 
 window.filterGame = function(el, game) {
     document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
     el.classList.add('active');
-    if (typeof window.jalankanFilter === "function") {
-        window.jalankanFilter(game);
-    }
+    if (typeof window.jalankanFilter === "function") window.jalankanFilter(game);
 };
 </script>
 
-<script type="module" src="app.js?v=999"></script>
+<script type="module" src="app.js?v=1.0.1"></script>
 
 </body>
 </html>
