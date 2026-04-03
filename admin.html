@@ -16,12 +16,35 @@
   <style>
     body { font-family: 'Poppins', sans-serif; background: #0f172a; color: white; padding: 20px; margin: 0; }
     
+    /* --- CSS TOAST NOTIFIKASI --- */
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #10b981;
+      color: #fff;
+      text-align: center;
+      border-radius: 12px;
+      padding: 16px;
+      position: fixed;
+      z-index: 10000;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.1);
+      font-size: 13px;
+    }
+    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+    @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+
     /* --- CSS LOGIN OVERLAY --- */
     #loginOverlay {
       position: fixed;
       top: 0; left: 0; width: 100%; height: 100%;
       background: #0f172a;
-      display: none; /* Default sembunyi, diatur lewat JS */
+      display: none;
       flex-direction: column;
       align-items: center; justify-content: center;
       z-index: 9999;
@@ -40,7 +63,6 @@
       background: linear-gradient(90deg, #3a7bd5, #00d2ff); color: white; 
       cursor: pointer; font-weight: bold; text-transform: uppercase;
     }
-    /* --- END CSS LOGIN --- */
 
     .box { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #334155; }
     h1 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px; }
@@ -109,12 +131,13 @@
 </head>
 <body>
 
+<div id="toast"></div>
+
 <div id="loginOverlay">
   <div class="login-box">
     <h1 style="font-size: 16px;">ADMIN SIWOSTORE</h1>
     <input type="password" id="passAdmin" placeholder="Masukkan Password">
     <button onclick="window.cekAksesAdmin()">MASUK SEKARANG</button>
-    <p id="pesanSalah" style="color: #ef4444; font-size: 11px; margin-top: 10px; display: none;">Password salah, Faz!</p>
   </div>
 </div>
 
@@ -197,30 +220,35 @@
 </div>
 
 <script>
-// --- LOGIKA PASSWORD ADMIN (MANDIRI) ---
+// --- FUNGSI TOAST (BISA DIPANGGIL app.js) ---
+window.showToast = function(pesan, warna = "#10b981") {
+    const x = document.getElementById("toast");
+    x.innerText = pesan;
+    x.style.backgroundColor = warna;
+    x.className = "show";
+    setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+};
+
+// --- LOGIKA PASSWORD ADMIN ---
 const PASSWORD_RAHASIA = "16092007"; 
 
 window.cekAksesAdmin = function() {
     const pass = document.getElementById("passAdmin").value;
     const overlay = document.getElementById("loginOverlay");
-    const pesan = document.getElementById("pesanSalah");
 
     if (pass === PASSWORD_RAHASIA) {
         sessionStorage.setItem("loginOk", "true");
-        overlay.style.display = "none";
-        // Refresh biar app.js jalan mulus narik data
-        location.reload(); 
+        window.showToast("Login Berhasil! Selamat Datang Faz.. ⚡");
+        setTimeout(() => { location.reload(); }, 1000);
     } else {
-        pesan.style.display = "block";
+        window.showToast("Password Salah! ❌", "#ef4444");
         document.getElementById("passAdmin").value = "";
     }
 };
 
-// Cek status saat halaman dimuat
 window.addEventListener("DOMContentLoaded", () => {
     const isLogin = sessionStorage.getItem("loginOk");
     const overlay = document.getElementById("loginOverlay");
-    
     if (isLogin === "true") {
         overlay.style.display = "none";
     } else {
@@ -242,11 +270,11 @@ function resetForm() {
     document.getElementById("gambar").value = "";
     document.getElementById("deskripsi").value = "";
     document.getElementById("editId").value = "";
-    alert("Form telah dibersihkan.");
+    window.showToast("Form telah dibersihkan. ✨", "#334155");
 }
 </script>
 
-<script type="module" src="app.js?v=2.4"></script>
+<script type="module" src="app.js?v=2.5"></script>
 
 </body>
 </html>
