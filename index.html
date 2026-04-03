@@ -183,11 +183,30 @@ window.showToast = function(pesan, warna = "#10b981") {
 
 // --- WRAPPER FUNGSI BIAR ADA TOAST ---
 window.handleConfirmBayar = function() {
-    window.showToast("Mengalihkan ke WhatsApp... 📱");
+    // Cek input dulu sebelum munculin toast
+    const pNama = document.getElementById("pembeliNama").value;
+    const pWA = document.getElementById("pembeliWA").value;
+    const pEmail = document.getElementById("pembeliEmail").value;
+    const metode = document.getElementById("metodeBayar").value;
+    const bukti = document.getElementById("buktiTransfer").value;
+
+    if(!pNama || !pWA || !pEmail || !metode || !bukti) {
+        window.showToast("Lengkapi semua data & bukti bayar! ⚠️", "#ef4444");
+        return;
+    }
+
+    // Kalau lengkap, baru proses
+    window.showToast("Sedang memproses pesanan... ⏳", "#3a7bd5");
+    
     setTimeout(() => {
-        if (typeof kirimInvoiceWA === "function") kirimInvoiceWA();
-    }, 1000);
+        if (typeof kirimInvoiceWA === "function") {
+            kirimInvoiceWA(); 
+            // Fungsi ini di app.js bakal simpan ke Firebase 
+            // dan bakal munculin toast "Pesanan Terkirim" kalau sukses.
+        }
+    }, 800);
 };
+
 
 window.handleLacak = function() {
     const id = document.getElementById("inputCekPesanan").value;
