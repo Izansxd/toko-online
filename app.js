@@ -11,7 +11,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// Variable Global untuk menyimpan data order sementara
+// Variable Global
 window.currentOrder = null;
 
 // Helper Notifikasi
@@ -20,7 +20,7 @@ const notify = (msg, color) => {
     else console.log(msg);
 };
 
-// --- 2. LOGIC DASHBOARD & PRODUK ---
+// --- 2. LOGIC TAMPIL PRODUK (USER & ADMIN) ---
 window.tampilProduk = function() {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
@@ -47,7 +47,6 @@ function renderHTML(data) {
     const isSold = p.status === "Sold" || p.status === "Sold Out";
     const hargaFormat = Number(p.harga).toLocaleString('id-ID');
     const namaAman = p.nama.replace(/'/g, "\\'");
-    const deskAman = (p.deskripsi || "").replace(/'/g, "\\'").replace(/\n/g, "\\n");
 
     if (isAdmin) {
       html += `
@@ -60,7 +59,7 @@ function renderHTML(data) {
             </div>
           </div>
           <div class="admin-actions">
-            <button class="btn-warning" onclick="window.editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','${deskAman}','${p.kategori}')">✏️</button>
+            <button class="btn-warning" onclick="window.editProduk('${p.id}','${namaAman}',${p.harga},'${p.gambar}','','${p.kategori}')">✏️</button>
             <button class="btn-danger" onclick="window.hapusProduk('${p.id}')">🗑️</button>
           </div>
         </div>`;
@@ -79,7 +78,7 @@ function renderHTML(data) {
         </div>`;
     }
   });
-  produkDiv.innerHTML = html || "<p style='text-align:center; width:100%; font-size:12px; color:#64748b;'>Belum ada produk.</p>";
+  produkDiv.innerHTML = html || "<p style='text-align:center; width:100%; font-size:12px;'>Belum ada produk.</p>";
 }
 
 // --- 3. SISTEM PEMBELIAN (USER) ---
@@ -92,8 +91,8 @@ window.bukaStruk = function(nama, harga) {
 
     isiStruk.innerHTML = `
         <div class="struk-header">
-            <h3>STRUK PEMBELIAN</h3>
-            <p>Faza Store - Terpercaya</p>
+            <h3>FORM PEMBELIAN</h3>
+            <p>Silakan isi data untuk menerima akun</p>
         </div>
         <div class="struk-divider"></div>
         <div class="struk-item"><span>Produk:</span> <b>${nama}</b></div>
@@ -101,9 +100,7 @@ window.bukaStruk = function(nama, harga) {
         <div class="struk-divider"></div>
         <label>NAMA PEMBELI</label>
         <input type="text" id="pembeliNama" placeholder="Nama Anda...">
-        <label>WHATSAPP</label>
-        <input type="number" id="pembeliWA" placeholder="08...">
-        <label>EMAIL</label>
+        <label>EMAIL PENERIMA</label>
         <input type="email" id="pembeliEmail" placeholder="Email aktif...">
         <label>VOUCHER (Opsional)</label>
         <div style="display:flex; gap:5px;">
@@ -116,44 +113,77 @@ window.bukaStruk = function(nama, harga) {
     modal.style.display = "flex";
 };
 
-window.pakaiVoucher = async function() {
-    const kode = document.getElementById("inputVoucher").value.trim().toUpperCase();
-    if(!kode) return;
-    const vSnap = await getDoc(doc(db, "vouchers", kode));
-    const pesan = document.getElementById("pesanVoucher");
-    if(vSnap.exists() && vSnap.data().kuota > 0) {
-        const potong = vSnap.data().potongan;
-        window.currentOrder.total = window.currentOrder.hargaAsli - potong;
-        window.currentOrder.voucher = kode;
-        document.getElementById("displayTotal").innerText = "Rp" + window.currentOrder.total.toLocaleString();
-        pesan.innerText = "Berhasil! Potongan Rp" + potong.toLocaleString();
-        pesan.style.color = "green";
-    } else {
-        pesan.innerText = "Voucher tidak valid/habis.";
-        pesan.style.color = "red";
-    }
-};
-
 window.handleConfirmBayar = async function() {
     const nama = document.getElementById("pembeliNama").value;
-    const wa = document.getElementById("pembeliWA").value;
     const email = document.getElementById("pembeliEmail").value;
-    if(!nama || !wa || !email) return notify("Lengkapi data!", "#ef4444");
+    if(!nama || !email) return notify("Lengkapi data formulir!", "#ef4444");
 
     try {
-        const orderData = { ...window.currentOrder, pembeli: nama, whatsapp: wa, email: email, status: "Menunggu Pembayaran", tanggal: new Date() };
-        const docRef = await addDoc(collection(db, "pesanan"), orderData);
-        const invoice = docRef.id.substring(0, 5).toUpperCase();
-
-        const msg = `Halo Admin Faza Store!%0ASaya ingin beli *${orderData.produk}*%0AID Order: *#${invoice}*%0ATotal: *Rp${orderData.total.toLocaleString()}*%0ANama: ${nama}`;
-        window.open(`https://wa.me/6282298627146?text=${msg}`, '_blank');
+        const orderData = { 
+            ...window.currentOrder, 
+            pembeli: nama, 
+            email: email, 
+            status: "Menunggu Pembayaran", 
+            tanggal: new Date() 
+        };
+        
+        await addDoc(collection(db, "pesanan"), orderData);
         
         window.tutupStruk();
-        notify("Order diproses! Silakan bayar via WA.", "#10b981");
-    } catch (e) { notify("Gagal order.", "#ef4444"); }
+        notify("Pesanan Berhasil! Silakan tunggu konfirmasi admin.", "#10b981");
+    } catch (e) { notify("Gagal memproses pesanan.", "#ef4444"); }
 };
 
-// --- 4. [ADMIN] FUNGSI KELOLA ---
+window.tutupStruk = () => { document.getElementById("modalStruk").style.display = "none"; };
+
+// --- 4. [ADMIN] KELOLA PESANAN & KIRIM AKUN ---
+window.muatPesananAdmin = function() {
+  const list = document.getElementById("listPesananAdmin");
+  if(!list) return;
+  
+  onSnapshot(query(collection(db, "pesanan"), orderBy("tanggal", "desc")), (snap) => {
+    let html = "";
+    snap.forEach(d => {
+      const p = d.data();
+      const isSelesai = p.status === "🎉 Pesanan Selesai";
+      
+      html += `
+        <div class="order-item-admin ${isSelesai ? 'status-selesai' : ''}">
+          <p><b>Pebeli:</b> ${p.pembeli} | <b>Produk:</b> ${p.produk}</p>
+          <p><b>Email:</b> ${p.email} | <b>Status:</b> ${p.status}</p>
+          ${!isSelesai ? `
+            <textarea id="dataAkun_${d.id}" placeholder="Email:Pass Akun (Data ini dikirim ke pembeli)" style="width:100%; margin-top:10px;"></textarea>
+            <button class="btn-success" onclick="window.prosesKirimAkun('${d.id}','${p.email}','${p.produk}','${p.pembeli}')">📧 KIRIM DATA & SELESAI</button>
+          ` : `<p style="color:#10b981; font-weight:bold;">✅ AKUN SUDAH DIKIRIM</p>`}
+        </div>`;
+    });
+    list.innerHTML = html || "<p style='text-align:center;'>Belum ada pesanan.</p>";
+  });
+};
+
+window.prosesKirimAkun = async function(docId, userEmail, produk, userNama) {
+    const detailAkun = document.getElementById(`dataAkun_${docId}`).value;
+    if(!detailAkun) return notify("Isi detail akun dulu!", "#ef4444");
+
+    const params = {
+        to_email: userEmail,
+        to_name: userNama,
+        product_name: produk,
+        account_details: detailAkun
+    };
+
+    // Integrasi EmailJS
+    emailjs.send("service_id_kamu", "template_kirim_akun", params)
+    .then(async () => {
+        await updateDoc(doc(db, "pesanan", docId), { status: "🎉 Pesanan Selesai" });
+        notify("Akun Berhasil dikirim ke " + userEmail, "#10b981");
+    })
+    .catch((err) => {
+        notify("Gagal kirim email: " + err.text, "#ef4444");
+    });
+};
+
+// --- 5. FUNGSI ADMIN LAINNYA ---
 window.submitProduk = async function() {
   const editId = document.getElementById("editId").value;
   const dataObj = {
@@ -208,85 +238,19 @@ window.muatVoucherAdmin = function() {
 
 window.hapusVoucher = async (id) => { await deleteDoc(doc(db, "vouchers", id)); };
 
-window.tambahTesti = async function() {
-  const img = document.getElementById("inputTesti").value;
-  if(img) await addDoc(collection(db, "testimoni"), { gambar: img });
-  document.getElementById("inputTesti").value = "";
-};
-
-window.muatTestimoniAdmin = function() {
-  const list = document.getElementById("list-testimoni-admin");
-  if(!list) return;
-  onSnapshot(collection(db, "testimoni"), (snap) => {
-    let html = "";
-    snap.forEach(d => { html += `<div style="display:inline-block;"><img src="${d.data().gambar}" width="50"><button onclick="window.hapusTesti('${d.id}')">X</button></div>`; });
-    list.innerHTML = html;
-  });
-};
-
-window.hapusTesti = async (id) => { await deleteDoc(doc(db, "testimoni", id)); };
-
-window.muatPesananAdmin = function() {
-  const list = document.getElementById("listPesananAdmin");
-  if(!list) return;
-  onSnapshot(query(collection(db, "pesanan"), orderBy("tanggal", "desc")), (snap) => {
-    let html = ""; let totalCuan = 0;
-    snap.forEach(d => {
-      const p = d.data();
-      const isSelesai = p.status === "🎉 Pesanan Selesai";
-      if(isSelesai) totalCuan += Number(p.total);
-      html += `<div class="order-item-admin ${isSelesai ? 'status-selesai' : ''}">
-        <p><b>${p.pembeli}</b> - ${p.produk}</p>
-        <p>WA: ${p.whatsapp} | Rp${Number(p.total).toLocaleString()}</p>
-        ${!isSelesai ? `<button onclick="window.selesaikanPesanan('${d.id}')">SELESAIKAN</button>` : '✅ SELESAI'}
-      </div>`;
-    });
-    list.innerHTML = html;
-    if(document.getElementById("statCuan")) document.getElementById("statCuan").innerText = "Rp" + totalCuan.toLocaleString();
-  });
-};
-
-window.selesaikanPesanan = async (id) => {
-    await updateDoc(doc(db, "pesanan", id), { status: "🎉 Pesanan Selesai" });
-    notify("Berhasil!");
-};
-
-// --- 5. SYSTEM UTILITY ---
-window.jalankanFilter = function(kategori) {
-  onSnapshot(collection(db, "produk"), (snapshot) => {
-    let filtered = [];
-    snapshot.forEach(docSnap => {
-      const data = docSnap.data();
-      if (kategori === "Semua" || data.kategori === kategori) filtered.push({ id: docSnap.id, ...data });
-    });
-    renderHTML(filtered);
-  });
-};
-
-window.muatTestimoniIndex = function() {
-  const list = document.getElementById("list-testimoni");
-  if(!list) return;
-  onSnapshot(collection(db, "testimoni"), (snap) => {
-    let html = "";
-    snap.forEach(d => { html += `<img src="${d.data().gambar}" style="width:150px; height:150px; object-fit:cover; border-radius:15px; margin-right:10px;">`; });
-    list.innerHTML = html || "<p>Belum ada testimoni.</p>";
-  });
-};
-
 // --- 6. INISIALISASI ---
 window.initApp = async function() {
   const pSnap = await getDoc(doc(db, "pengaturan", "toko"));
-  const runningTextEl = document.getElementById("isiPengumuman");
-  if(pSnap.exists() && runningTextEl) runningTextEl.innerText = pSnap.data().pengumuman;
+  if(pSnap.exists() && document.getElementById("isiPengumuman")) {
+    document.getElementById("isiPengumuman").innerText = pSnap.data().pengumuman;
+  }
 
   if (window.location.href.includes("admin.html")) {
     window.muatVoucherAdmin();
-    window.muatTestimoniAdmin();
     window.muatPesananAdmin();
     window.tampilProduk();
   } else {
-    window.tampilProduk(); 
-    window.muatTestimoniIndex();
+    window.tampilProduk();
   }
 };
 
