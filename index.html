@@ -71,15 +71,69 @@
     .btn-beli { background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; padding: 10px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; transition: 0.3s; }
     .btn-beli:hover { filter: brightness(1.2); box-shadow: 0 0 15px var(--primary); }
 
+    /* --- CSS MODAL --- */
     #modalStruk, #modalDetail, #modalLacak { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px; transition: 0.3s; }
-    .struk-box, .detail-box, .lacak-box { animation: modalBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+    .detail-box, .lacak-box { animation: modalBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
     
     @keyframes modalBounce { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 
-    .struk-box { background: white; color: #333; width: 100%; max-width: 380px; padding: 20px; border-radius: 15px; max-height: 90vh; overflow-y: auto; }
+    /* --- CSS STRUK KASIR BARU --- */
+    .struk-box { 
+      background: white; 
+      color: #1a1a1a; 
+      width: 100%; 
+      max-width: 320px; 
+      padding: 25px 20px; 
+      border-radius: 4px; 
+      box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+      font-family: 'Courier New', Courier, monospace;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalBounce 0.4s ease;
+    }
+
+    .struk-divider { border-top: 1px dashed #444; margin: 12px 0; }
+    .struk-header { text-align: center; margin-bottom: 15px; }
+    .struk-header h3 { margin: 0; font-size: 18px; font-weight: bold; }
+    .struk-header p { font-size: 10px; margin: 2px 0; font-family: 'Poppins', sans-serif; }
+
+    .struk-item { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
+    .struk-total { 
+      display: flex; 
+      justify-content: space-between; 
+      font-weight: bold; 
+      font-size: 15px; 
+      margin-top: 10px; 
+      padding-top: 10px;
+      border-top: 2px solid #1a1a1a;
+    }
+
+    /* Input di dalam struk */
+    .struk-box input, .struk-box select {
+      font-family: 'Poppins', sans-serif;
+      background: #f1f5f9;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+      margin-bottom: 10px;
+      font-size: 12px;
+      padding: 8px;
+      border-radius: 6px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .struk-box label {
+      font-family: 'Poppins', sans-serif;
+      font-size: 10px;
+      font-weight: bold;
+      color: #64748b;
+      display: block;
+      margin-top: 10px;
+      margin-bottom: 2px;
+    }
+
     .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); }
 
-    /* --- LIVE SALES NOTIFIKASI --- */
+    /* --- LIVE SALES --- */
     .sales-notification { position: fixed; bottom: 85px; left: -350px; background: #ffffff !important; color: #333333 !important; padding: 8px 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100000; transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55); border-left: 4px solid #10b981; width: 210px; pointer-events: none; }
     .sales-notification.show { left: 15px; }
     .sales-notification img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
@@ -91,7 +145,6 @@
     @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-    input, select { width: 100%; padding: 10px; margin-top: 5px; border-radius: 8px; border: 1px solid #ddd; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
     .lacak-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 350px; padding: 20px; border-radius: 15px; border: 1px solid var(--primary); text-align: center; }
   </style>
 </head>
@@ -125,12 +178,10 @@
 
 <div id="modalStruk">
   <div class="struk-box">
-    <h3 style="text-align:center; margin: 0; color: #333;">STRUK PESANAN</h3>
-    <hr style="border: 0.5px dashed #ccc; margin: 15px 0;">
     <div id="isiStruk"></div>
-    <hr style="border: 0.5px dashed #ccc; margin: 15px 0;">
-    <button onclick="window.handleConfirmBayar()" style="width:100%; padding:15px; background:#10b981; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-family: 'Poppins', sans-serif;">KONFIRMASI & BAYAR SEKARANG</button>
-    <button onclick="tutupStruk()" style="width:100%; background:none; border:none; color:#888; font-size:11px; margin-top:10px; cursor:pointer;">Kembali</button>
+    
+    <button onclick="window.handleConfirmBayar()" style="width:100%; padding:15px; background:#10b981; color:#fff; border:none; border-radius:10px; font-weight:800; cursor:pointer; font-family: 'Poppins', sans-serif; margin-top:20px;">KONFIRMASI & BAYAR</button>
+    <button onclick="tutupStruk()" style="width:100%; background:none; border:none; color:#888; font-size:11px; margin-top:10px; cursor:pointer; font-family: 'Poppins', sans-serif;">Kembali</button>
   </div>
 </div>
 
@@ -151,7 +202,7 @@
   <div class="lacak-box">
     <h3 style="margin-top:0; color: var(--primary);">🚚 Lacak Pesanan</h3>
     <p style="font-size: 12px; color: #94a3b8;">Masukkan ID Invoice untuk cek status</p>
-    <input type="text" id="inputCekPesanan" placeholder="Contoh: FZ-1234" style="text-align:center; text-transform:uppercase; margin-bottom:15px;">
+    <input type="text" id="inputCekPesanan" placeholder="Contoh: FZ-1234" style="text-align:center; text-transform:uppercase; margin-bottom:15px; width:100%; padding:10px; border-radius:8px; border:none;">
     <button onclick="window.handleLacak()" style="width:100%; padding:12px; background:var(--primary); color:var(--dark); border:none; border-radius:10px; font-weight:800; cursor:pointer;">CEK STATUS</button>
     <button onclick="document.getElementById('modalLacak').style.display='none'" style="width:100%; background:none; border:none; color:#94a3b8; margin-top:15px; cursor:pointer; font-size:12px;">Tutup</button>
   </div>
@@ -172,7 +223,7 @@
 </footer>
 
 <script>
-// --- FUNGSI TOAST INDEX ---
+// --- FUNGSI TOAST ---
 window.showToast = function(pesan, warna = "#10b981") {
     const x = document.getElementById("toast");
     x.innerText = pesan;
@@ -181,32 +232,27 @@ window.showToast = function(pesan, warna = "#10b981") {
     setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
 };
 
-// --- WRAPPER FUNGSI BIAR ADA TOAST ---
+// --- LOGIKA TOMBOL KONFIRMASI ---
 window.handleConfirmBayar = function() {
-    // Cek input dulu sebelum munculin toast
-    const pNama = document.getElementById("pembeliNama").value;
-    const pWA = document.getElementById("pembeliWA").value;
-    const pEmail = document.getElementById("pembeliEmail").value;
-    const metode = document.getElementById("metodeBayar").value;
-    const bukti = document.getElementById("buktiTransfer").value;
+    const pNama = document.getElementById("pembeliNama")?.value;
+    const pWA = document.getElementById("pembeliWA")?.value;
+    const pEmail = document.getElementById("pembeliEmail")?.value;
+    const metode = document.getElementById("metodeBayar")?.value;
+    const bukti = document.getElementById("buktiTransfer")?.value;
 
     if(!pNama || !pWA || !pEmail || !metode || !bukti) {
         window.showToast("Lengkapi semua data & bukti bayar! ⚠️", "#ef4444");
         return;
     }
 
-    // Kalau lengkap, baru proses
     window.showToast("Sedang memproses pesanan... ⏳", "#3a7bd5");
     
     setTimeout(() => {
         if (typeof kirimInvoiceWA === "function") {
             kirimInvoiceWA(); 
-            // Fungsi ini di app.js bakal simpan ke Firebase 
-            // dan bakal munculin toast "Pesanan Terkirim" kalau sukses.
         }
     }, 800);
 };
-
 
 window.handleLacak = function() {
     const id = document.getElementById("inputCekPesanan").value;
@@ -219,13 +265,9 @@ window.handleLacak = function() {
 };
 
 window.filterGame = function(el, game) {
-    // Tombol Filter
     document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
     el.classList.add('active');
-    
     window.showToast("Menampilkan: " + game + " ✨", "#00d2ff");
-    
-    // Panggil fungsi filter asli di app.js
     if (typeof window.jalankanFilter === "function") {
         window.jalankanFilter(game);
     }
