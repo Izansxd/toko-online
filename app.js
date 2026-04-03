@@ -18,12 +18,34 @@ const db = getFirestore();
 
 let allProducts = [];
 let dataPesananSementera = {}; 
+let base64Bukti = ""; // Variabel penampung foto bukti transfer
 
 // --- FUNGSI HELPER TOAST ---
 const notify = (msg, color) => {
     if (window.showToast) window.showToast(msg, color);
-    else console.log(msg); // Fallback jika fungsi belum dimuat
+    else console.log(msg); 
 };
+
+// --- LOGIKA UPLOAD FOTO OTOMATIS ---
+document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'buktiTransferFile') {
+        const file = e.target.files[0];
+        if (file) {
+            // Validasi ukuran file (Max 1MB agar database tidak bengkak)
+            if (file.size > 1024 * 1024) {
+                notify("Foto terlalu besar! Gunakan foto di bawah 1MB.", "#ef4444");
+                e.target.value = "";
+                return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = function() {
+                base64Bukti = reader.result; 
+                notify("Foto Bukti Berhasil Dimuat! ✅");
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+});
 
 // --- FUNGSI COPY OTOMATIS ---
 window.salinTeks = function(teks, btn) {
@@ -313,6 +335,7 @@ window.bukaStruk = function(nama, harga) {
   const tgl = new Date().toLocaleDateString('id-ID');
   const jam = new Date().toLocaleTimeString('id-ID');
   
+  base64Bukti = ""; // Reset foto setiap buka struk baru
   dataPesananSementera = { produk: nama, hargaAsli: harga, total: harga, inv: inv, voucherPakai: "" };
 
   document.getElementById("isiStruk").innerHTML = `
@@ -369,8 +392,8 @@ window.bukaStruk = function(nama, harga) {
       
       <div id="wadahBayar"></div>
       
-      <label>BUKTI TRANSFER (LINK FOTO)</label>
-      <input type="text" id="buktiTransfer" placeholder="Tempel link bukti di sini">
+      <label>UPLOAD BUKTI TRANSFER (FOTO)</label>
+      <input type="file" id="buktiTransferFile" accept="image/*" style="padding: 10px; background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; width: 100%; margin-top:5px;">
     </div>
 
     <div class="struk-footer">
@@ -382,36 +405,6 @@ window.bukaStruk = function(nama, harga) {
   document.getElementById("modalStruk").style.display = "flex";
 };
 
-/*window.bukaStruk = function(nama, harga) {
-  const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
-  dataPesananSementera = { produk: nama, hargaAsli: harga, total: harga, inv: inv, voucherPakai: "" };
-  document.getElementById("isiStruk").innerHTML = `
-    <div style="font-size: 13px; color: #333;">
-        <p><b>Invoice:</b> ${inv}</p>
-        <p><b>Produk:</b> ${nama}</p>
-        <p style="color:#10b981;"><b>Total Bayar:</b> <span id="displayTotalStruk" style="font-weight:bold;">Rp${harga.toLocaleString('id-ID')}</span></p>
-    </div>
-    <label style="font-size:11px; font-weight:bold; margin-top:10px; display:block;">VOUCHER</label>
-    <div style="display:flex; gap:5px; margin-bottom:10px;">
-      <input type="text" id="inputVoucher" placeholder="KODE" style="flex:1; text-transform:uppercase; padding:8px; border:1px solid #ddd; border-radius:5px;">
-      <button onclick="window.cekVoucherAktif()" style="background:#0f172a; color:white; border:none; padding:8px 15px; border-radius:5px; cursor:pointer;">PAKAI</button>
-    </div>
-    <div id="pesanVoucher" style="font-size:10px; margin-top:-5px; margin-bottom:10px;"></div>
-    <label>Nama Pembeli:</label><input type="text" id="pembeliNama">
-    <label>WhatsApp:</label><input type="number" id="pembeliWA" placeholder="628xxx">
-    <label>Email Pengiriman:</label><input type="email" id="pembeliEmail">
-    <label>Metode Bayar:</label>
-    <select id="metodeBayar" onchange="window.pilihPembayaran(this.value)">
-      <option value="">-- Pilih --</option>
-      <option value="DANA">DANA (${NO_DANA})</option>
-      <option value="QRIS">QRIS (Scan Gambar)</option>
-    </select>
-    <div id="wadahBayar" style="text-align:center; margin-top:10px;"></div>
-    <label>Link Bukti Transfer:</label><input type="text" id="buktiTransfer" placeholder="Tempel link foto bukti">
-  `;
-  document.getElementById("modalStruk").style.display = "flex";
-};*/
-
 window.cekVoucherAktif = async function() {
     const kode = document.getElementById("inputVoucher").value.trim().toUpperCase();
     if(!kode) return notify("Isi kode dulu!", "#ef4444");
@@ -421,12 +414,15 @@ window.cekVoucherAktif = async function() {
             const pot = vSnap.data().potongan;
             dataPesananSementera.total = dataPesananSementera.hargaAsli - pot;
             dataPesananSementera.voucherPakai = kode;
+
+            // Update Tampilan Struk
             document.getElementById("displayTotalStruk").innerText = "Rp" + dataPesananSementera.total.toLocaleString('id-ID');
-            notify("Voucher Berhasil Dipasang! ✅");
-            document.getElementById("pesanVoucher").innerHTML = `<span style="color:green; font-weight:bold;">✔️ Potongan Rp${pot.toLocaleString()} Berhasil!</span>`;
+            document.getElementById("potonganVoucherRow").style.display = "flex";
+            document.getElementById("txtPotongan").innerText = "-Rp" + pot.toLocaleString('id-ID');
+            
+            notify("Berhasil! Kamu hemat Rp" + pot.toLocaleString('id-ID') + " 🎉", "#10b981");
         } else { 
-            notify("Voucher tidak valid!", "#ef4444");
-            document.getElementById("pesanVoucher").innerHTML = `<span style="color:red;">❌ Voucher tidak valid/habis!</span>`; 
+            notify("Voucher tidak valid atau habis!", "#ef4444");
         }
     } catch (e) { console.error(e); }
 };
@@ -434,11 +430,11 @@ window.cekVoucherAktif = async function() {
 window.pilihPembayaran = function(val) {
   const wadah = document.getElementById("wadahBayar");
   if(val === "QRIS") {
-      wadah.innerHTML = `<img src="${URL_QRIS}" style="width:150px; border-radius:10px;">`;
+      wadah.innerHTML = `<img src="${URL_QRIS}" style="width:150px; border-radius:10px; margin: 10px 0;">`;
       notify("Silakan Scan QRIS 📸", "#3a7bd5");
   } else if(val === "DANA") {
       wadah.innerHTML = `
-        <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin-top:10px; border:1px dashed #334155;">
+        <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin:10px 0; border:1px dashed #334155;">
           <p style="font-size:11px; margin:0 0 5px;">Transfer ke DANA:</p>
           <p style="font-size:14px; font-weight:800; color:#0f172a; margin:0 0 10px;">${NO_DANA}</p>
           <button onclick="window.salinTeks('${NO_DANA}', this)" style="background:#334155; color:white; border:none; padding:5px 15px; border-radius:5px; font-size:10px; cursor:pointer;">SALIN NOMOR</button>
@@ -455,9 +451,8 @@ window.kirimInvoiceWA = async function() {
   const pWA = document.getElementById("pembeliWA").value;
   const pEmail = document.getElementById("pembeliEmail").value;
   const metode = document.getElementById("metodeBayar").value;
-  const bukti = document.getElementById("buktiTransfer").value;
 
-  if(!pNama || !pWA || !pEmail || !metode || !bukti) return notify("Lengkapi data pembeli!", "#ef4444");
+  if(!pNama || !pWA || !pEmail || !metode || !base64Bukti) return notify("Lengkapi data & Upload foto bukti!", "#ef4444");
 
   try {
     if(dataPesananSementera.voucherPakai) {
@@ -466,7 +461,7 @@ window.kirimInvoiceWA = async function() {
         if(vSnap.exists()) await updateDoc(vRef, { kuota: vSnap.data().kuota - 1 });
     }
     await setDoc(doc(db, "pesanan", dataPesananSementera.inv), { 
-      ...dataPesananSementera, pembeli: pNama, whatsapp: pWA, email: pEmail, metode, bukti, status: "⏳ Menunggu Validasi", tanggal: new Date() 
+      ...dataPesananSementera, pembeli: pNama, whatsapp: pWA, email: pEmail, metode, bukti: base64Bukti, status: "⏳ Menunggu Validasi", tanggal: new Date() 
     });
     notify("Pesanan Terkirim! Mohon tunggu konfirmasi. 🚀"); 
     setTimeout(() => location.reload(), 2000);
@@ -488,7 +483,7 @@ async function muatPesananMasuk() {
         <p><b>ID:</b> ${d.id} | <b>Pembeli:</b> ${p.pembeli}</p>
         <p><b>WA:</b> <a class="wa-tag" href="https://wa.me/${p.whatsapp}" target="_blank">WhatsApp</a></p>
         <p><b>Produk:</b> ${p.produk}</p>
-        <p><b>Bukti:</b> <a href="${p.bukti}" target="_blank" style="color:#10b981; font-weight:bold;">Lihat Bukti Transfer</a></p>
+        <p><b>Bukti:</b> <br><img src="${p.bukti}" style="width:100px; border-radius:5px; border:1px solid #ddd; margin-top:5px; cursor:pointer;" onclick="window.open('${p.bukti}')"></p>
         
         ${!isSelesai ? `
           <textarea id="dataAkun_${d.id}" placeholder="Tulis data akun (Email:Pass) di sini..." style="width:100%; height:50px; background:#f4f4f4; border:1px solid #ddd; margin:10px 0; border-radius:5px; padding:5px; color:#333;"></textarea>
