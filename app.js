@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-
 // --- 1. KONFIGURASI FIREBASE & PEMBAYARAN ---
 const NOMOR_WA_ADMIN = "6282298627146"; 
 const NO_DANA = "082298627146"; 
@@ -20,12 +19,19 @@ const db = getFirestore();
 let allProducts = [];
 let dataPesananSementera = {}; 
 
+// --- FUNGSI HELPER TOAST ---
+const notify = (msg, color) => {
+    if (window.showToast) window.showToast(msg, color);
+    else console.log(msg); // Fallback jika fungsi belum dimuat
+};
+
 // --- FUNGSI COPY OTOMATIS ---
 window.salinTeks = function(teks, btn) {
   navigator.clipboard.writeText(teks).then(() => {
     const textAsli = btn.innerText;
     btn.innerText = "BERHASIL!";
     btn.style.background = "#10b981";
+    notify("Nomor berhasil disalin! 📋");
     setTimeout(() => {
       btn.innerText = textAsli;
       btn.style.background = "#334155";
@@ -95,7 +101,7 @@ window.submitProduk = async function() {
   const nama = document.getElementById("nama").value;
   const harga = document.getElementById("harga").value;
   
-  if(!nama || !harga) return alert("Nama dan Harga wajib diisi!");
+  if(!nama || !harga) return notify("Nama dan Harga wajib diisi!", "#ef4444");
 
   const dataObj = {
     nama: nama,
@@ -110,8 +116,9 @@ window.submitProduk = async function() {
   try {
     if (editId) { await updateDoc(doc(db, "produk", editId), dataObj); } 
     else { await addDoc(collection(db, "produk"), dataObj); }
-    alert("Berhasil Simpan Produk!"); location.reload();
-  } catch (e) { alert("Gagal: " + e.message); }
+    notify("Berhasil Simpan Produk! ✅"); 
+    setTimeout(() => location.reload(), 1500);
+  } catch (e) { notify("Gagal: " + e.message, "#ef4444"); }
 };
 
 window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
@@ -122,21 +129,29 @@ window.editProduk = (id, nama, harga, gambar, deskripsi, kategori, status) => {
   document.getElementById("deskripsi").value = deskripsi;
   document.getElementById("kategori").value = kategori;
   document.getElementById("editId").value = id;
+  notify("Mode Edit: " + nama + " ✏️", "#3a7bd5");
   window.scrollTo(0,0);
 };
 
-window.hapusProduk = async (id) => { if(confirm("Hapus produk ini?")) { await deleteDoc(doc(db, "produk", id)); location.reload(); } };
+window.hapusProduk = async (id) => { 
+    if(confirm("Hapus produk ini?")) { 
+        await deleteDoc(doc(db, "produk", id)); 
+        notify("Produk berhasil dihapus! 🗑️", "#ef4444");
+        setTimeout(() => location.reload(), 1000); 
+    } 
+};
 
 // --- 4. KELOLA VOUCHER & PENGUMUMAN (ADMIN) ---
 window.tambahVoucher = async function() {
   const kode = document.getElementById("vKode").value.trim().toUpperCase();
   const potongan = Number(document.getElementById("vDiskon").value);
   const kuota = Number(document.getElementById("vKuota").value);
-  if(!kode || !potongan) return alert("Lengkapi data voucher!");
+  if(!kode || !potongan) return notify("Lengkapi data voucher!", "#ef4444");
   try {
     await setDoc(doc(db, "vouchers", kode), { potongan, kuota });
-    alert("Voucher Berhasil Disimpan!"); muatVoucher();
-  } catch (e) { alert("Gagal!"); }
+    notify("Voucher Berhasil Disimpan! 🎟️"); 
+    muatVoucher();
+  } catch (e) { notify("Gagal simpan voucher!", "#ef4444"); }
 };
 
 async function muatVoucher() {
@@ -153,25 +168,30 @@ async function muatVoucher() {
   list.innerHTML = html;
 }
 
-window.hapusVoucher = async (id) => { await deleteDoc(doc(db, "vouchers", id)); muatVoucher(); };
+window.hapusVoucher = async (id) => { 
+    await deleteDoc(doc(db, "vouchers", id)); 
+    notify("Voucher Dihapus!", "#ef4444");
+    muatVoucher(); 
+};
 
 window.updatePengumuman = async function() {
   const teks = document.getElementById("inputPengumuman").value;
-  if(!teks) return alert("Isi teks pengumuman!");
+  if(!teks) return notify("Isi teks pengumuman!", "#ef4444");
   try {
     await setDoc(doc(db, "pengaturan", "toko"), { pengumuman: teks });
-    alert("Running Text Berhasil Diupdate!");
-  } catch (e) { alert("Gagal!"); }
+    notify("Running Text Diupdate! 📢", "#f1c40f");
+  } catch (e) { notify("Gagal update!", "#ef4444"); }
 };
 
 // --- 5. TESTIMONI ---
 window.tambahTesti = async function() {
   const img = document.getElementById("inputTesti").value;
-  if(!img) return alert("Masukkan link gambar!");
+  if(!img) return notify("Masukkan link gambar!", "#ef4444");
   try {
     await addDoc(collection(db, "testimoni"), { gambar: img });
-    alert("Testimoni Berhasil Ditambah!"); location.reload();
-  } catch (e) { alert("Gagal!"); }
+    notify("Testimoni Ditambahkan! ✅"); 
+    setTimeout(() => location.reload(), 1500);
+  } catch (e) { notify("Gagal simpan testi!", "#ef4444"); }
 };
 
 async function muatTestimoni() {
@@ -205,7 +225,13 @@ async function muatTestimoni() {
   testiDiv.innerHTML = html || "<p style='text-align:center; font-size:12px; color:#64748b;'>Belum ada testimoni.</p>";
 }
 
-window.hapusTesti = async (id) => { if(confirm("Hapus testimoni ini?")) { await deleteDoc(doc(db, "testimoni", id)); location.reload(); } };
+window.hapusTesti = async (id) => { 
+    if(confirm("Hapus testimoni ini?")) { 
+        await deleteDoc(doc(db, "testimoni", id)); 
+        notify("Testimoni Dihapus!", "#ef4444");
+        setTimeout(() => location.reload(), 1000); 
+    } 
+};
 
 // --- 6. RENDER HTML ---
 function renderHTML(data) {
@@ -251,11 +277,8 @@ function renderHTML(data) {
   produkDiv.innerHTML = html || "<p>Produk Kosong.</p>";
 }
 
-// --- 7. FILTER GAME ---
-window.filterGame = function(el, kategori) {
-  const btns = document.querySelectorAll('.btn-filter');
-  btns.forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
+// --- 7. FILTER GAME (MODIFIKASI) ---
+window.jalankanFilter = function(kategori) {
   if(kategori === 'Semua') renderHTML(allProducts);
   else renderHTML(allProducts.filter(p => p.kategori === kategori));
 };
@@ -274,7 +297,10 @@ window.bukaDetail = function(nama, deskripsi, gambar, harga) {
   document.getElementById("detailNama").innerText = nama;
   document.getElementById("detailDeskripsi").innerText = deskripsi;
   document.getElementById("detailGambarWadah").innerHTML = htmlGambar;
-  document.getElementById("btnNegoWA").onclick = () => window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=Halo, saya ingin nego akun: ${nama}`, '_blank');
+  document.getElementById("btnNegoWA").onclick = () => {
+    notify("Membuka WhatsApp... 💬");
+    window.open(`https://wa.me/${NOMOR_WA_ADMIN}?text=Halo, saya ingin nego akun: ${nama}`, '_blank');
+  };
   document.getElementById("btnLanjutBeli").onclick = () => { window.tutupDetail(); window.bukaStruk(nama, harga); };
   document.getElementById("modalDetail").style.display = "flex";
 };
@@ -314,8 +340,7 @@ window.bukaStruk = function(nama, harga) {
 
 window.cekVoucherAktif = async function() {
     const kode = document.getElementById("inputVoucher").value.trim().toUpperCase();
-    const pesan = document.getElementById("pesanVoucher");
-    if(!kode) return;
+    if(!kode) return notify("Isi kode dulu!", "#ef4444");
     try {
         const vSnap = await getDoc(doc(db, "vouchers", kode));
         if (vSnap.exists() && vSnap.data().kuota > 0) {
@@ -323,8 +348,12 @@ window.cekVoucherAktif = async function() {
             dataPesananSementera.total = dataPesananSementera.hargaAsli - pot;
             dataPesananSementera.voucherPakai = kode;
             document.getElementById("displayTotalStruk").innerText = "Rp" + dataPesananSementera.total.toLocaleString('id-ID');
-            pesan.innerHTML = `<span style="color:green; font-weight:bold;">✔️ Potongan Rp${pot.toLocaleString()} Berhasil!</span>`;
-        } else { pesan.innerHTML = `<span style="color:red;">❌ Voucher tidak valid/habis!</span>`; }
+            notify("Voucher Berhasil Dipasang! ✅");
+            document.getElementById("pesanVoucher").innerHTML = `<span style="color:green; font-weight:bold;">✔️ Potongan Rp${pot.toLocaleString()} Berhasil!</span>`;
+        } else { 
+            notify("Voucher tidak valid!", "#ef4444");
+            document.getElementById("pesanVoucher").innerHTML = `<span style="color:red;">❌ Voucher tidak valid/habis!</span>`; 
+        }
     } catch (e) { console.error(e); }
 };
 
@@ -332,6 +361,7 @@ window.pilihPembayaran = function(val) {
   const wadah = document.getElementById("wadahBayar");
   if(val === "QRIS") {
       wadah.innerHTML = `<img src="${URL_QRIS}" style="width:150px; border-radius:10px;">`;
+      notify("Silakan Scan QRIS 📸", "#3a7bd5");
   } else if(val === "DANA") {
       wadah.innerHTML = `
         <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin-top:10px; border:1px dashed #334155;">
@@ -339,9 +369,8 @@ window.pilihPembayaran = function(val) {
           <p style="font-size:14px; font-weight:800; color:#0f172a; margin:0 0 10px;">${NO_DANA}</p>
           <button onclick="window.salinTeks('${NO_DANA}', this)" style="background:#334155; color:white; border:none; padding:5px 15px; border-radius:5px; font-size:10px; cursor:pointer;">SALIN NOMOR</button>
         </div>`;
-  } else {
-      wadah.innerHTML = "";
-  }
+      notify("Silakan Transfer ke DANA 📱", "#3a7bd5");
+  } else { wadah.innerHTML = ""; }
 };
 
 window.tutupStruk = () => document.getElementById("modalStruk").style.display = "none";
@@ -354,7 +383,7 @@ window.kirimInvoiceWA = async function() {
   const metode = document.getElementById("metodeBayar").value;
   const bukti = document.getElementById("buktiTransfer").value;
 
-  if(!pNama || !pWA || !pEmail || !metode || !bukti) return alert("Lengkapi data pembeli & bukti bayar!");
+  if(!pNama || !pWA || !pEmail || !metode || !bukti) return notify("Lengkapi data pembeli!", "#ef4444");
 
   try {
     if(dataPesananSementera.voucherPakai) {
@@ -365,8 +394,9 @@ window.kirimInvoiceWA = async function() {
     await setDoc(doc(db, "pesanan", dataPesananSementera.inv), { 
       ...dataPesananSementera, pembeli: pNama, whatsapp: pWA, email: pEmail, metode, bukti, status: "⏳ Menunggu Validasi", tanggal: new Date() 
     });
-    alert("Pesanan Berhasil! Mohon tunggu konfirmasi admin."); location.reload();
-  } catch (e) { alert("Gagal memproses pesanan!"); }
+    notify("Pesanan Terkirim! Mohon tunggu konfirmasi. 🚀"); 
+    setTimeout(() => location.reload(), 2000);
+  } catch (e) { notify("Gagal memproses pesanan!", "#ef4444"); }
 };
 
 // --- 11. ADMIN: PESANAN MASUK & AUTO SOLD ---
@@ -401,7 +431,10 @@ async function muatPesananMasuk() {
 
 window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) {
     const dataAkun = document.getElementById(`dataAkun_${invId}`).value;
-    if(!dataAkun) return alert("Isi data akun dulu!");
+    if(!dataAkun) return notify("Isi data akun dulu!", "#ef4444");
+    
+    notify("Sedang mengirim email... 📧", "#3a7bd5");
+
     try {
         await emailjs.send("service_xe358l6", "template_2j4eu9o", {
             nama_pembeli: namaPembeli,
@@ -418,25 +451,32 @@ window.kirimDataEmail = async function(invId, emailTujuan, produk, namaPembeli) 
             await updateDoc(doc(db, "produk", docProduk.id), { status: "Sold" });
         });
 
-        alert("Email Terkirim & Produk Otomatis SOLD!"); 
+        notify("Data Terkirim & Produk SOLD! 📧🚀"); 
         muatPesananMasuk(); 
-    } catch (e) { console.error(e); alert("Gagal Kirim!"); }
+    } catch (e) { notify("Gagal Kirim!", "#ef4444"); }
 };
 
-window.hapusPesanan = async (id) => { if(confirm("Hapus pesanan?")) { await deleteDoc(doc(db, "pesanan", id)); location.reload(); } };
+window.hapusPesanan = async (id) => { 
+    if(confirm("Hapus pesanan?")) { 
+        await deleteDoc(doc(db, "pesanan", id)); 
+        notify("Pesanan Dihapus!", "#ef4444");
+        muatPesananMasuk(); 
+    } 
+};
 
 // --- 12. LACAK PESANAN ---
 window.cekStatusPesanan = async function() {
     const invId = document.getElementById("inputCekPesanan").value.trim().toUpperCase();
-    if(!invId) return alert("Masukkan ID Invoice!");
+    if(!invId) return notify("Masukkan ID Invoice!", "#ef4444");
+    
     const docSnap = await getDoc(doc(db, "pesanan", invId));
     if (docSnap.exists()) {
         const p = docSnap.data();
-        alert(`📌 STATUS PESANAN: ${invId}\nProduk: ${p.produk}\nStatus: ${p.status}`);
-    } else { alert("❌ Invoice tidak ditemukan."); }
+        notify(`ID: ${invId} | Status: ${p.status}`, "#3a7bd5");
+    } else { notify("Invoice tidak ditemukan! ❌", "#ef4444"); }
 };
 
-// --- 13. LIVE SALES NOTIFIKASI (DINAMIS & LOOP) ---
+// --- 13. LIVE SALES NOTIFIKASI ---
 async function jalankanLiveNotif() {
   const notifBox = document.getElementById("salesNotif");
   if(!notifBox) return;
