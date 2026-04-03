@@ -1,6 +1,14 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
+// --- 0. KEAMANAN ADMIN (FAZA ONLY) ---
+if (window.location.href.includes("admin.html")) {
+  const statusLogin = sessionStorage.getItem("loginOk");
+  if (statusLogin !== "true") {
+    window.location.href = "index.html"; // Tendang balik ke home kalau nakal
+  }
+}
+
 // --- 1. KONFIGURASI FIREBASE & PEMBAYARAN ---
 const NOMOR_WA_ADMIN = "6282298627146"; 
 const NO_DANA = "082298627146"; 
@@ -19,13 +27,25 @@ const db = getFirestore();
 let allProducts = [];
 let dataPesananSementera = {}; 
 
+// --- FUNGSI COPY OTOMATIS ---
+window.salinTeks = function(teks, btn) {
+  navigator.clipboard.writeText(teks).then(() => {
+    const textAsli = btn.innerText;
+    btn.innerText = "BERHASIL!";
+    btn.style.background = "#10b981";
+    setTimeout(() => {
+      btn.innerText = textAsli;
+      btn.style.background = "#334155";
+    }, 2000);
+  });
+};
+
 // --- FUNGSI SKELETON (LOADING ANIMATION) ---
 function tampilkanSkeleton() {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
   
   let skeletonHTML = "";
-  // Munculkan 4 kotak skeleton
   for (let i = 0; i < 4; i++) {
     skeletonHTML += `
       <div class="card skeleton-loading" style="height: 280px; border: 1px solid #334155; margin-bottom: 15px; border-radius: 15px; padding:10px;">
@@ -41,9 +61,7 @@ function tampilkanSkeleton() {
 // --- 2. FUNGSI UTAMA (TAMPIL DATA) ---
 window.tampilProduk = async function() {
   try {
-    // Tampilkan skeleton saat mulai narik data
     tampilkanSkeleton();
-
     const dataSnap = await getDocs(collection(db, "produk"));
     allProducts = []; 
     dataSnap.forEach(docSnap => {
@@ -67,13 +85,10 @@ window.tampilProduk = async function() {
       document.getElementById("isiPengumuman").innerText = infoSnap.data().pengumuman;
     }
 
-    // Render data asli (Otomatis menimpa skeleton)
     renderHTML(allProducts);
-    
     muatTestimoni(); 
     muatVoucher();
     if(window.location.href.includes("admin.html")) muatPesananMasuk();
-    
     jalankanLiveNotif();
   } catch (error) { 
     console.error(error); 
@@ -322,9 +337,18 @@ window.cekVoucherAktif = async function() {
 
 window.pilihPembayaran = function(val) {
   const wadah = document.getElementById("wadahBayar");
-  if(val === "QRIS") wadah.innerHTML = `<img src="${URL_QRIS}" style="width:150px; border-radius:10px;">`;
-  else if(val === "DANA") wadah.innerHTML = `<p style="font-size:12px;">Transfer ke DANA: <b>${NO_DANA}</b></p>`;
-  else wadah.innerHTML = "";
+  if(val === "QRIS") {
+      wadah.innerHTML = `<img src="${URL_QRIS}" style="width:150px; border-radius:10px;">`;
+  } else if(val === "DANA") {
+      wadah.innerHTML = `
+        <div style="background:#f1f5f9; padding:10px; border-radius:8px; margin-top:10px; border:1px dashed #334155;">
+          <p style="font-size:11px; margin:0 0 5px;">Transfer ke DANA:</p>
+          <p style="font-size:14px; font-weight:800; color:#0f172a; margin:0 0 10px;">${NO_DANA}</p>
+          <button onclick="window.salinTeks('${NO_DANA}', this)" style="background:#334155; color:white; border:none; padding:5px 15px; border-radius:5px; font-size:10px; cursor:pointer;">SALIN NOMOR</button>
+        </div>`;
+  } else {
+      wadah.innerHTML = "";
+  }
 };
 
 window.tutupStruk = () => document.getElementById("modalStruk").style.display = "none";
@@ -435,21 +459,15 @@ async function jalankanLiveNotif() {
 
   if(listSelesai.length === 0) return;
 
-  // Interval untuk memunculkan notif secara bergantian
   setInterval(() => {
-    // Ambil user secara acak dari database yang sudah 'Selesai'
     const data = listSelesai[Math.floor(Math.random() * listSelesai.length)];
-    
     document.getElementById("notifUser").innerText = data.pembeli.substring(0, 2) + "*** (Verified)";
     document.getElementById("notifProduk").innerText = "Baru saja membeli " + data.produk;
-    
     notifBox.classList.add("show");
-    
     setTimeout(() => {
         notifBox.classList.remove("show");
-    }, 5000); // Tampil selama 5 detik
-    
-  }, 15000); // Muncul setiap 15 detik sekali
+    }, 5000);
+  }, 15000);
 }
 
 // Jalankan fungsi awal
