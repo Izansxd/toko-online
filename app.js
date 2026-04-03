@@ -2,7 +2,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebas
 import { getFirestore, collection, getDocs, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, query, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // --- 0. KEAMANAN ADMIN (FAZA ONLY) ---
-if (window.location.href.includes("admin.html")) {
+//if (window.location.href.includes("admin.html")) {
   const statusLogin = sessionStorage.getItem("loginOk");
   if (statusLogin !== "true") {
     window.location.href = "index.html"; // Tendang balik ke home kalau nakal
