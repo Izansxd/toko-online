@@ -310,6 +310,80 @@ window.tutupDetail = () => document.getElementById("modalDetail").style.display 
 // --- 9. BUKA STRUK & VOUCHER ---
 window.bukaStruk = function(nama, harga) {
   const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
+  const tgl = new Date().toLocaleDateString('id-ID');
+  const jam = new Date().toLocaleTimeString('id-ID');
+  
+  dataPesananSementera = { produk: nama, hargaAsli: harga, total: harga, inv: inv, voucherPakai: "" };
+
+  document.getElementById("isiStruk").innerHTML = `
+    <div class="struk-header">
+      <h3>FAZA STORE</h3>
+      <p>PELAYANAN DIGITAL 24 JAM</p>
+      <p>${tgl} | ${jam}</p>
+    </div>
+
+    <div class="struk-divider"></div>
+
+    <div class="struk-item">
+      <span>NO. INV</span>
+      <span>${inv}</span>
+    </div>
+
+    <div class="struk-divider"></div>
+
+    <div class="struk-item">
+      <span style="flex:2;">${nama}</span>
+      <span style="flex:1; text-align:right;">Rp${harga.toLocaleString('id-ID')}</span>
+    </div>
+
+    <div id="potonganVoucherRow" style="display:none;" class="struk-item">
+      <span style="color:#ef4444;">DISKON VOUCHER</span>
+      <span id="txtPotongan" style="color:#ef4444;">-Rp0</span>
+    </div>
+
+    <div class="struk-total">
+      <span>TOTAL</span>
+      <span id="displayTotalStruk">Rp${harga.toLocaleString('id-ID')}</span>
+    </div>
+
+    <div class="struk-divider"></div>
+
+    <div style="margin-top:15px;">
+      <label>KODE VOUCHER (OPSIONAL)</label>
+      <div style="display:flex; gap:5px; margin-bottom:10px;">
+        <input type="text" id="inputVoucher" placeholder="KODE" style="flex:1; margin-bottom:0; text-transform:uppercase;">
+        <button onclick="window.cekVoucherAktif()" style="background:#1e293b; color:white; border:none; padding:0 12px; border-radius:6px; cursor:pointer; font-size:10px;">PAKAI</button>
+      </div>
+
+      <label>IDENTITAS PEMBELI</label>
+      <input type="text" id="pembeliNama" placeholder="Nama Lengkap">
+      <input type="number" id="pembeliWA" placeholder="Nomor WA (628xxx)">
+      <input type="email" id="pembeliEmail" placeholder="Email (Untuk Kirim Akun)">
+      
+      <label>METODE PEMBAYARAN</label>
+      <select id="metodeBayar" onchange="window.pilihPembayaran(this.value)">
+        <option value="">-- PILIH PEMBAYARAN --</option>
+        <option value="DANA">DANA (${NO_DANA})</option>
+        <option value="QRIS">QRIS (OTOMATIS)</option>
+      </select>
+      
+      <div id="wadahBayar"></div>
+      
+      <label>BUKTI TRANSFER (LINK FOTO)</label>
+      <input type="text" id="buktiTransfer" placeholder="Tempel link bukti di sini">
+    </div>
+
+    <div class="struk-footer">
+      --- TERIMA KASIH ---<br>
+      BARANG YANG SUDAH DIBELI<br>
+      TIDAK DAPAT DITUKAR KEMBALI
+    </div>
+  `;
+  document.getElementById("modalStruk").style.display = "flex";
+};
+
+/*window.bukaStruk = function(nama, harga) {
+  const inv = "FZ-" + Math.floor(1000 + Math.random() * 9999);
   dataPesananSementera = { produk: nama, hargaAsli: harga, total: harga, inv: inv, voucherPakai: "" };
   document.getElementById("isiStruk").innerHTML = `
     <div style="font-size: 13px; color: #333;">
@@ -336,7 +410,7 @@ window.bukaStruk = function(nama, harga) {
     <label>Link Bukti Transfer:</label><input type="text" id="buktiTransfer" placeholder="Tempel link foto bukti">
   `;
   document.getElementById("modalStruk").style.display = "flex";
-};
+};*/
 
 window.cekVoucherAktif = async function() {
     const kode = document.getElementById("inputVoucher").value.trim().toUpperCase();
