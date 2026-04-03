@@ -22,14 +22,12 @@ window.tampilProduk = function() {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
 
-  // Real-time listener untuk sinkronisasi otomatis
   onSnapshot(collection(db, "produk"), (snapshot) => {
     let allProducts = [];
     snapshot.forEach(docSnap => {
       allProducts.push({ id: docSnap.id, ...docSnap.data() });
     });
     
-    // Update Statistik Admin jika elemennya ada
     const statTotal = document.getElementById("statTotal");
     if(statTotal) statTotal.innerText = allProducts.length;
 
@@ -45,8 +43,6 @@ function renderHTML(data) {
   data.forEach((p) => {
     const isSold = p.status === "Sold" || p.status === "Sold Out";
     const hargaFormat = Number(p.harga).toLocaleString('id-ID');
-    
-    // Pembersihan teks agar tidak error saat dipassing ke fungsi onclick
     const namaAman = p.nama.replace(/'/g, "\\'");
     const deskAman = (p.deskripsi || "").replace(/'/g, "\\'").replace(/\n/g, "\\n");
 
@@ -66,7 +62,6 @@ function renderHTML(data) {
           </div>
         </div>`;
     } else {
-      // Tampilan untuk pembeli (index.html)
       html += `
         <div class="card">
           <div class="badge">${p.kategori}</div>
@@ -88,7 +83,7 @@ function renderHTML(data) {
 window.submitProduk = async function() {
   const editId = document.getElementById("editId").value;
   const nama = document.getElementById("nama").value;
-  const harga = document.getElementById("harga").value; // Nilai murni dari hidden input
+  const harga = document.getElementById("harga").value;
   const gambar = document.getElementById("gambar").value;
   const deskripsi = document.getElementById("deskripsi").value;
   const kategori = document.getElementById("kategori").value;
@@ -96,13 +91,8 @@ window.submitProduk = async function() {
   if(!nama || !harga) return notify("Nama dan Harga wajib diisi! ⚠️", "#ef4444");
 
   const dataObj = {
-    nama: nama,
-    harga: Number(harga),
-    gambar: gambar,
-    deskripsi: deskripsi,
-    kategori: kategori,
-    status: "Ready",
-    tanggal: new Date()
+    nama: nama, harga: Number(harga), gambar: gambar,
+    deskripsi: deskripsi, kategori: kategori, status: "Ready", tanggal: new Date()
   };
 
   try {
@@ -113,7 +103,6 @@ window.submitProduk = async function() {
       await addDoc(collection(db, "produk"), dataObj);
       notify("Produk Berhasil Ditambahkan! ✅");
     }
-    // Reset form via fungsi di admin.html
     if(window.resetForm) window.resetForm();
   } catch (e) { notify("Gagal: " + e.message, "#ef4444"); }
 };
@@ -152,48 +141,33 @@ window.tambahVoucher = async function() {
   const kode = document.getElementById("vKode").value.trim().toUpperCase();
   const potongan = Number(document.getElementById("vDiskon").value);
   const kuota = Number(document.getElementById("vKuota").value);
-  
   if(!kode || !potongan) return notify("Data voucher tidak lengkap! ⚠️", "#ef4444");
-  try {
-    await setDoc(doc(db, "vouchers", kode), { potongan, kuota });
-    notify("Voucher '" + kode + "' Tersimpan! 🎟️");
-    document.getElementById("vKode").value = "";
-    document.getElementById("vDiskon").value = "";
-    document.getElementById("vKuota").value = "";
-    window.muatVoucherAdmin();
-  } catch (e) { notify("Gagal simpan voucher.", "#ef4444"); }
+  await setDoc(doc(db, "vouchers", kode), { potongan, kuota });
+  notify("Voucher Tersimpan! 🎟️");
+  window.muatVoucherAdmin();
 };
 
-window.muatVoucherAdmin = async function() {
+window.muatVoucherAdmin = function() {
   const list = document.getElementById("listVoucherAdmin");
   if(!list) return;
   onSnapshot(collection(db, "vouchers"), (snap) => {
     let html = "";
     snap.forEach(d => {
-      html += `<div>
-        <span style="font-size:12px;"><b>${d.id}</b> (Pot: Rp${d.data().potongan.toLocaleString()})</span>
-        <button onclick="window.hapusVoucher('${d.id}')" style="background:none; color:#ef4444; border:none; padding:0; width:auto; cursor:pointer;">HAPUS</button>
-      </div>`;
+      html += `<div><span><b>${d.id}</b> (Rp${d.data().potongan.toLocaleString()})</span>
+      <button onclick="window.hapusVoucher('${d.id}')" style="background:none; color:#ef4444; border:none; cursor:pointer;">HAPUS</button></div>`;
     });
     list.innerHTML = html;
   });
 };
 
-window.hapusVoucher = async (id) => {
-  await deleteDoc(doc(db, "vouchers", id));
-  notify("Voucher Dihapus! 🗑️", "#ef4444");
-};
+window.hapusVoucher = async (id) => { await deleteDoc(doc(db, "vouchers", id)); notify("Voucher Dihapus!", "#ef4444"); };
 
 // --- 6. [ADMIN] TAMBAH TESTIMONI ---
 window.tambahTesti = async function() {
   const img = document.getElementById("inputTesti").value;
-  if(!img) return notify("Masukkan link gambar testimoni!", "#ef4444");
-  try {
-    await addDoc(collection(db, "testimoni"), { gambar: img });
-    notify("Testimoni Berhasil Disimpan! 📸");
-    document.getElementById("inputTesti").value = "";
-    window.muatTestimoniAdmin();
-  } catch (e) { notify("Gagal simpan testimoni.", "#ef4444"); }
+  if(!img) return notify("Masukkan link gambar!", "#ef4444");
+  await addDoc(collection(db, "testimoni"), { gambar: img });
+  notify("Testimoni Disimpan! 📸");
 };
 
 window.muatTestimoniAdmin = function() {
@@ -202,61 +176,77 @@ window.muatTestimoniAdmin = function() {
   onSnapshot(collection(db, "testimoni"), (snap) => {
     let html = "";
     snap.forEach(d => {
-      html += `<div style="display:flex; align-items:center; gap:10px; background:#0f172a; padding:10px; border-radius:10px; border:1px solid #334155;">
+      html += `<div style="display:flex; align-items:center; gap:10px; margin-bottom:5px;">
         <img src="${d.data().gambar}" style="width:40px; height:40px; border-radius:5px; object-fit:cover;">
-        <span style="font-size:10px; flex:1; overflow:hidden;">${d.data().gambar.substring(0,30)}...</span>
-        <button onclick="window.hapusTesti('${d.id}')" style="background:none; color:#ef4444; border:none; width:auto; cursor:pointer;">Hapus</button>
+        <button onclick="window.hapusTesti('${d.id}')" style="color:#ef4444; border:none; background:none; cursor:pointer;">Hapus</button>
       </div>`;
     });
     list.innerHTML = html;
   });
 };
 
-window.hapusTesti = async (id) => {
-  await deleteDoc(doc(db, "testimoni", id));
-  notify("Testimoni Dihapus!", "#ef4444");
-};
+window.hapusTesti = async (id) => { await deleteDoc(doc(db, "testimoni", id)); notify("Testimoni Dihapus!", "#ef4444"); };
 
 // --- 7. PESANAN & CUAN ---
 window.muatPesananAdmin = function() {
   const list = document.getElementById("listPesananAdmin");
   if(!list) return;
   onSnapshot(query(collection(db, "pesanan"), orderBy("tanggal", "desc")), (snap) => {
-    let html = "";
-    let totalCuan = 0;
+    let html = ""; let totalCuan = 0;
     snap.forEach(d => {
       const p = d.data();
       const isSelesai = p.status === "🎉 Pesanan Selesai";
       if(isSelesai) totalCuan += Number(p.total);
-      
-      html += `
-        <div class="order-item-admin ${isSelesai ? 'status-selesai' : ''}">
-          <p><b>ID:</b> ${d.id} | <b>User:</b> ${p.pembeli}</p>
-          <p><b>Produk:</b> ${p.produk} (Rp${Number(p.total).toLocaleString()})</p>
-          <p><b>WA:</b> <a href="https://wa.me/${p.whatsapp}" class="wa-tag" target="_blank">Chat WA</a></p>
-          ${!isSelesai ? `
-            <textarea id="dataAkun_${d.id}" placeholder="Email:Pass Akun..."></textarea>
-            <button class="btn-success" onclick="window.kirimDataEmail('${d.id}','${p.email}','${p.produk}','${p.pembeli}')">📧 KIRIM & SOLD</button>
-          ` : `<p style="color:#10b981; font-weight:bold; margin-top:5px;">✅ PESANAN SELESAI</p>`}
-        </div>`;
+      html += `<div class="order-item-admin ${isSelesai ? 'status-selesai' : ''}">
+        <p><b>ID:</b> ${d.id} | <b>User:</b> ${p.pembeli}</p>
+        <p><b>Produk:</b> ${p.produk} (Rp${Number(p.total).toLocaleString()})</p>
+        ${!isSelesai ? `<button onclick="window.selesaikanPesanan('${d.id}')">SELESAIKAN</button>` : '✅ SELESAI'}
+      </div>`;
     });
-    list.innerHTML = html || "<p style='text-align:center;'>Belum ada pesanan.</p>";
-    if(document.getElementById("statCuan")) document.getElementById("statCuan").innerText = "Rp" + totalCuan.toLocaleString('id-ID');
+    list.innerHTML = html;
+    if(document.getElementById("statCuan")) document.getElementById("statCuan").innerText = "Rp" + totalCuan.toLocaleString();
   });
 };
 
-// --- INISIALISASI ---
-window.initAdminPanel = async function() {
-  if(!window.location.href.includes("admin.html")) return;
-  
-  // Load data awal running text
-  const pSnap = await getDoc(doc(db, "pengaturan", "toko"));
-  if(pSnap.exists()) document.getElementById("inputPengumuman").value = pSnap.data().pengumuman;
-
-  window.muatVoucherAdmin();
-  window.muatTestimoniAdmin();
-  window.muatPesananAdmin();
-  window.tampilProduk();
+// --- 8. SISTEM FILTER (KHUSUS INDEX) ---
+window.jalankanFilter = function(kategori) {
+  onSnapshot(collection(db, "produk"), (snapshot) => {
+    let filtered = [];
+    snapshot.forEach(docSnap => {
+      const data = docSnap.data();
+      if (kategori === "Semua" || data.kategori === kategori) filtered.push({ id: docSnap.id, ...data });
+    });
+    renderHTML(filtered);
+  });
 };
 
-window.initAdminPanel();
+// --- 9. MUAT TESTIMONI (KHUSUS INDEX) ---
+window.muatTestimoniIndex = function() {
+  const list = document.getElementById("list-testimoni");
+  if(!list) return;
+  onSnapshot(collection(db, "testimoni"), (snap) => {
+    let html = "";
+    snap.forEach(d => { html += `<img src="${d.data().gambar}" style="width:150px; height:150px; object-fit:cover; border-radius:15px; margin-right:10px; flex-shrink:0;">`; });
+    list.innerHTML = html || "<p style='font-size:10px; color:#64748b;'>Belum ada testimoni.</p>";
+  });
+};
+
+// --- 10. INISIALISASI APLIKASI (DETEKSI HALAMAN) ---
+window.initApp = async function() {
+  // Muat Running Text
+  const pSnap = await getDoc(doc(db, "pengaturan", "toko"));
+  const runningTextEl = document.getElementById("isiPengumuman");
+  if(pSnap.exists() && runningTextEl) runningTextEl.innerText = pSnap.data().pengumuman;
+
+  if (window.location.href.includes("admin.html")) {
+    window.muatVoucherAdmin();
+    window.muatTestimoniAdmin();
+    window.muatPesananAdmin();
+    window.tampilProduk();
+  } else {
+    window.tampilProduk(); 
+    window.muatTestimoniIndex();
+  }
+};
+
+window.initApp();
