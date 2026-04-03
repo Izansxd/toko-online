@@ -19,9 +19,31 @@ const db = getFirestore();
 let allProducts = [];
 let dataPesananSementera = {}; 
 
+// --- FUNGSI SKELETON (LOADING ANIMATION) ---
+function tampilkanSkeleton() {
+  const produkDiv = document.getElementById("produk");
+  if (!produkDiv) return;
+  
+  let skeletonHTML = "";
+  // Munculkan 4 kotak skeleton
+  for (let i = 0; i < 4; i++) {
+    skeletonHTML += `
+      <div class="card skeleton-loading" style="height: 280px; border: 1px solid #334155; margin-bottom: 15px; border-radius: 15px; padding:10px;">
+        <div style="width: 100%; height: 150px; background: rgba(255,255,255,0.05); border-radius: 10px; margin-bottom: 10px;"></div>
+        <div style="width: 80%; height: 15px; background: rgba(255,255,255,0.05); border-radius: 5px; margin-bottom: 8px;"></div>
+        <div style="width: 50%; height: 15px; background: rgba(255,255,255,0.05); border-radius: 5px; margin-bottom: 12px;"></div>
+        <div style="width: 100%; height: 35px; background: rgba(255,255,255,0.05); border-radius: 10px;"></div>
+      </div>`;
+  }
+  produkDiv.innerHTML = skeletonHTML;
+}
+
 // --- 2. FUNGSI UTAMA (TAMPIL DATA) ---
 window.tampilProduk = async function() {
   try {
+    // Tampilkan skeleton saat mulai narik data
+    tampilkanSkeleton();
+
     const dataSnap = await getDocs(collection(db, "produk"));
     allProducts = []; 
     dataSnap.forEach(docSnap => {
@@ -45,13 +67,18 @@ window.tampilProduk = async function() {
       document.getElementById("isiPengumuman").innerText = infoSnap.data().pengumuman;
     }
 
+    // Render data asli (Otomatis menimpa skeleton)
     renderHTML(allProducts);
+    
     muatTestimoni(); 
     muatVoucher();
     if(window.location.href.includes("admin.html")) muatPesananMasuk();
     
     jalankanLiveNotif();
-  } catch (error) { console.error(error); }
+  } catch (error) { 
+    console.error(error); 
+    if(document.getElementById("produk")) document.getElementById("produk").innerHTML = "Gagal memuat data.";
+  }
 };
 
 // --- 3. KELOLA PRODUK (ADMIN) ---
