@@ -216,7 +216,7 @@ window.prosesKirimAkun = async (docId, userEmail, produk, userNama) => {
     account_details: detailAkun
   };
   try {
-    await emailjs.send("service_xxxxx", "template_xxxxx", templateParams);
+    await emailjs.send("service_xe358l6", "template_2j4eu9o", templateParams);
     await updateDoc(doc(db, "pesanan", docId), { status: "🎉 Pesanan Selesai" });
     window.showToast("Akun berhasil dikirim ke " + userEmail, "#10b981");
   } catch (err) {
