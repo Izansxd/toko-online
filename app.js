@@ -199,7 +199,7 @@ window.prosesKirimAkun = async (docId, userEmail, produk, userNama) => {
   const templateParams = {
     email_pembeli: userEmail,   // untuk field "To Email"
     nama_akun: produk,          // untuk subject
-    detail_akun: detailAkun,    // untuk isi email (pastikan di content template ada {{detail_akun}})
+    data_akun: detailAkun,    // untuk isi email (pastikan di content template ada {{data_akun}})
     nama_pembeli: userNama      // opsional, jika template membutuhkan
   };
 
