@@ -1,5 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
-import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, setDoc, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, getDocs, setDoc, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
 // ========== 1. FIREBASE CONFIG ==========
 const firebaseConfig = {
@@ -15,7 +15,7 @@ window.currentOrder = null;
 window.currentVoucher = null;
 window.currentFilter = "Semua";
 
-// ========== 2. TOAST NOTIFICATION (satu untuk semua) ==========
+// ========== 2. TOAST NOTIFICATION ==========
 window.showToast = (msg, color = "#10b981") => {
   let toast = document.getElementById("toast");
   if (!toast) {
@@ -29,7 +29,7 @@ window.showToast = (msg, color = "#10b981") => {
   setTimeout(() => toast.classList.remove("show"), 3000);
 };
 
-// ========== 3. PRODUK: TAMPIL & FILTER (untuk user & admin) ==========
+// ========== 3. PRODUK: TAMPIL & FILTER ==========
 window.tampilProduk = () => {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
@@ -38,13 +38,7 @@ window.tampilProduk = () => {
     snapshot.forEach(d => all.push({ id: d.id, ...d.data() }));
     const statTotal = document.getElementById("statTotal");
     if (statTotal) statTotal.innerText = all.length;
-    
-    // Hitung total cuan (hanya untuk admin)
-    if (window.location.href.includes("admin.html")) {
-      hitungCuan();
-    }
-    
-    // Filter jika di index.html
+    if (window.location.href.includes("admin.html")) hitungCuan();
     if (!window.location.href.includes("admin.html") && window.currentFilter !== "Semua") {
       all = all.filter(p => p.kategori === window.currentFilter);
     }
@@ -78,7 +72,6 @@ function renderProduk(data) {
   produkDiv.innerHTML = html || "<p style='text-align:center;'>Belum ada produk.</p>";
 }
 
-// Hitung total cuan untuk admin
 async function hitungCuan() {
   const snap = await getDocs(collection(db, "pesanan"));
   let total = 0;
@@ -90,7 +83,7 @@ async function hitungCuan() {
   if (cuanEl) cuanEl.innerText = "Rp" + total.toLocaleString();
 }
 
-// ========== 4. FUNGSI UNTUK USER (PEMBELIAN) ==========
+// ========== 4. FUNGSI USER ==========
 window.bukaStruk = (nama, harga, produkId) => {
   const modal = document.getElementById("modalStruk");
   if (!modal) return;
@@ -134,9 +127,10 @@ window.handleConfirmBayar = async () => {
   const nama = document.getElementById("pembeliNama").value;
   const email = document.getElementById("pembeliEmail").value;
   if (!nama || !email) return window.showToast("Lengkapi data formulir!", "#ef4444");
-  
+  if (!email.includes("@") || !email.includes(".")) {
+    return window.showToast("Format email tidak valid! Contoh: nama@email.com", "#ef4444");
+  }
   try {
-    // Kurangi kuota voucher jika dipakai
     if (window.currentOrder.voucher) {
       const vocRef = doc(db, "vouchers", window.currentOrder.voucher);
       const vocSnap = await getDoc(vocRef);
@@ -145,7 +139,6 @@ window.handleConfirmBayar = async () => {
         if (newKuota >= 0) await updateDoc(vocRef, { kuota: newKuota });
       }
     }
-    
     const orderData = {
       produk: window.currentOrder.produk,
       hargaAsli: window.currentOrder.hargaAsli,
@@ -160,7 +153,6 @@ window.handleConfirmBayar = async () => {
     await addDoc(collection(db, "pesanan"), orderData);
     window.tutupStruk();
     window.showToast("Pesanan Berhasil! Silakan tunggu konfirmasi admin.", "#10b981");
-    // Tampilkan notifikasi sales (opsional)
     showSalesNotif(nama, window.currentOrder.produk);
   } catch (e) {
     window.showToast("Gagal memproses pesanan.", "#ef4444");
@@ -181,7 +173,7 @@ function showSalesNotif(nama, produk) {
   setTimeout(() => notif.classList.remove("show"), 5000);
 }
 
-// ========== 5. FUNGSI UNTUK ADMIN (KELOLA PESANAN, VOUCHER, TESTIMONI) ==========
+// ========== 5. FUNGSI ADMIN ==========
 window.muatPesananAdmin = () => {
   const list = document.getElementById("listPesananAdmin");
   if (!list) return;
@@ -207,8 +199,12 @@ window.muatPesananAdmin = () => {
 window.prosesKirimAkun = async (docId, userEmail, produk, userNama) => {
   const detailAkun = document.getElementById(`dataAkun_${docId}`).value;
   if (!detailAkun) return window.showToast("Isi detail akun dulu!", "#ef4444");
-  
-  // Kirim email via EmailJS (pastikan service ID dan template ID sudah benar)
+  if (!userEmail || userEmail.trim() === "") {
+    return window.showToast("❌ Email penerima kosong! Tidak bisa kirim.", "#ef4444");
+  }
+  if (!userEmail.includes("@") || !userEmail.includes(".")) {
+    return window.showToast("❌ Format email tidak valid: " + userEmail, "#ef4444");
+  }
   const templateParams = {
     to_email: userEmail,
     to_name: userNama,
@@ -218,9 +214,10 @@ window.prosesKirimAkun = async (docId, userEmail, produk, userNama) => {
   try {
     await emailjs.send("service_xe358l6", "template_2j4eu9o", templateParams);
     await updateDoc(doc(db, "pesanan", docId), { status: "🎉 Pesanan Selesai" });
-    window.showToast("Akun berhasil dikirim ke " + userEmail, "#10b981");
+    window.showToast("✅ Akun berhasil dikirim ke " + userEmail, "#10b981");
   } catch (err) {
-    window.showToast("Gagal kirim email: " + err.text, "#ef4444");
+    console.error(err);
+    window.showToast("❌ Gagal kirim email: " + (err.text || err.message), "#ef4444");
   }
 };
 
@@ -294,7 +291,7 @@ window.hapusTesti = async (id) => {
   if (confirm("Hapus testimoni?")) await deleteDoc(doc(db, "testimoni", id));
 };
 
-// ========== 6. FUNGSI CRUD PRODUK UNTUK ADMIN ==========
+// ========== 6. CRUD PRODUK ==========
 window.submitProduk = async () => {
   const editId = document.getElementById("editId").value;
   const dataObj = {
@@ -334,7 +331,6 @@ window.hapusProduk = async (id) => {
   if (confirm("Hapus produk?")) await deleteDoc(doc(db, "produk", id));
 };
 
-// Reset form (untuk admin)
 window.resetForm = () => {
   document.getElementById("nama").value = "";
   document.getElementById("harga").value = "";
@@ -345,14 +341,13 @@ window.resetForm = () => {
   window.showToast("Form dibersihkan.");
 };
 
-// Pengumuman
 window.updatePengumuman = async () => {
   const teks = document.getElementById("inputPengumuman").value;
   await setDoc(doc(db, "pengaturan", "toko"), { pengumuman: teks });
   window.showToast("Pengumuman diupdate!");
 };
 
-// ========== 7. FITUR UNTUK INDEX.HTML (FILTER, LACAK, DETAIL PRODUK) ==========
+// ========== 7. FITUR INDEX.HTML ==========
 window.jalankanFilter = (game) => {
   window.currentFilter = game;
   window.tampilProduk();
@@ -368,7 +363,6 @@ window.cekStatusPesanan = async (invoice) => {
   });
 };
 
-// Fungsi untuk detail produk (jika diperlukan)
 window.bukaDetail = (id, nama, harga, gambar, deskripsi, kategori) => {
   const modal = document.getElementById("modalDetail");
   if (!modal) return;
@@ -382,21 +376,18 @@ window.bukaDetail = (id, nama, harga, gambar, deskripsi, kategori) => {
   modal.style.display = "flex";
 };
 
-// ========== 8. INISIALISASI SEMUA ==========
+// ========== 8. INIT ==========
 window.initApp = async () => {
-  // Load pengumuman
   const pengumumanDoc = await getDoc(doc(db, "pengaturan", "toko"));
   if (pengumumanDoc.exists() && document.getElementById("isiPengumuman")) {
     document.getElementById("isiPengumuman").innerText = pengumumanDoc.data().pengumuman;
   }
-  
   const isAdmin = window.location.href.includes("admin.html");
   if (isAdmin) {
     window.muatPesananAdmin();
     window.muatVoucherAdmin();
     window.muatTestimoniAdmin();
     window.tampilProduk();
-    // Set listener untuk input harga format rupiah
     const displayHarga = document.getElementById("displayHarga");
     if (displayHarga) {
       displayHarga.addEventListener("input", function(e) {
