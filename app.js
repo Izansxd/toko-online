@@ -25,6 +25,10 @@ window.showToast = (msg, color = "#10b981") => {
   setTimeout(() => toast.classList.remove("show"), 3000);
 };
 
+window.onerror = function(msg, url, line, col, error) {
+  alert("Error: " + msg + "\nLine: " + line);
+  return false;
+};
 // ========== PRODUK ==========
 window.tampilProduk = () => {
   const produkDiv = document.getElementById("produk");
