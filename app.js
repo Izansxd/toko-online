@@ -108,42 +108,67 @@ window.bukaStruk = (nama, harga, produkId) => {
     <div class="struk-total"><span>TOTAL:</span> <span id="displayTotal">Rp${harga.toLocaleString()}</span></div>
   `;
   modal.style.display = "flex";
-  // Pasang event untuk tombol kirim (karena tombolnya sudah ada di luar)
-  document.getElementById("btnKirimBukti").onclick = async () => {
-    const nama = document.getElementById("pembeliNama").value;
-    const email = document.getElementById("pembeliEmail").value;
-    const wa = document.getElementById("pembeliWA").value;
-    const metode = document.getElementById("metodeBayar").value;
-    const file = document.getElementById("buktiFile").files[0];
-    if (!nama || !email) return window.showToast("Lengkapi nama dan email!", "#ef4444");
-    if (!file) return window.showToast("Upload bukti transfer!", "#ef4444");
-    if (!email.includes("@")) return window.showToast("Email tidak valid!", "#ef4444");
 
-    // Upload file
-    const fileName = `bukti_${Date.now()}_${file.name}`;
-    const storageRef = ref(storage, `bukti/${fileName}`);
-    await uploadBytes(storageRef, file);
-    const buktiUrl = await getDownloadURL(storageRef);
+  // Hapus event listener lama jika ada, lalu pasang yang baru
+  const btnKirim = document.getElementById("btnKirimBukti");
+  if (btnKirim) {
+    // Clone dan ganti untuk menghapus listener lama
+    const newBtn = btnKirim.cloneNode(true);
+    btnKirim.parentNode.replaceChild(newBtn, btnKirim);
+    newBtn.onclick = async () => {
+      const nama = document.getElementById("pembeliNama").value;
+      const email = document.getElementById("pembeliEmail").value;
+      const wa = document.getElementById("pembeliWA").value;
+      const metode = document.getElementById("metodeBayar").value;
+      const fileInput = document.getElementById("buktiFile");
+      const file = fileInput.files[0];
+      if (!nama || !email) {
+        window.showToast("Lengkapi nama dan email!", "#ef4444");
+        return;
+      }
+      if (!file) {
+        window.showToast("Upload bukti transfer!", "#ef4444");
+        return;
+      }
+      if (!email.includes("@")) {
+        window.showToast("Email tidak valid!", "#ef4444");
+        return;
+      }
 
-    // Simpan pesanan
-    const orderData = {
-      produk: window.currentOrder.produk,
-      hargaAsli: window.currentOrder.hargaAsli,
-      totalAkhir: window.currentOrder.total,
-      voucher: window.currentOrder.voucher || "",
-      pembeli: nama,
-      email: email,
-      wa: wa,
-      metode: metode,
-      buktiUrl: buktiUrl,
-      status: "Menunggu Verifikasi",
-      tanggal: new Date(),
-      invoice: "INV-" + Date.now()
+      window.showToast("Mengupload bukti...", "#3b82f6");
+      try {
+        // Upload file ke Firebase Storage
+        const fileName = `bukti_${Date.now()}_${file.name}`;
+        const storageRef = ref(storage, `bukti/${fileName}`);
+        await uploadBytes(storageRef, file);
+        const buktiUrl = await getDownloadURL(storageRef);
+
+        // Simpan pesanan
+        const orderData = {
+          produk: window.currentOrder.produk,
+          hargaAsli: window.currentOrder.hargaAsli,
+          totalAkhir: window.currentOrder.total,
+          voucher: window.currentOrder.voucher || "",
+          pembeli: nama,
+          email: email,
+          wa: wa,
+          metode: metode,
+          buktiUrl: buktiUrl,
+          status: "Menunggu Verifikasi",
+          tanggal: new Date(),
+          invoice: "INV-" + Date.now()
+        };
+        await addDoc(collection(db, "pesanan"), orderData);
+        window.tutupStruk();
+        window.showToast("Pesanan terkirim! Tunggu verifikasi admin.", "#10b981");
+      } catch (err) {
+        console.error(err);
+        window.showToast("Gagal upload bukti: " + err.message, "#ef4444");
+      }
     };
-    await addDoc(collection(db, "pesanan"), orderData);
-    window.tutupStruk();
-    window.showToast("Pesanan terkirim! Tunggu verifikasi admin.", "#10b981");
-  };
+  } else {
+    console.error("Tombol btnKirimBukti tidak ditemukan!");
+  }
 };
 
 window.pakaiVoucher = async () => {
