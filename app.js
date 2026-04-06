@@ -186,10 +186,38 @@ window.muatPesananAdmin = () => {
 
 window.prosesKirimAkun = async (docId, userEmail, produk, userNama) => {
   const detailAkun = document.getElementById(`dataAkun_${docId}`).value;
-  if (!detailAkun) return window.showToast("Isi detail akun!", "#ef4444");
-  // BYPASS EMAIL: langsung selesai
-  await updateDoc(doc(db, "pesanan", docId), { status: "🎉 Pesanan Selesai", detailAkun: detailAkun });
-  window.showToast("✅ Pesanan selesai! Data akun tersimpan.", "#10b981");
+  if (!detailAkun) return window.showToast("Isi detail akun dulu!", "#ef4444");
+
+  // Validasi email
+  if (!userEmail || userEmail.trim() === "" || !userEmail.includes("@")) {
+    window.showToast("❌ Email penerima tidak valid!", "#ef4444");
+    console.error("Email Error:", userEmail);
+    return;
+  }
+
+  // Parameter sesuai template EmailJS (lihat gambar: {{email_pembeli}}, {{nama_akun}})
+  const templateParams = {
+    email_pembeli: userEmail,   // untuk field "To Email"
+    nama_akun: produk,          // untuk subject
+    detail_akun: detailAkun,    // untuk isi email (pastikan di content template ada {{detail_akun}})
+    nama_pembeli: userNama      // opsional, jika template membutuhkan
+  };
+
+  try {
+    // Kirim email
+    const response = await emailjs.send("service_xe358l6", "template_2j4eu9o", templateParams);
+    console.log("✅ Email berhasil terkirim!", response);
+
+    // Update status pesanan di Firestore
+    await updateDoc(doc(db, "pesanan", docId), {
+      status: "🎉 Pesanan Selesai",
+      detailAkun: detailAkun
+    });
+    window.showToast(`✅ Akun berhasil dikirim ke ${userEmail}`, "#10b981");
+  } catch (error) {
+    console.error("❌ Gagal kirim email:", error);
+    window.showToast(`❌ Gagal kirim email: ${error.text || error.message}`, "#ef4444");
+  }
 };
 
 // Voucher
