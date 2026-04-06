@@ -1,7 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-app.js";
 import { getFirestore, collection, addDoc, deleteDoc, doc, updateDoc, getDoc, getDocs, setDoc, query, orderBy, onSnapshot, where } from "https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore.js";
 
-// ========== 1. FIREBASE CONFIG ==========
 const firebaseConfig = {
   apiKey: "AIzaSyDNoZShqjTqLQEmoYogAQTshXlKNPWphH4",
   authDomain: "toko-online-8a68d.firebaseapp.com",
@@ -10,12 +9,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore();
 
-// Global variables
 window.currentOrder = null;
-window.currentVoucher = null;
 window.currentFilter = "Semua";
 
-// ========== 2. TOAST NOTIFICATION ==========
 window.showToast = (msg, color = "#10b981") => {
   let toast = document.getElementById("toast");
   if (!toast) {
@@ -29,16 +25,16 @@ window.showToast = (msg, color = "#10b981") => {
   setTimeout(() => toast.classList.remove("show"), 3000);
 };
 
-// ========== 3. PRODUK: TAMPIL & FILTER ==========
+// ========== PRODUK ==========
 window.tampilProduk = () => {
   const produkDiv = document.getElementById("produk");
   if (!produkDiv) return;
-  onSnapshot(collection(db, "produk"), (snapshot) => {
+  onSnapshot(collection(db, "produk"), async (snapshot) => {
     let all = [];
     snapshot.forEach(d => all.push({ id: d.id, ...d.data() }));
     const statTotal = document.getElementById("statTotal");
     if (statTotal) statTotal.innerText = all.length;
-    if (window.location.href.includes("admin.html")) hitungCuan();
+    if (window.location.href.includes("admin.html")) await hitungCuan();
     if (!window.location.href.includes("admin.html") && window.currentFilter !== "Semua") {
       all = all.filter(p => p.kategori === window.currentFilter);
     }
@@ -83,7 +79,7 @@ async function hitungCuan() {
   if (cuanEl) cuanEl.innerText = "Rp" + total.toLocaleString();
 }
 
-// ========== 4. FUNGSI USER ==========
+// ========== PEMBELIAN ==========
 window.bukaStruk = (nama, harga, produkId) => {
   const modal = document.getElementById("modalStruk");
   if (!modal) return;
@@ -114,8 +110,7 @@ window.pakaiVoucher = async () => {
   const data = snap.data();
   if (data.kuota <= 0) return window.showToast("Voucher sudah habis!", "#ef4444");
   const potongan = data.potongan;
-  const hargaAwal = window.currentOrder.hargaAsli;
-  const totalBaru = Math.max(0, hargaAwal - potongan);
+  const totalBaru = Math.max(0, window.currentOrder.hargaAsli - potongan);
   window.currentOrder.total = totalBaru;
   window.currentOrder.voucher = kode;
   document.getElementById("displayTotal").innerText = `Rp${totalBaru.toLocaleString()}`;
@@ -127,19 +122,14 @@ window.handleConfirmBayar = async () => {
   const nama = document.getElementById("pembeliNama").value;
   const email = document.getElementById("pembeliEmail").value;
   if (!nama || !email) return window.showToast("Lengkapi data formulir!", "#ef4444");
-  if (!email.includes("@") || !email.includes(".")) {
-    return window.showToast("Format email tidak valid! Contoh: nama@email.com", "#ef4444");
-  }
+  if (!email.includes("@") || !email.includes(".")) return window.showToast("Email tidak valid!", "#ef4444");
   try {
     if (window.currentOrder.voucher) {
       const vocRef = doc(db, "vouchers", window.currentOrder.voucher);
       const vocSnap = await getDoc(vocRef);
-      if (vocSnap.exists()) {
-        const newKuota = vocSnap.data().kuota - 1;
-        if (newKuota >= 0) await updateDoc(vocRef, { kuota: newKuota });
-      }
+      if (vocSnap.exists()) await updateDoc(vocRef, { kuota: vocSnap.data().kuota - 1 });
     }
-    const orderData = {
+    await addDoc(collection(db, "pesanan"), {
       produk: window.currentOrder.produk,
       hargaAsli: window.currentOrder.hargaAsli,
       totalAkhir: window.currentOrder.total,
@@ -149,14 +139,17 @@ window.handleConfirmBayar = async () => {
       status: "Menunggu Pembayaran",
       tanggal: new Date(),
       invoice: "INV-" + Date.now()
-    };
-    await addDoc(collection(db, "pesanan"), orderData);
+    });
     window.tutupStruk();
-    window.showToast("Pesanan Berhasil! Silakan tunggu konfirmasi admin.", "#10b981");
-    showSalesNotif(nama, window.currentOrder.produk);
-  } catch (e) {
-    window.showToast("Gagal memproses pesanan.", "#ef4444");
-  }
+    window.showToast("Pesanan berhasil!", "#10b981");
+    const notif = document.getElementById("salesNotif");
+    if (notif) {
+      document.getElementById("notifUser").innerHTML = nama;
+      document.getElementById("notifProduk").innerHTML = `membeli ${window.currentOrder.produk}`;
+      notif.classList.add("show");
+      setTimeout(() => notif.classList.remove("show"), 5000);
+    }
+  } catch (e) { window.showToast("Gagal!", "#ef4444"); }
 };
 
 window.tutupStruk = () => {
@@ -164,16 +157,7 @@ window.tutupStruk = () => {
   if (modal) modal.style.display = "none";
 };
 
-function showSalesNotif(nama, produk) {
-  const notif = document.getElementById("salesNotif");
-  if (!notif) return;
-  document.getElementById("notifUser").innerHTML = nama;
-  document.getElementById("notifProduk").innerHTML = `membeli ${produk}`;
-  notif.classList.add("show");
-  setTimeout(() => notif.classList.remove("show"), 5000);
-}
-
-// ========== 5. FUNGSI ADMIN ==========
+// ========== ADMIN ==========
 window.muatPesananAdmin = () => {
   const list = document.getElementById("listPesananAdmin");
   if (!list) return;
@@ -187,38 +171,21 @@ window.muatPesananAdmin = () => {
           <p><b>Pembeli:</b> ${p.pembeli} | <b>Produk:</b> ${p.produk}</p>
           <p><b>Email:</b> ${p.email} | <b>Status:</b> ${p.status}</p>
           ${!isSelesai ? `
-            <textarea id="dataAkun_${d.id}" placeholder="Email:Pass Akun (Data ini dikirim ke pembeli)" style="width:100%; margin-top:10px;"></textarea>
+            <textarea id="dataAkun_${d.id}" placeholder="Email:Pass Akun" style="width:100%; margin-top:10px;"></textarea>
             <button class="btn-success" onclick="window.prosesKirimAkun('${d.id}','${p.email}','${p.produk}','${p.pembeli}')">📧 KIRIM DATA & SELESAI</button>
-          ` : `<p style="color:#10b981; font-weight:bold;">✅ AKUN SUDAH DIKIRIM</p>`}
+          ` : `<p style="color:#10b981;">✅ AKUN SUDAH DIKIRIM</p>`}
         </div>`;
     });
-    list.innerHTML = html || "<p style='text-align:center;'>Belum ada pesanan.</p>";
+    list.innerHTML = html || "<p>Belum ada pesanan.</p>";
   });
 };
 
 window.prosesKirimAkun = async (docId, userEmail, produk, userNama) => {
   const detailAkun = document.getElementById(`dataAkun_${docId}`).value;
-  if (!detailAkun) return window.showToast("Isi detail akun dulu!", "#ef4444");
-  if (!userEmail || userEmail.trim() === "") {
-    return window.showToast("❌ Email penerima kosong! Tidak bisa kirim.", "#ef4444");
-  }
-  if (!userEmail.includes("@") || !userEmail.includes(".")) {
-    return window.showToast("❌ Format email tidak valid: " + userEmail, "#ef4444");
-  }
-  const templateParams = {
-    to_email: userEmail,
-    to_name: userNama,
-    product_name: produk,
-    account_details: detailAkun
-  };
-  try {
-    await emailjs.send("service_xe358l6", "template_2j4eu9o", templateParams);
-    await updateDoc(doc(db, "pesanan", docId), { status: "🎉 Pesanan Selesai" });
-    window.showToast("✅ Akun berhasil dikirim ke " + userEmail, "#10b981");
-  } catch (err) {
-    console.error(err);
-    window.showToast("❌ Gagal kirim email: " + (err.text || err.message), "#ef4444");
-  }
+  if (!detailAkun) return window.showToast("Isi detail akun!", "#ef4444");
+  // BYPASS EMAIL: langsung selesai
+  await updateDoc(doc(db, "pesanan", docId), { status: "🎉 Pesanan Selesai", detailAkun: detailAkun });
+  window.showToast("✅ Pesanan selesai! Data akun tersimpan.", "#10b981");
 };
 
 // Voucher
@@ -226,7 +193,7 @@ window.tambahVoucher = async () => {
   const kode = document.getElementById("vKode").value.trim().toUpperCase();
   const pot = Number(document.getElementById("vDiskon").value);
   const kuota = Number(document.getElementById("vKuota").value);
-  if (!kode || !pot) return window.showToast("Lengkapi kode dan potongan!", "#ef4444");
+  if (!kode || !pot) return window.showToast("Lengkapi!", "#ef4444");
   await setDoc(doc(db, "vouchers", kode), { potongan: pot, kuota: kuota });
   window.showToast("Voucher tersimpan!");
   document.getElementById("vKode").value = "";
@@ -255,7 +222,7 @@ window.hapusVoucher = async (id) => {
 // Testimoni
 window.tambahTesti = async () => {
   const link = document.getElementById("inputTesti").value.trim();
-  if (!link) return window.showToast("Masukkan link gambar testi!", "#ef4444");
+  if (!link) return window.showToast("Masukkan link gambar!", "#ef4444");
   await addDoc(collection(db, "testimoni"), { gambar: link, tanggal: new Date() });
   window.showToast("Testimoni ditambahkan!");
   document.getElementById("inputTesti").value = "";
@@ -269,9 +236,9 @@ window.muatTestimoniAdmin = () => {
   onSnapshot(collection(db, "testimoni"), (snap) => {
     let html = "";
     snap.forEach(d => {
-      html += `<div style="background:#0f172a; padding:10px; border-radius:8px;"><img src="${d.data().gambar}" style="width:100%; border-radius:8px;"><button onclick="window.hapusTesti('${d.id}')" style="margin-top:5px; background:#ef4444; border:none; padding:5px;">Hapus</button></div>`;
+      html += `<div><img src="${d.data().gambar}" style="width:100%;"><button onclick="window.hapusTesti('${d.id}')">Hapus</button></div>`;
     });
-    container.innerHTML = html || "<p>Belum ada testimoni.</p>";
+    container.innerHTML = html;
   });
 };
 
@@ -280,18 +247,16 @@ window.muatTestimoniUser = () => {
   if (!container) return;
   onSnapshot(collection(db, "testimoni"), (snap) => {
     let html = "";
-    snap.forEach(d => {
-      html += `<img src="${d.data().gambar}" style="width:100px; height:100px; object-fit:cover; border-radius:12px;">`;
-    });
-    container.innerHTML = html || "<p>Belum ada testimoni.</p>";
+    snap.forEach(d => { html += `<img src="${d.data().gambar}" style="width:100px;">`; });
+    container.innerHTML = html;
   });
 };
 
 window.hapusTesti = async (id) => {
-  if (confirm("Hapus testimoni?")) await deleteDoc(doc(db, "testimoni", id));
+  if (confirm("Hapus?")) await deleteDoc(doc(db, "testimoni", id));
 };
 
-// ========== 6. CRUD PRODUK ==========
+// CRUD Produk
 window.submitProduk = async () => {
   const editId = document.getElementById("editId").value;
   const dataObj = {
@@ -303,32 +268,27 @@ window.submitProduk = async () => {
     status: "Ready",
     tanggal: new Date()
   };
-  if (!dataObj.nama || !dataObj.harga) return window.showToast("Lengkapi nama dan harga!", "#ef4444");
-  if (editId) {
-    await updateDoc(doc(db, "produk", editId), dataObj);
-    window.showToast("Produk diupdate!");
-  } else {
-    await addDoc(collection(db, "produk"), dataObj);
-    window.showToast("Produk ditambahkan!");
-  }
+  if (!dataObj.nama || !dataObj.harga) return window.showToast("Lengkapi!", "#ef4444");
+  if (editId) await updateDoc(doc(db, "produk", editId), dataObj);
+  else await addDoc(collection(db, "produk"), dataObj);
+  window.showToast("Sukses!");
   if (window.resetForm) window.resetForm();
-  else document.getElementById("editId").value = "";
 };
 
 window.editProduk = (id, nama, harga, gambar, deskripsi, kategori) => {
   document.getElementById("nama").value = nama;
   document.getElementById("harga").value = harga;
-  const displayHarga = document.getElementById("displayHarga");
-  if (displayHarga) displayHarga.value = new Intl.NumberFormat('id-ID').format(harga);
+  const display = document.getElementById("displayHarga");
+  if (display) display.value = new Intl.NumberFormat('id-ID').format(harga);
   document.getElementById("gambar").value = gambar;
   document.getElementById("deskripsi").value = deskripsi;
   document.getElementById("kategori").value = kategori;
   document.getElementById("editId").value = id;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  window.scrollTo({ top: 0 });
 };
 
 window.hapusProduk = async (id) => {
-  if (confirm("Hapus produk?")) await deleteDoc(doc(db, "produk", id));
+  if (confirm("Hapus?")) await deleteDoc(doc(db, "produk", id));
 };
 
 window.resetForm = () => {
@@ -347,7 +307,7 @@ window.updatePengumuman = async () => {
   window.showToast("Pengumuman diupdate!");
 };
 
-// ========== 7. FITUR INDEX.HTML ==========
+// Filter & Lainnya
 window.jalankanFilter = (game) => {
   window.currentFilter = game;
   window.tampilProduk();
@@ -356,11 +316,8 @@ window.jalankanFilter = (game) => {
 window.cekStatusPesanan = async (invoice) => {
   const q = query(collection(db, "pesanan"), where("invoice", "==", invoice));
   const snap = await getDocs(q);
-  if (snap.empty) return window.showToast("ID Invoice tidak ditemukan!", "#ef4444");
-  snap.forEach(doc => {
-    const data = doc.data();
-    window.showToast(`Status: ${data.status}`, "#10b981");
-  });
+  if (snap.empty) return window.showToast("Invoice tidak ditemukan!", "#ef4444");
+  snap.forEach(d => window.showToast(`Status: ${d.data().status}`, "#10b981"));
 };
 
 window.bukaDetail = (id, nama, harga, gambar, deskripsi, kategori) => {
@@ -368,19 +325,17 @@ window.bukaDetail = (id, nama, harga, gambar, deskripsi, kategori) => {
   if (!modal) return;
   document.getElementById("detailNama").innerText = nama;
   document.getElementById("detailDeskripsi").innerHTML = deskripsi || "Tidak ada deskripsi.";
-  document.getElementById("detailGambarWadah").innerHTML = `<img src="${gambar.split(',')[0]}" style="width:100%; border-radius:10px;">`;
-  const btnBeli = document.getElementById("btnLanjutBeli");
-  btnBeli.onclick = () => { window.bukaStruk(nama, harga, id); modal.style.display = "none"; };
-  const btnNego = document.getElementById("btnNegoWA");
-  btnNego.onclick = () => { window.open(`https://wa.me/628123456789?text=Halo, saya mau nego ${nama}`, "_blank"); };
+  document.getElementById("detailGambarWadah").innerHTML = `<img src="${gambar.split(',')[0]}" style="width:100%;">`;
+  document.getElementById("btnLanjutBeli").onclick = () => { window.bukaStruk(nama, harga, id); modal.style.display = "none"; };
+  document.getElementById("btnNegoWA").onclick = () => { window.open(`https://wa.me/628123456789?text=Halo, saya mau nego ${nama}`, "_blank"); };
   modal.style.display = "flex";
 };
 
-// ========== 8. INIT ==========
+// INIT
 window.initApp = async () => {
-  const pengumumanDoc = await getDoc(doc(db, "pengaturan", "toko"));
-  if (pengumumanDoc.exists() && document.getElementById("isiPengumuman")) {
-    document.getElementById("isiPengumuman").innerText = pengumumanDoc.data().pengumuman;
+  const pengDoc = await getDoc(doc(db, "pengaturan", "toko"));
+  if (pengDoc.exists() && document.getElementById("isiPengumuman")) {
+    document.getElementById("isiPengumuman").innerText = pengDoc.data().pengumuman;
   }
   const isAdmin = window.location.href.includes("admin.html");
   if (isAdmin) {
