@@ -12,22 +12,16 @@
      })();
   </script>
   
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: 'Poppins', sans-serif;
       background: #0f172a;
-      color: white;
+      color: #f1f5f9;
       padding: 20px;
-      margin: 0;
     }
-    
-    /* TOAST NOTIFIKASI */
+    /* Toast */
     #toast {
       visibility: hidden;
       min-width: 250px;
@@ -42,31 +36,19 @@
       bottom: 30px;
       transform: translateX(-50%);
       font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      border: 1px solid rgba(255,255,255,0.1);
       font-size: 13px;
     }
-    #toast.show {
-      visibility: visible;
-      animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    }
-    @keyframes fadein {
-      from {bottom: 0; opacity: 0;}
-      to {bottom: 30px; opacity: 1;}
-    }
-    @keyframes fadeout {
-      from {bottom: 30px; opacity: 1;}
-      to {bottom: 0; opacity: 0;}
-    }
+    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
+    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+    @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
 
-    /* LOGIN OVERLAY */
+    /* Login Overlay */
     #loginOverlay {
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
       background: #0f172a;
       display: none;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       z-index: 9999;
@@ -86,211 +68,168 @@
       border: 1px solid #334155;
       background: #0f172a;
       color: white;
-      text-align: center;
-      margin-bottom: 15px;
       width: 100%;
-      outline: none;
+      margin-bottom: 15px;
     }
     .login-box button {
-      padding: 12px;
-      width: 100%;
-      border-radius: 8px;
-      border: none;
       background: linear-gradient(90deg, #3a7bd5, #00d2ff);
       color: white;
-      cursor: pointer;
+      padding: 12px;
+      width: 100%;
+      border: none;
+      border-radius: 8px;
       font-weight: bold;
-      text-transform: uppercase;
+      cursor: pointer;
     }
 
-    /* BOX & CARD */
-    .box {
-      background: #1e293b;
-      padding: 25px;
-      border-radius: 15px;
-      max-width: 600px;
-      margin: 20px auto;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-      border: 1px solid #334155;
-    }
-    h1 {
-      text-align: center;
-      margin-bottom: 20px;
-      font-size: 20px;
-      color: #00d2ff;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-    }
-    
+    /* Dashboard */
     .dashboard-grid {
       display: grid;
       grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      gap: 15px;
       max-width: 600px;
       margin: 0 auto 20px;
     }
     .stat-card {
       background: #1e293b;
-      padding: 15px;
-      border-radius: 15px;
-      border: 1px solid #334155;
+      padding: 20px;
+      border-radius: 20px;
       text-align: center;
+      border: 1px solid #334155;
     }
-    .stat-card span {
-      font-size: 9px;
-      color: #94a3b8;
-      font-weight: 600;
+    .stat-card span { font-size: 11px; color: #94a3b8; text-transform: uppercase; }
+    .stat-card h2 { font-size: 24px; margin-top: 5px; }
+    .stat-total h2 { color: #00d2ff; }
+    .stat-cuan h2 { color: #fbbf24; }
+
+    /* Box */
+    .box {
+      background: #1e293b;
+      padding: 24px;
+      border-radius: 24px;
+      max-width: 700px;
+      margin: 20px auto;
+      border: 1px solid #334155;
+    }
+    h1 {
+      font-size: 20px;
+      color: #00d2ff;
+      text-align: center;
+      margin-bottom: 20px;
       text-transform: uppercase;
     }
-    .stat-card h2 {
-      margin: 5px 0 0;
-      font-size: 18px;
-    }
-    .stat-total h2 { color: #00d2ff; }
-    .stat-cuan h2 { color: #f1c40f; }
-
     label {
       font-size: 11px;
       color: #94a3b8;
-      margin-top: 12px;
-      display: block;
-      font-weight: 600;
       text-transform: uppercase;
+      font-weight: 600;
+      display: block;
+      margin-top: 16px;
     }
     input, textarea, select {
       width: 100%;
       padding: 12px;
-      margin-top: 5px;
-      border-radius: 8px;
+      margin-top: 6px;
+      border-radius: 12px;
       border: 1px solid #334155;
       background: #0f172a;
       color: white;
-      font-family: 'Poppins', sans-serif;
-      outline: none;
+      font-family: inherit;
     }
-    
-    .flex-row {
-      display: flex;
-      gap: 10px;
-    }
-    .flex-row > div {
-      flex: 1;
-    }
+    .flex-row { display: flex; gap: 12px; }
+    .flex-row > div { flex: 1; }
 
     button {
       width: 100%;
-      padding: 14px;
-      margin-top: 10px;
+      padding: 12px;
+      margin-top: 16px;
       border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      cursor: pointer;
+      border-radius: 40px;
       font-weight: 800;
-      transition: 0.3s;
+      cursor: pointer;
+      transition: 0.2s;
       text-transform: uppercase;
+      font-size: 13px;
     }
     .btn-tambah { background: linear-gradient(90deg, #3a7bd5, #00d2ff); color: white; }
     .btn-success { background: #10b981; color: white; }
-    .btn-warning { background: #f1c40f; color: #0f172a; }
-    .btn-danger { background: #ef4444; color: white !important; }
-    
-    .produk-container {
-      max-width: 600px;
-      margin: 40px auto;
-      padding: 0 15px;
-    }
+    .btn-warning { background: #f59e0b; color: #0f172a; }
+    .btn-danger { background: #ef4444; color: white; }
+    .btn-secondary { background: #475569; color: white; }
+
+    /* Produk admin */
+    .produk-container { max-width: 700px; margin: 30px auto; }
     .card-admin {
-      background: #1e293b;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 16px;
       padding: 12px;
-      border-radius: 12px;
       margin-bottom: 12px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      border: 1px solid #334155;
     }
-    .card-admin-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex: 1;
-    }
-    .card-admin img {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 8px;
-      background: #0f172a;
-    }
-    .admin-actions {
-      display: flex;
-      gap: 8px;
-    }
-    .card-admin button {
-      width: auto;
-      padding: 8px 12px;
-      margin: 0;
-      font-size: 11px;
-    }
+    .card-admin-info { display: flex; align-items: center; gap: 12px; flex: 1; }
+    .card-admin img { width: 55px; height: 55px; object-fit: cover; border-radius: 12px; }
+    .admin-actions button { width: auto; padding: 8px 14px; margin: 0; font-size: 12px; border-radius: 30px; }
 
-    /* ========== PESANAN ADMIN (DIPERBARUI) ========== */
-    .order-item-admin {
-      background: white;
-      color: #333;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 15px;
-      border-left: 5px solid #f1c40f;
-      transition: 0.3s;
+    /* ========== PESANAN (BARU, RAPI) ========== */
+    .order-item {
+      background: #0f172a;
+      border-left: 4px solid #f59e0b;
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
     }
-    .order-item-admin p {
-      margin: 3px 0;
-      font-size: 12px;
+    .order-item.status-selesai {
+      border-left-color: #10b981;
+      background: #0a0f1a;
+      padding: 8px 14px;
     }
-    /* Tampilan ringkas untuk pesanan selesai */
-    .order-item-admin.status-selesai {
-      background: #0f172a !important;
-      border-left: 3px solid #10b981 !important;
-      padding: 8px 12px !important;
-      margin-bottom: 8px !important;
-      opacity: 0.9;
-    }
-    .order-item-admin.status-selesai p {
+    .order-item.status-selesai .order-detail-lengkap {
       display: none;
     }
-    .order-item-admin.status-selesai .order-selesai-ringkas {
+    .order-selesai-ringkas {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      font-size: 13px;
+      color: #cbd5e1;
+    }
+    .order-selesai-ringkas b { color: #10b981; }
+    .order-detail-lengkap p {
+      font-size: 13px;
+      margin: 4px 0;
+    }
+    .order-detail-lengkap textarea {
+      margin-top: 8px;
+      margin-bottom: 8px;
       font-size: 12px;
-      color: #94a3b8;
     }
-    .order-item-admin.status-selesai .order-selesai-ringkas b {
-      color: #10b981;
+    .aksi-group {
+      display: flex;
+      gap: 10px;
     }
-    /* Sembunyikan tombol dan textarea pada pesanan selesai */
-    .order-item-admin.status-selesai textarea,
-    .order-item-admin.status-selesai button {
-      display: none;
+    .aksi-group button {
+      margin-top: 0;
+      padding: 10px;
+      font-size: 12px;
     }
 
     #listVoucherAdmin div {
+      background: #0f172a;
+      padding: 12px;
+      border-radius: 14px;
+      margin-top: 8px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #0f172a;
-      padding: 10px;
-      border-radius: 8px;
-      margin-top: 8px;
-      border: 1px solid #334155;
     }
   </style>
 </head>
 <body>
-
 <div id="toast"></div>
-
 <div id="loginOverlay">
   <div class="login-box">
     <h1 style="font-size: 16px;">ADMIN SIWOSTORE</h1>
@@ -304,135 +243,90 @@
   <div class="stat-card stat-cuan"><span>Total Cuan</span><h2 id="statCuan">Rp0</h2></div>
 </div>
 
-<div class="box" style="border: 1px solid #10b981;">
+<div class="box">
   <h1>📥 Pesanan Masuk</h1>
-  <div id="listPesananAdmin">
-    <p style="text-align: center; font-size: 12px; color: #64748b;">Memuat data pesanan...</p>
-  </div>
+  <div id="listPesananAdmin">Memuat...</div>
 </div>
 
 <div class="box">
-  <h1>🛠️ Atur Produk Akun</h1>
+  <h1>🛠️ Atur Produk</h1>
   <label>Nama Akun</label>
   <input type="text" id="nama" placeholder="Contoh: Akun ML Mythic Glory">
-  
   <div class="flex-row">
-    <div>
-      <label>Harga Jual</label>
-      <input type="text" id="displayHarga" placeholder="Rp 0" oninput="formatRupiah(this, 'harga')">
-      <input type="hidden" id="harga"> 
-    </div>
-    <div>
-      <label>Kategori Game</label>
-      <select id="kategori">
-        <option value="Mobile Legends">Mobile Legends</option>
-        <option value="Free Fire">Free Fire</option>
-        <option value="PUBG Mobile">PUBG Mobile</option>
-        <option value="Lainnya">Lainnya</option>
-      </select>
-    </div>
+    <div><label>Harga</label><input type="text" id="displayHarga" placeholder="Rp 0" oninput="formatRupiah(this,'harga')"><input type="hidden" id="harga"></div>
+    <div><label>Kategori</label><select id="kategori"><option>Mobile Legends</option><option>Free Fire</option><option>PUBG Mobile</option><option>Lainnya</option></select></div>
   </div>
-  
-  <label>Spesifikasi Lengkap</label>
-  <textarea id="deskripsi" placeholder="- Skin Legend: Gusion..."></textarea>
-  
-  <label>Link Foto Akun (Gunakan koma [,] jika > 1)</label>
-  <input type="text" id="gambar" placeholder="link1.jpg, link2.jpg">
-  
+  <label>Spesifikasi</label><textarea id="deskripsi" placeholder="- Skin Legend: Gusion..."></textarea>
+  <label>Link Foto</label><input type="text" id="gambar" placeholder="link1.jpg, link2.jpg">
   <input type="hidden" id="editId">
-  <button class="btn-tambah" onclick="window.submitProduk()">💾 SIMPAN DATA PRODUK</button>
-  <button style="background: #475569; color: white;" onclick="resetForm()">➕ RESET FORM</button>
+  <button class="btn-tambah" onclick="window.submitProduk()">💾 SIMPAN</button>
+  <button class="btn-secondary" onclick="resetForm()">🔄 RESET</button>
 </div>
 
 <div class="box">
-  <h1>🎟️ Kelola Voucher</h1>
-  <label>Kode Voucher</label>
-  <input type="text" id="vKode" placeholder="Contoh: PROMO10K">
-  <div class="flex-row">
-    <div><label>Potongan (Rp)</label><input type="number" id="vDiskon"></div>
-    <div><label>Kuota</label><input type="number" id="vKuota"></div>
-  </div>
+  <h1>🎟️ Voucher</h1>
+  <label>Kode</label><input type="text" id="vKode" placeholder="PROMO10K">
+  <div class="flex-row"><div><label>Potongan (Rp)</label><input type="number" id="vDiskon"></div><div><label>Kuota</label><input type="number" id="vKuota"></div></div>
   <button class="btn-success" onclick="window.tambahVoucher()">💾 SIMPAN VOUCHER</button>
-  <div id="listVoucherAdmin" style="margin-top:15px;"></div>
+  <div id="listVoucherAdmin"></div>
 </div>
 
 <div class="box">
-  <h1>📢 Pengumuman Toko</h1>
-  <textarea id="inputPengumuman" placeholder="Tulis info promo/toko..."></textarea>
-  <button class="btn-warning" onclick="window.updatePengumuman()">📢 UPDATE RUNNING TEXT</button>
+  <h1>📢 Pengumuman</h1>
+  <textarea id="inputPengumuman" placeholder="Info promo..."></textarea>
+  <button class="btn-warning" onclick="window.updatePengumuman()">UPDATE</button>
 </div>
 
 <div class="box">
-  <h1>📸 Tambah Testimoni</h1>
+  <h1>📸 Testimoni</h1>
   <input type="text" id="inputTesti" placeholder="Link gambar testi">
-  <button class="btn-success" onclick="window.tambahTesti()">+ SIMPAN TESTIMONI</button>
-  <button style="background: #3b82f6; color:white;" onclick="window.location.href='index.html'">👀 LIHAT TAMPILAN TOKO</button>
+  <button class="btn-success" onclick="window.tambahTesti()">+ TAMBAH</button>
+  <button class="btn-secondary" onclick="location.href='index.html'">👀 LIHAT TOKO</button>
 </div>
 
 <div class="produk-container">
-  <h2 style="border-bottom: 1px solid #334155; padding-bottom: 10px; font-size: 16px;">Daftar Akun Aktif</h2>
+  <h2 style="border-bottom:1px solid #334155; padding-bottom:8px;">Daftar Akun</h2>
   <div id="produk"></div>
-  
-  <h2 style="margin-top: 40px; border-bottom: 1px solid #334155; padding-bottom: 10px; font-size: 16px;">Daftar Testimoni</h2>
-  <div id="list-testimoni-admin" style="display: grid; grid-template-columns: 1fr; gap: 10px;"></div>
+  <h2 style="margin-top:30px;">Testimoni Admin</h2>
+  <div id="list-testimoni-admin"></div>
 </div>
 
 <script>
-// --- FUNGSI TOAST (dipanggil juga dari app.js) ---
-window.showToast = function(pesan, warna = "#10b981") {
-    const x = document.getElementById("toast");
-    if (!x) return;
-    x.innerText = pesan;
-    x.style.backgroundColor = warna;
-    x.className = "show";
-    setTimeout(() => { x.className = x.className.replace("show", ""); }, 3000);
+window.showToast = function(pesan, warna="#10b981") {
+  let t=document.getElementById("toast");
+  if(!t) return;
+  t.innerText=pesan; t.style.backgroundColor=warna; t.className="show";
+  setTimeout(()=>t.className="",3000);
 };
-
-// --- LOGIKA PASSWORD ADMIN ---
-const PASSWORD_RAHASIA = "16092007"; 
-
-window.cekAksesAdmin = function() {
-    const pass = document.getElementById("passAdmin").value;
-    const overlay = document.getElementById("loginOverlay");
-
-    if (pass === PASSWORD_RAHASIA) {
-        sessionStorage.setItem("loginOk", "true");
-        window.showToast("Login Berhasil! Selamat Datang Faz.. ⚡");
-        setTimeout(() => { location.reload(); }, 1000);
-    } else {
-        window.showToast("Password Salah! ❌", "#ef4444");
-        document.getElementById("passAdmin").value = "";
-    }
+const PASSWORD_RAHASIA="16092007";
+window.cekAksesAdmin=function(){
+  let pass=document.getElementById("passAdmin").value;
+  if(pass===PASSWORD_RAHASIA){
+    sessionStorage.setItem("loginOk","true");
+    window.showToast("Login Berhasil! ⚡");
+    setTimeout(()=>location.reload(),1000);
+  } else { window.showToast("Password Salah! ❌","#ef4444"); }
 };
-
-window.addEventListener("DOMContentLoaded", () => {
-    const isLogin = sessionStorage.getItem("loginOk");
-    const overlay = document.getElementById("loginOverlay");
-    if (isLogin === "true") {
-        overlay.style.display = "none";
-    } else {
-        overlay.style.display = "flex";
-    }
+window.addEventListener("DOMContentLoaded",()=>{
+  if(sessionStorage.getItem("loginOk")==="true") document.getElementById("loginOverlay").style.display="none";
+  else document.getElementById("loginOverlay").style.display="flex";
 });
-
-function formatRupiah(el, hiddenId) {
-    let value = el.value.replace(/[^0-9]/g, ""); 
-    document.getElementById(hiddenId).value = value;
-    if (value === "") { el.value = ""; return; }
-    el.value = new Intl.NumberFormat('id-ID').format(value);
+function formatRupiah(el,hiddenId){
+  let v=el.value.replace(/[^0-9]/g,"");
+  document.getElementById(hiddenId).value=v;
+  if(v==="") el.value="";
+  else el.value=new Intl.NumberFormat('id-ID').format(v);
 }
-
-function resetForm() {
-    document.getElementById("nama").value = "";
-    document.getElementById("harga").value = "";
-    document.getElementById("displayHarga").value = "";
-    document.getElementById("gambar").value = "";
-    document.getElementById("deskripsi").value = "";
-    document.getElementById("editId").value = "";
-    window.showToast("Form telah dibersihkan. ✨", "#334155");
+function resetForm(){
+  document.getElementById("nama").value="";
+  document.getElementById("harga").value="";
+  document.getElementById("displayHarga").value="";
+  document.getElementById("gambar").value="";
+  document.getElementById("deskripsi").value="";
+  document.getElementById("editId").value="";
+  window.showToast("Form bersih ✨");
 }
 </script>
-
-<script type="module" src="app.js?v=2.6"></script>
+<script type="module" src="app.js?v=3.0"></script>
 </body>
 </html>
