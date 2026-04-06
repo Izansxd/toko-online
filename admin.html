@@ -14,9 +14,20 @@
   
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
   <style>
-    body { font-family: 'Poppins', sans-serif; background: #0f172a; color: white; padding: 20px; margin: 0; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0f172a;
+      color: white;
+      padding: 20px;
+      margin: 0;
+    }
     
-    /* --- CSS TOAST NOTIFIKASI --- */
+    /* TOAST NOTIFIKASI */
     #toast {
       visibility: hidden;
       min-width: 250px;
@@ -35,97 +46,244 @@
       border: 1px solid rgba(255,255,255,0.1);
       font-size: 13px;
     }
-    #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-    @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    @keyframes fadein {
+      from {bottom: 0; opacity: 0;}
+      to {bottom: 30px; opacity: 1;}
+    }
+    @keyframes fadeout {
+      from {bottom: 30px; opacity: 1;}
+      to {bottom: 0; opacity: 0;}
+    }
 
-    /* --- CSS LOGIN OVERLAY --- */
+    /* LOGIN OVERLAY */
     #loginOverlay {
       position: fixed;
-      top: 0; left: 0; width: 100%; height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: #0f172a;
       display: none;
       flex-direction: column;
-      align-items: center; justify-content: center;
+      align-items: center;
+      justify-content: center;
       z-index: 9999;
     }
     .login-box {
-      background: #1e293b; padding: 30px; border-radius: 20px;
-      border: 1px solid #334155; text-align: center; width: 85%; max-width: 350px;
+      background: #1e293b;
+      padding: 30px;
+      border-radius: 20px;
+      border: 1px solid #334155;
+      text-align: center;
+      width: 85%;
+      max-width: 350px;
     }
     .login-box input {
-      padding: 12px; border-radius: 8px; border: 1px solid #334155;
-      background: #0f172a; color: white; text-align: center;
-      margin-bottom: 15px; width: 100%; outline: none; box-sizing: border-box;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+      margin-bottom: 15px;
+      width: 100%;
+      outline: none;
     }
     .login-box button {
-      padding: 12px; width: 100%; border-radius: 8px; border: none;
-      background: linear-gradient(90deg, #3a7bd5, #00d2ff); color: white; 
-      cursor: pointer; font-weight: bold; text-transform: uppercase;
+      padding: 12px;
+      width: 100%;
+      border-radius: 8px;
+      border: none;
+      background: linear-gradient(90deg, #3a7bd5, #00d2ff);
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+      text-transform: uppercase;
     }
 
-    .box { background: #1e293b; padding: 25px; border-radius: 15px; max-width: 500px; margin: 20px auto; box-shadow: 0 4px 15px rgba(0,0,0,0.3); border: 1px solid #334155; }
-    h1 { text-align: center; margin-bottom: 20px; font-size: 20px; color: #00d2ff; text-transform: uppercase; letter-spacing: 1px; }
+    /* BOX & CARD */
+    .box {
+      background: #1e293b;
+      padding: 25px;
+      border-radius: 15px;
+      max-width: 600px;
+      margin: 20px auto;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      border: 1px solid #334155;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      font-size: 20px;
+      color: #00d2ff;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
     
-    .dashboard-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; max-width: 600px; margin: 0 auto 20px; }
-    .stat-card { background: #1e293b; padding: 15px; border-radius: 15px; border: 1px solid #334155; text-align: center; }
-    .stat-card span { font-size: 9px; color: #94a3b8; font-weight: 600; text-transform: uppercase; }
-    .stat-card h2 { margin: 5px 0 0; font-size: 18px; }
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      max-width: 600px;
+      margin: 0 auto 20px;
+    }
+    .stat-card {
+      background: #1e293b;
+      padding: 15px;
+      border-radius: 15px;
+      border: 1px solid #334155;
+      text-align: center;
+    }
+    .stat-card span {
+      font-size: 9px;
+      color: #94a3b8;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .stat-card h2 {
+      margin: 5px 0 0;
+      font-size: 18px;
+    }
     .stat-total h2 { color: #00d2ff; }
     .stat-cuan h2 { color: #f1c40f; }
 
-    label { font-size: 11px; color: #94a3b8; margin-top: 12px; display: block; font-weight: 600; text-transform: uppercase; }
-    input, textarea, select { 
-      width: 100%; padding: 12px; margin-top: 5px; border-radius: 8px; 
-      border: 1px solid #334155; box-sizing: border-box; background: #0f172a; color: white;
-      font-family: 'Poppins', sans-serif; outline: none;
+    label {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 12px;
+      display: block;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 12px;
+      margin-top: 5px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+      background: #0f172a;
+      color: white;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
     }
     
-    .flex-row { display: flex; gap: 10px; }
-    .flex-row > div { flex: 1; }
+    .flex-row {
+      display: flex;
+      gap: 10px;
+    }
+    .flex-row > div {
+      flex: 1;
+    }
 
-    button { width: 100%; padding: 14px; margin-top: 10px; border: none; border-radius: 10px; font-size: 14px; cursor: pointer; font-weight: 800; transition: 0.3s; text-transform: uppercase; }
+    button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 10px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: 800;
+      transition: 0.3s;
+      text-transform: uppercase;
+    }
     .btn-tambah { background: linear-gradient(90deg, #3a7bd5, #00d2ff); color: white; }
     .btn-success { background: #10b981; color: white; }
     .btn-warning { background: #f1c40f; color: #0f172a; }
     .btn-danger { background: #ef4444; color: white !important; }
     
-    .produk-container { max-width: 600px; margin: 40px auto; padding: 0 15px; }
-    .card-admin { 
-      background: #1e293b; padding: 12px; border-radius: 12px; margin-bottom: 12px; 
-      display: flex; align-items: center; justify-content: space-between; gap: 12px; 
-      border: 1px solid #334155; 
+    .produk-container {
+      max-width: 600px;
+      margin: 40px auto;
+      padding: 0 15px;
     }
-    .card-admin-info { display: flex; align-items: center; gap: 12px; flex: 1; }
-    .card-admin img { width: 50px; height: 50px; object-fit: cover; border-radius: 8px; background: #0f172a; }
-    .admin-actions { display: flex; gap: 8px; }
-    .card-admin button { width: auto; padding: 8px 12px; margin: 0; font-size: 11px; }
+    .card-admin {
+      background: #1e293b;
+      padding: 12px;
+      border-radius: 12px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      border: 1px solid #334155;
+    }
+    .card-admin-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+    .card-admin img {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 8px;
+      background: #0f172a;
+    }
+    .admin-actions {
+      display: flex;
+      gap: 8px;
+    }
+    .card-admin button {
+      width: auto;
+      padding: 8px 12px;
+      margin: 0;
+      font-size: 11px;
+    }
 
+    /* ========== PESANAN ADMIN (DIPERBARUI) ========== */
     .order-item-admin {
-      background: white; color: #333; padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 5px solid #10b981;
+      background: white;
+      color: #333;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      border-left: 5px solid #f1c40f;
       transition: 0.3s;
     }
-    .order-item-admin p { margin: 3px 0; font-size: 12px; }
-    .wa-tag { background: #25d366; color: white; padding: 2px 6px; border-radius: 4px; text-decoration: none; font-weight: bold; }
-
-    .order-item-admin.status-selesai {
-      background: #0f172a !important; 
-      border-left: 5px solid #64748b !important; 
-      opacity: 0.7;
+    .order-item-admin p {
+      margin: 3px 0;
+      font-size: 12px;
     }
-    .order-item-admin.status-selesai p { color: #94a3b8 !important; }
-    .order-item-admin.status-selesai .wa-tag { background: #475569; }
-
-    .btn-selesai-muted {
-      background: #334155 !important;
-      color: #64748b !important;
-      cursor: not-allowed !important;
-      pointer-events: none;
+    /* Tampilan ringkas untuk pesanan selesai */
+    .order-item-admin.status-selesai {
+      background: #0f172a !important;
+      border-left: 3px solid #10b981 !important;
+      padding: 8px 12px !important;
+      margin-bottom: 8px !important;
+      opacity: 0.9;
+    }
+    .order-item-admin.status-selesai p {
+      display: none;
+    }
+    .order-item-admin.status-selesai .order-selesai-ringkas {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #94a3b8;
+    }
+    .order-item-admin.status-selesai .order-selesai-ringkas b {
+      color: #10b981;
+    }
+    /* Sembunyikan tombol dan textarea pada pesanan selesai */
+    .order-item-admin.status-selesai textarea,
+    .order-item-admin.status-selesai button {
+      display: none;
     }
 
     #listVoucherAdmin div {
-      display: flex; justify-content: space-between; align-items: center;
-      background: #0f172a; padding: 10px; border-radius: 8px; margin-top: 8px; border: 1px solid #334155;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0f172a;
+      padding: 10px;
+      border-radius: 8px;
+      margin-top: 8px;
+      border: 1px solid #334155;
     }
   </style>
 </head>
@@ -146,7 +304,7 @@
   <div class="stat-card stat-cuan"><span>Total Cuan</span><h2 id="statCuan">Rp0</h2></div>
 </div>
 
-<div class="box" style="max-width: 600px; border: 1px solid #10b981;">
+<div class="box" style="border: 1px solid #10b981;">
   <h1>📥 Pesanan Masuk</h1>
   <div id="listPesananAdmin">
     <p style="text-align: center; font-size: 12px; color: #64748b;">Memuat data pesanan...</p>
@@ -220,9 +378,10 @@
 </div>
 
 <script>
-// --- FUNGSI TOAST (BISA DIPANGGIL app.js) ---
+// --- FUNGSI TOAST (dipanggil juga dari app.js) ---
 window.showToast = function(pesan, warna = "#10b981") {
     const x = document.getElementById("toast");
+    if (!x) return;
     x.innerText = pesan;
     x.style.backgroundColor = warna;
     x.className = "show";
@@ -274,7 +433,6 @@ function resetForm() {
 }
 </script>
 
-<script type="module" src="app.js?v=2.5"></script>
-
+<script type="module" src="app.js?v=2.6"></script>
 </body>
 </html>
