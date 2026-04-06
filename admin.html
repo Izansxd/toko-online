@@ -20,16 +20,27 @@
     h1{text-align:center;color:#00d2ff;font-size:20px;margin-bottom:20px;}
     .dashboard-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;max-width:600px;margin:0 auto 20px;}
     .stat-card{background:#1e293b;padding:15px;border-radius:15px;text-align:center;}
-    .order-item{background:#0f172a;border-left:4px solid #f59e0b;border-radius:16px;padding:14px;margin-bottom:12px;}
-    .order-item.status-selesai{border-left-color:#10b981;padding:8px 14px;}
-    .order-selesai-ringkas{display:flex;justify-content:space-between;font-size:13px;}
-    .order-detail-lengkap textarea{width:100%;margin-top:8px;margin-bottom:8px;}
-    .aksi-group{display:flex;gap:10px;}
+    label{font-size:11px;color:#94a3b8;display:block;margin-top:12px;}
+    input,textarea,select{width:100%;padding:10px;margin-top:5px;border-radius:8px;border:1px solid #334155;background:#0f172a;color:white;}
+    .flex-row{display:flex;gap:10px;}
+    button{padding:12px;margin-top:10px;border:none;border-radius:40px;font-weight:800;cursor:pointer;}
     .btn-success{background:#10b981;color:white;}
     .btn-danger{background:#ef4444;color:white;}
     .btn-warning{background:#f59e0b;color:#0f172a;}
-    button{padding:10px;border:none;border-radius:30px;font-weight:800;cursor:pointer;}
-    img.bukti-img{max-width:100px;max-height:100px;border-radius:8px;margin-top:8px;}
+    .btn-secondary{background:#475569;color:white;}
+    .order-item{background:#0f172a;border-left:4px solid #f59e0b;border-radius:16px;padding:14px;margin-bottom:12px;}
+    .order-item.status-selesai{border-left-color:#10b981;padding:8px 14px;}
+    .order-selesai-ringkas{display:flex;justify-content:space-between;font-size:13px;}
+    .order-detail-lengkap p{font-size:13px;margin:4px 0;}
+    .order-detail-lengkap textarea{width:100%;margin-top:8px;margin-bottom:8px;}
+    .aksi-group{display:flex;gap:10px;}
+    .bukti-img{max-width:100px;max-height:100px;border-radius:8px;margin-top:8px;cursor:pointer;}
+    .card-admin{background:#0f172a;border:1px solid #334155;border-radius:16px;padding:12px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center;}
+    .card-admin-info{display:flex;gap:12px;align-items:center;}
+    .card-admin img{width:50px;height:50px;object-fit:cover;border-radius:10px;}
+    .admin-actions{display:flex;gap:8px;}
+    .admin-actions button{padding:8px 12px;margin:0;font-size:11px;}
+    #listVoucherAdmin div{background:#0f172a;padding:10px;border-radius:8px;margin-top:8px;display:flex;justify-content:space-between;}
   </style>
 </head>
 <body>
@@ -37,19 +48,19 @@
 <div id="loginOverlay"><div class="login-box"><h1>ADMIN SIWOSTORE</h1><input type="password" id="passAdmin" placeholder="Password"><button onclick="cekAksesAdmin()">MASUK</button></div></div>
 <div class="dashboard-grid"><div class="stat-card"><span>Total Produk</span><h2 id="statTotal">0</h2></div><div class="stat-card"><span>Total Cuan</span><h2 id="statCuan">Rp0</h2></div></div>
 <div class="box"><h1>📥 Pesanan Masuk</h1><div id="listPesananAdmin">Memuat...</div></div>
-<div class="box"><h1>🛠️ Atur Produk</h1><label>Nama Akun</label><input id="nama"><div class="flex-row"><div><label>Harga</label><input id="displayHarga" oninput="formatRupiah(this,'harga')"><input type="hidden" id="harga"></div><div><label>Kategori</label><select id="kategori"><option>Mobile Legends</option><option>Free Fire</option><option>PUBG Mobile</option></select></div></div><label>Spesifikasi</label><textarea id="deskripsi"></textarea><label>Link Foto</label><input id="gambar"><input type="hidden" id="editId"><button class="btn-success" onclick="submitProduk()">SIMPAN</button><button onclick="resetForm()">RESET</button></div>
-<div class="box"><h1>🎟️ Voucher</h1><input id="vKode" placeholder="Kode"><div><input id="vDiskon" placeholder="Potongan"><input id="vKuota" placeholder="Kuota"></div><button class="btn-success" onclick="tambahVoucher()">SIMPAN VOUCHER</button><div id="listVoucherAdmin"></div></div>
-<div class="box"><h1>📢 Pengumuman</h1><textarea id="inputPengumuman"></textarea><button onclick="updatePengumuman()">UPDATE</button></div>
-<div class="box"><h1>📸 Testimoni</h1><input id="inputTesti"><button onclick="tambahTesti()">TAMBAH</button><button onclick="location.href='index.html'">LIHAT TOKO</button></div>
-<div class="produk-container"><h2>Daftar Akun</h2><div id="produk"></div><h2>Testimoni Admin</h2><div id="list-testimoni-admin"></div></div>
+<div class="box"><h1>🛠️ Atur Produk</h1><label>Nama Akun</label><input id="nama"><div class="flex-row"><div><label>Harga</label><input id="displayHarga" oninput="formatRupiah(this,'harga')"><input type="hidden" id="harga"></div><div><label>Kategori</label><select id="kategori"><option>Mobile Legends</option><option>Free Fire</option><option>PUBG Mobile</option><option>Lainnya</option></select></div></div><label>Spesifikasi</label><textarea id="deskripsi"></textarea><label>Link Foto (koma jika lebih)</label><input id="gambar"><input type="hidden" id="editId"><button class="btn-success" onclick="submitProduk()">💾 SIMPAN</button><button class="btn-secondary" onclick="resetForm()">🔄 RESET</button></div>
+<div class="box"><h1>🎟️ Voucher</h1><input id="vKode" placeholder="Kode Voucher"><div class="flex-row"><div><label>Potongan (Rp)</label><input id="vDiskon" type="number"></div><div><label>Kuota</label><input id="vKuota" type="number"></div></div><button class="btn-success" onclick="tambahVoucher()">💾 SIMPAN VOUCHER</button><div id="listVoucherAdmin"></div></div>
+<div class="box"><h1>📢 Pengumuman</h1><textarea id="inputPengumuman" placeholder="Tulis pengumuman..."></textarea><button class="btn-warning" onclick="updatePengumuman()">📢 UPDATE</button></div>
+<div class="box"><h1>📸 Testimoni</h1><input id="inputTesti" placeholder="Link gambar testi"><button class="btn-success" onclick="tambahTesti()">+ TAMBAH</button><button class="btn-secondary" onclick="location.href='index.html'">👀 LIHAT TOKO</button></div>
+<div class="produk-container"><h2>📦 Daftar Akun</h2><div id="produk"></div><h2>📸 Testimoni Admin</h2><div id="list-testimoni-admin"></div></div>
 <script>
 const PASSWORD_RAHASIA="16092007";
-function cekAksesAdmin(){ let p=document.getElementById("passAdmin").value; if(p===PASSWORD_RAHASIA){ sessionStorage.setItem("loginOk","true"); location.reload(); } else alert("Salah!"); }
+function cekAksesAdmin(){ let p=document.getElementById("passAdmin").value; if(p===PASSWORD_RAHASIA){ sessionStorage.setItem("loginOk","true"); location.reload(); } else alert("Password salah!"); }
 if(sessionStorage.getItem("loginOk")!=="true") document.getElementById("loginOverlay").style.display="flex";
 function formatRupiah(el,hid){ let v=el.value.replace(/[^0-9]/g,""); document.getElementById(hid).value=v; if(v) el.value=new Intl.NumberFormat('id-ID').format(v); else el.value=""; }
 function resetForm(){ document.getElementById("nama").value=""; document.getElementById("harga").value=""; document.getElementById("displayHarga").value=""; document.getElementById("gambar").value=""; document.getElementById("deskripsi").value=""; document.getElementById("editId").value=""; }
 window.showToast=function(msg,col){ let t=document.getElementById("toast"); t.innerText=msg; t.style.backgroundColor=col||"#10b981"; t.className="show"; setTimeout(()=>t.className="",3000); };
 </script>
-<script type="module" src="app.js?v=4.0"></script>
+<script type="module" src="app.js?v=5.0"></script>
 </body>
 </html>
