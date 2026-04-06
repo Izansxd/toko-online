@@ -6,9 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script type="text/javascript">
-     (function(){
-        emailjs.init("vj_Kj-N52AowtKruT"); 
-     })();
+     (function(){ emailjs.init("vj_Kj-N52AowtKruT"); })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <style>
@@ -37,7 +35,6 @@
       bottom: 30px;
       transform: translateX(-50%);
       font-weight: 600;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
       font-size: 13px;
     }
     #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
@@ -46,67 +43,48 @@
     header { background: linear-gradient(135deg, var(--secondary), var(--primary)); padding: 40px 15px; text-align: center; border-bottom-left-radius: 30px; border-bottom-right-radius: 30px; }
     .announcement-bar { background: #1e293b; border-bottom: 1px solid var(--input-border); padding: 10px 0; display: flex; align-items: center; }
     .announcement-label { background: var(--danger); color: white; padding: 2px 10px; font-size: 10px; font-weight: 800; border-radius: 4px; margin-left: 15px; }
-    .filter-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; scrollbar-width: none; }
-    .filter-container::-webkit-scrollbar { display: none; }
-    .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: 0.3s; }
-    .btn-filter.active { background-color: var(--primary) !important; color: var(--dark) !important; transform: scale(1.05); }
-    #produk { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 1000px; margin: 10px auto; padding: 0 15px; min-height: 200px; }
-    .card { background: var(--card-bg); border-radius: 18px; overflow: hidden; border: 1px solid var(--input-border); position: relative; transition: 0.3s; }
-    .card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,210,255,0.2); border-color: var(--primary); }
+    .filter-container { display: flex; gap: 10px; padding: 15px; overflow-x: auto; }
+    .btn-filter { background: #1e293b; color: #94a3b8; border: 1px solid var(--input-border); padding: 10px 22px; border-radius: 25px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .btn-filter.active { background-color: var(--primary); color: var(--dark); }
+    #produk { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; max-width: 1000px; margin: 10px auto; padding: 0 15px; }
+    .card { background: var(--card-bg); border-radius: 18px; overflow: hidden; border: 1px solid var(--input-border); transition: 0.3s; }
     .card img { width: 100%; height: 140px; object-fit: cover; }
     .card-info { padding: 12px; }
-    .badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); color: var(--primary); padding: 4px 8px; font-size: 10px; border-radius: 5px; }
+    .badge { position: absolute; background: rgba(0,0,0,0.7); color: var(--primary); padding: 4px 8px; font-size: 10px; border-radius: 5px; }
     .harga-baru { color: var(--success); font-weight: 700; font-size: 15px; display: block; margin-bottom: 10px; }
     .btn-beli { background: linear-gradient(90deg, var(--secondary), var(--primary)); color: white; border: none; padding: 10px; border-radius: 10px; width: 100%; font-weight: 700; cursor: pointer; }
-    #modalStruk, #modalDetail, #modalLacak, #modalInbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(5px); padding: 20px; }
+    #modalStruk, #modalInbox, #modalLacak, #modalDetail { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 9999; align-items: center; justify-content: center; padding: 20px; }
     .struk-box, .inbox-box { background: white; color: #1a1a1a; width: 100%; max-width: 350px; padding: 20px; border-radius: 16px; max-height: 90vh; overflow-y: auto; }
     .inbox-box { background: #1e293b; color: white; }
-    .struk-divider { border-top: 1px dashed #444; margin: 12px 0; }
-    .struk-header { text-align: center; margin-bottom: 15px; }
     .struk-item { display: flex; justify-content: space-between; font-size: 12px; margin: 4px 0; }
     .struk-total { display: flex; justify-content: space-between; font-weight: bold; margin-top: 10px; padding-top: 10px; border-top: 2px solid #1a1a1a; }
-    .struk-box input, .struk-box select, .struk-box textarea { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f1f5f9; color: #1e293b; font-family: 'Poppins', sans-serif; }
-    .struk-box label { font-size: 10px; font-weight: bold; color: #64748b; display: block; margin-top: 8px; margin-bottom: 2px; }
-    .detail-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 400px; border-radius: 20px; padding: 20px; border: 1px solid var(--input-border); }
-    .sales-notification { position: fixed; bottom: 85px; left: -350px; background: white; color: #333; padding: 8px 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.3); z-index: 100000; transition: 0.6s; border-left: 4px solid #10b981; width: 210px; pointer-events: none; }
-    .sales-notification.show { left: 15px; }
-    .btn-buka-status { position: fixed; bottom: 20px; right: 20px; background: var(--primary); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 15px rgba(0,210,255,0.4); z-index: 100; font-size: 20px; cursor: pointer; animation: float 3s ease-in-out infinite; }
-    .btn-inbox { position: fixed; bottom: 20px; left: 20px; background: #10b981; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 15px rgba(16,185,129,0.4); z-index: 100; font-size: 20px; cursor: pointer; }
+    .struk-box input, .struk-box select, .struk-box textarea { width: 100%; padding: 8px; margin-bottom: 10px; border-radius: 8px; border: 1px solid #cbd5e1; background: #f1f5f9; }
+    .struk-box label { font-size: 10px; font-weight: bold; display: block; margin-top: 8px; }
+    .btn-inbox { position: fixed; bottom: 20px; left: 20px; background: #10b981; width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; box-shadow: 0 4px 15px rgba(16,185,129,0.4); cursor: pointer; font-size: 20px; z-index: 100; }
+    .btn-buka-status { position: fixed; bottom: 20px; right: 20px; background: var(--primary); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: none; cursor: pointer; font-size: 20px; z-index: 100; }
     .inbox-item { background: #0f172a; padding: 12px; border-radius: 12px; margin-bottom: 8px; border-left: 3px solid var(--primary); }
     .inbox-item p { margin: 0; font-size: 12px; }
-    @keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-    .lacak-box { background: var(--card-bg); color: var(--text); width: 100%; max-width: 350px; padding: 20px; border-radius: 15px; border: 1px solid var(--primary); text-align: center; }
+    .sales-notification { position: fixed; bottom: 85px; left: -350px; background: white; padding: 8px 12px; border-radius: 10px; display: flex; align-items: center; gap: 10px; transition: 0.6s; border-left: 4px solid #10b981; width: 210px; pointer-events: none; z-index: 100000; }
+    .sales-notification.show { left: 15px; }
   </style>
 </head>
 <body>
-
 <div id="toast"></div>
-
-<header>
-  <h2>🎮 FAZA STORE</h2>
-  <p>Akun Game Murah, Aman & Terpercaya</p>
-</header>
-
-<div class="announcement-bar">
-  <div class="announcement-label">INFO</div>
-  <marquee id="isiPengumuman">Memuat info toko...</marquee>
-</div>
-
+<header><h2>🎮 FAZA STORE</h2><p>Akun Game Murah, Aman & Terpercaya</p></header>
+<div class="announcement-bar"><div class="announcement-label">INFO</div><marquee id="isiPengumuman">Memuat info toko...</marquee></div>
 <div class="filter-container">
-  <button class="btn-filter active" onclick="filterGame(this, 'Semua')">Semua</button>
-  <button class="btn-filter" onclick="filterGame(this, 'Mobile Legends')">MLBB</button>
-  <button class="btn-filter" onclick="filterGame(this, 'Free Fire')">FF</button>
-  <button class="btn-filter" onclick="filterGame(this, 'PUBG Mobile')">PUBG</button>
+  <button class="btn-filter active" onclick="filterGame(this,'Semua')">Semua</button>
+  <button class="btn-filter" onclick="filterGame(this,'Mobile Legends')">MLBB</button>
+  <button class="btn-filter" onclick="filterGame(this,'Free Fire')">FF</button>
+  <button class="btn-filter" onclick="filterGame(this,'PUBG Mobile')">PUBG</button>
 </div>
-
 <div id="produk"></div>
-
-<div class="testimoni-section" style="max-width: 1000px; margin: 30px auto; padding: 0 15px;">
-  <h3 style="font-size: 16px; margin-bottom: 10px; color: var(--primary);">💬 TESTIMONI</h3>
-  <div id="list-testimoni" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 10px;"></div>
+<div class="testimoni-section" style="max-width:1000px; margin:30px auto; padding:0 15px;">
+  <h3 style="color:var(--primary);">💬 TESTIMONI</h3>
+  <div id="list-testimoni" style="display:flex; gap:10px; overflow-x:auto;"></div>
 </div>
 
-<!-- Modal Struk (Pembelian) -->
+<!-- Modal Struk (Pembelian + Upload) -->
 <div id="modalStruk">
   <div class="struk-box">
     <div id="isiStruk"></div>
@@ -118,76 +96,29 @@
 <!-- Modal Inbox -->
 <div id="modalInbox">
   <div class="inbox-box">
-    <h3 style="text-align:center; margin:0 0 15px 0;">📬 INBOX</h3>
-    <div id="listInbox" style="max-height: 400px; overflow-y: auto;"></div>
+    <h3 style="text-align:center;">📬 INBOX</h3>
+    <div id="listInbox" style="max-height:400px; overflow-y:auto;"></div>
     <button onclick="document.getElementById('modalInbox').style.display='none'" style="width:100%; background:#334155; color:white; border:none; padding:10px; border-radius:10px; margin-top:15px;">Tutup</button>
   </div>
 </div>
 
-<div id="modalDetail">
-  <div class="detail-box">
-    <div id="detailGambarWadah"></div>
-    <h3 id="detailNama"></h3>
-    <div id="detailDeskripsi"></div>
-    <div style="display: flex; gap: 10px;">
-      <button id="btnNegoWA" style="flex:1; background:#25d366; color:#fff;">💬 NEGO</button>
-      <button id="btnLanjutBeli" style="flex:1; background:var(--primary); color:#fff;">BELI</button>
-    </div>
-    <button onclick="tutupDetail()" style="width:100%; background:none; border:none; color:#94a3b8; margin-top:15px;">Tutup</button>
-  </div>
-</div>
+<div id="modalLacak"><div class="lacak-box">...</div></div>
+<div id="modalDetail"><div class="detail-box">...</div></div>
 
-<div id="modalLacak">
-  <div class="lacak-box">
-    <h3>🚚 Lacak Pesanan</h3>
-    <input type="text" id="inputCekPesanan" placeholder="Contoh: INV-1234567890" style="width:100%; padding:10px; margin-bottom:15px; border-radius:8px; border:none;">
-    <button onclick="window.handleLacak()" style="background:var(--primary); color:var(--dark); padding:12px; border:none; border-radius:10px; font-weight:800;">CEK STATUS</button>
-    <button onclick="document.getElementById('modalLacak').style.display='none'" style="background:none; border:none; color:#94a3b8; margin-top:15px;">Tutup</button>
-  </div>
-</div>
+<div id="salesNotif" class="sales-notification"><img src="https://cdn-icons-png.flaticon.com/512/5637/5637217.png"><div class="sales-text"><b id="notifUser">Faza Store</b><span id="notifProduk">Baru saja membeli produk</span></div></div>
 
-<div id="salesNotif" class="sales-notification">
-  <img src="https://cdn-icons-png.flaticon.com/512/5637/5637217.png" alt="Buyer">
-  <div class="sales-text">
-    <b id="notifUser">Faza Store</b>
-    <span id="notifProduk">Baru saja membeli produk</span>
-  </div>
-</div>
+<button class="btn-inbox" onclick="window.bukaInbox()">📬</button>
+<button class="btn-buka-status" onclick="document.getElementById('modalLacak').style.display='flex'">🚚</button>
 
-<button class="btn-buka-status" onclick="document.getElementById('modalLacak').style.display='flex'" title="Lacak Pesanan">🚚</button>
-<button class="btn-inbox" onclick="window.bukaInbox()" title="Pesan">📬</button>
-
-<footer style="text-align:center; padding:30px; font-size:11px; color:#64748b;">
-  &copy; 2026 Faza Store Indonesia. All Rights Reserved.
-</footer>
+<footer style="text-align:center; padding:30px; font-size:11px;">&copy; 2026 Faza Store</footer>
 
 <script>
-window.showToast = function(pesan, warna = "#10b981") {
-    let toast = document.getElementById("toast");
-    if(!toast) return;
-    toast.innerText = pesan;
-    toast.style.backgroundColor = warna;
-    toast.className = "show";
-    setTimeout(() => toast.className = "", 3000);
-};
-window.tutupStruk = () => document.getElementById('modalStruk').style.display = 'none';
-window.tutupDetail = () => document.getElementById('modalDetail').style.display = 'none';
-window.handleLacak = function() {
-    let id = document.getElementById("inputCekPesanan").value;
-    if (!id) return window.showToast("Masukkan ID Invoice!", "#ef4444");
-    if (typeof window.cekStatusPesanan === "function") window.cekStatusPesanan(id);
-};
-window.filterGame = function(el, game) {
-    document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
-    el.classList.add('active');
-    if (typeof window.jalankanFilter === "function") window.jalankanFilter(game);
-};
-window.bukaInbox = function() {
-    document.getElementById('modalInbox').style.display = 'flex';
-    if (typeof window.muatInbox === "function") window.muatInbox();
-};
+window.showToast = function(pesan,warna="#10b981"){ let t=document.getElementById("toast"); if(t){ t.innerText=pesan; t.style.backgroundColor=warna; t.className="show"; setTimeout(()=>t.className="",3000); } };
+window.tutupStruk = ()=>document.getElementById('modalStruk').style.display='none';
+window.filterGame = function(el,game){ document.querySelectorAll('.btn-filter').forEach(btn=>btn.classList.remove('active')); el.classList.add('active'); if(window.jalankanFilter) window.jalankanFilter(game); };
+window.bukaInbox = function(){ document.getElementById('modalInbox').style.display='flex'; if(window.muatInbox) window.muatInbox(); };
+window.handleLacak = function(){ let id=document.getElementById("inputCekPesanan").value; if(id) window.cekStatusPesanan(id); };
 </script>
-
-<script type="module" src="app.js?v=3.0"></script>
+<script type="module" src="app.js?v=4.0"></script>
 </body>
 </html>
